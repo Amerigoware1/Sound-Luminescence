@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sound Luminescence — Light &amp; Sound Therapy</title>
+
+    <!-- Google Fonts + Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- Tone.js for audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.js">
+    </script>
+    <!-- ResponsiveVoice for speech -->
+    <script src="https://code.responsivevoice.org/responsivevoice.js">
+    </script>
+
+    <style>
+        /* ─── RESET & BASE ─── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-page: #0b0d12;
+            --bg-card: #13171f;
+            --bg-tab: #0d1017;
+            --border-subtle: #262d3a;
+            --text-primary: #edf2f7;
+            --text-secondary: #94a3b8;
+            --text-muted: #475569;
+            --gold: #d4af37;
+            --gold-glow: rgba(212, 175, 55, 0.25);
+            --gold-hover: #f3cd57;
+            --radius: 14px;
+            --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.55);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1.25rem;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── MAIN CARD ─── */
+        .app {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+
+        /* ─── HEADER ─── */
+        .app-header {
+            padding: 1.75rem 2.25rem 0.75rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+        }
+
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .app-header .brand i {
+            font-size: 1.6rem;
+            color: var(--gold);
+            filter: drop-shadow(0 0 6px var(--gold-glow));
+        }
+
+        .app-header .brand h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--text-primary);
+        }
+
+        .app-header .brand span {
+            color: var(--gold);
+            font-weight: 400;
+        }
+
+        .app-header .tagline {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.06em;
+            font-weight: 300;
+            border-left: 1px solid var(--border-subtle);
+            padding-left: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .app-header {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1.25rem 1.25rem 0.5rem;
+            }
+            .app-header .tagline {
+                border-left: none;
+                padding-left: 0;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* ─── TAB NAV ─── */
+        .tab-nav {
+            display: flex;
+            overflow-x: auto;
+            background: var(--bg-tab);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 0.5rem;
+            gap: 0.25rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-subtle) transparent;
+        }
+
+        .tab-nav::-webkit-scrollbar {
+            height: 3px;
+        }
+        .tab-nav::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            padding: 0.9rem 1.4rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn i {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .tab-btn.active i {
+            opacity: 1;
+        }
+
+        /* ─── TAB PANELS ─── */
+        .tab-panels {
+            padding: 2.25rem 2.5rem 2.5rem;
+        }
+
+        .tab-panel {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── TYPOGRAPHY ─── */
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.75rem 0 0.75rem;
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 1.25rem 0 0.4rem;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 72ch;
+        }
+
+        .lead {
+            font-size: 1.15rem;
+            color: var(--text-primary);
+            font-weight: 400;
+            opacity: 0.85;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--gold);
+            padding: 0.9rem 1.5rem;
+            margin: 1.5rem 0;
+            background: rgba(212, 175, 55, 0.04);
+            border-radius: 0 10px 10px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: normal;
+        }
+
+        a {
+            color: var(--gold);
+            text-decoration: none;
+            transition: var(--transition);
+            border-bottom: 1px solid transparent;
+        }
+
+        a:hover {
+            color: var(--gold-hover);
+            border-bottom-color: var(--gold-hover);
+        }
+
+        .btn-gold {
+            display: inline-block;
+            background: var(--gold);
+            color: #0b0d12;
+            font-weight: 700;
+            padding: 0.7rem 2rem;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+            border-bottom: none;
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+            border-bottom: none;
+            color: #0b0d12;
+        }
+
+        .btn-outline {
+            display: inline-block;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 0.6rem 1.8rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: none;
+        }
+
+        .btn-outline:hover {
+            background: var(--gold);
+            color: #0b0d12;
+            transform: translateY(-2px);
+            border-bottom: none;
+        }
+
+        .footnote {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 1.25rem;
+            margin-top: 2rem;
+        }
+
+        /* ─── SERVICE CARDS ─── */
+        .service-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem 1.75rem;
+            transition: var(--transition);
+        }
+
+        .service-card:hover {
+            border-color: rgba(212, 175, 55, 0.25);
+            background: rgba(212, 175, 55, 0.03);
+            transform: translateY(-2px);
+        }
+
+        .service-card h4 {
+            color: var(--text-primary);
+            margin: 0 0 0.25rem;
+            font-size: 1.1rem;
+        }
+
+        .service-card .price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0.3rem 0 0.6rem;
+        }
+
+        .service-card .meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .service-card .btn-outline {
+            font-size: 0.8rem;
+            padding: 0.4rem 1.4rem;
+        }
+
+        @media (max-width: 640px) {
+            .service-grid {
+                grid-template-columns: 1fr;
+            }
+            .tab-panels {
+                padding: 1.5rem 1.25rem;
+            }
+        }
+
+        /* ─── CHAKRA LENS (embedded) ─── */
+        .chakra-embed {
+            margin: 1.5rem 0 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem 1.5rem 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .chakra-embed .lens-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chakra-embed .lens-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem 3rem;
+            width: 100%;
+        }
+
+        .chakra-embed .circle-wrap {
+            position: relative;
+            width: 170px;
+            height: 170px;
+            flex-shrink: 0;
+        }
+
+        .chakra-embed .circle-wrap .ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            pointer-events: none;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chakra-embed .circle-wrap .ring::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .chakra-embed #colorCircle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0a0a0f;
+            transition: background 0.4s ease, box-shadow 0.6s ease, transform 0.4s ease;
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chakra-embed #colorCircle.active {
+            animation: pulseGlow 2.4s ease-in-out infinite;
+            box-shadow:
+                0 0 60px var(--glow-color, rgba(255,255,255,0.3)),
+                0 0 150px var(--glow-color, rgba(255,255,255,0.2)),
+                0 0 300px var(--glow-color, rgba(255,255,255,0.1)),
+                inset 0 -20px 40px rgba(0,0,0,0.3) !important;
+            filter: drop-shadow(0 0 80px var(--glow-color, rgba(255,255,255,0.3))) !important;
+        }
+
+        @keyframes pulseGlow {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .chakra-embed #chakraSymbol {
+            width: 52%;
+            height: 52%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .chakra-embed #colorCircle.active #chakraSymbol {
+            opacity: 0.85;
+            transform: scale(1);
+        }
+
+        .chakra-embed #chakraSymbol svg {
+            width: 100%;
+            height: 100%;
+            fill: #fff;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+        }
+
+        .chakra-embed .info-box {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 1rem 1.4rem;
+            border: 1px solid var(--border-subtle);
+            text-align: center;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chakra-embed .info-box .empty {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+        }
+
+        .chakra-embed .info-box .note-badge {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chakra-embed .info-box .chakra-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #d4cfc7;
+        }
+
+        .chakra-embed .info-box .lore {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        .chakra-embed .info-box .freq-row {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .chakra-embed .info-box .freq-row span {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 1px 12px;
+            border-radius: 20px;
+        }
+
+        .chakra-embed .keyboard-row {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.25rem;
+            width: 100%;
+        }
+
+        .chakra-embed .key {
+            width: 54px;
+            height: 120px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.03);
+            transition: var(--transition);
+            padding-bottom: 14px;
+            position: relative;
+            user-select: none;
+        }
+
+        .chakra-embed .key:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
+        }
+
+        .chakra-embed .key:active {
+            transform: translateY(2px) scale(0.96);
+        }
+
+        .chakra-embed .key .dot {
+            position: absolute;
+            bottom: 4px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.15;
+            transition: opacity 0.3s;
+        }
+
+        .chakra-embed .key:hover .dot {
+            opacity: 0.4;
+        }
+
+        .chakra-embed .controls-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .chakra-embed .controls-row button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chakra-embed .controls-row button:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chakra-embed .controls-row button.on {
+            background: rgba(120, 200, 255, 0.1);
+            border-color: rgba(120, 200, 255, 0.2);
+            color: #a8d8ff;
+        }
+
+        .chakra-embed .controls-row button.off {
+            background: rgba(255, 100, 100, 0.06);
+            border-color: rgba(255, 100, 100, 0.12);
+            color: #ff9999;
+        }
+
+        .chakra-embed .controls-row .dot-indicator {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .chakra-embed .controls-row .dot-indicator.on {
+            background: #78c8ff;
+            box-shadow: 0 0 10px rgba(120, 200, 255, 0.3);
+        }
+        .chakra-embed .controls-row .dot-indicator.off {
+            background: #555;
+        }
+
+        @media (max-width: 640px) {
+            .chakra-embed .lens-row {
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+            .chakra-embed .circle-wrap {
+                width: 140px;
+                height: 140px;
+            }
+            .chakra-embed .key {
+                width: 42px;
+                height: 90px;
+                font-size: 1rem;
+                padding-bottom: 10px;
+            }
+            .chakra-embed .keyboard-row {
+                gap: 4px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .chakra-embed .key {
+                width: 36px;
+                height: 76px;
+                font-size: 0.85rem;
+                border-radius: 7px;
+                padding-bottom: 8px;
+            }
+            .chakra-embed .circle-wrap {
+                width: 120px;
+                height: 120px;
+            }
+            .tab-btn {
+                padding: 0.7rem 0.9rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <!-- ═══ HEADER ═══ -->
+        <header class="app-header">
+            <div class="brand">
+                <i class="fas fa-soundcloud"></i>
+                <h1>Sound <span>Luminescence</span></h1>
+            </div>
+            <div class="tagline">light &bull; sound &bull; harmony</div>
+        </header>
+
+        <!-- ═══ TAB NAV ═══ -->
+        <nav class="tab-nav" role="tablist">
+            <button class="tab-btn active" data-tab="home" role="tab"><i class="fas fa-home"></i> Home</button>
+            <button class="tab-btn" data-tab="therapy" role="tab"><i class="fas fa-wave-square"></i> Therapy</button>
+            <button class="tab-btn" data-tab="soul" role="tab"><i class="fas fa-spa"></i> The Soul</button>
+            <button class="tab-btn" data-tab="services" role="tab"><i class="fas fa-hand-holding-heart"></i> Services</button>
+            <button class="tab-btn" data-tab="chakra" role="tab"><i class="fas fa-circle"></i> Chakra Lens</button>
+        </nav>
+
+        <!-- ═══ TAB PANELS ═══ -->
+        <div class="tab-panels">
+
+            <!-- ─── HOME ─── -->
+            <section class="tab-panel active" id="panel-home" role="tabpanel">
+                <h2>Welcome to Sound Luminescence</h2>
+                <p class="lead">A Gateway to Mental and Physical Well-Being</p>
+                <p>
+                    <em>The Soul, the intangible you.</em> This is the continuing introspection of our souls.
+                    Our ongoing mission: to explore our deepest depths, to seek out the happiness within,
+                    and to harmonize with all mankind. To boldly go where few have ventured before.
+                </p>
+                <h3>Are you ready to meet yourself?</h3>
+                <p>
+                    The concept of Light and Sound Therapy has been around since the dawn of man.
+                    A simple campfire and a bone drum were used to elicit a desired response —
+                    fear, rage, sleepiness, joy, or a euphoric trance. The same is still done in
+                    concerts, television, and other media today.
+                </p>
+                <p>
+                    Together, in the comfort of your own home, we can tune your spectrum from the
+                    inside out, bringing internal harmony where there may be discord. Then we can
+                    work on expanding and drawing your soul to the surface and into the light.
+                </p>
+                <a href="https://amerigoware1.wixsite.com/soundluminescence/book-online" target="_blank" class="btn-gold">
+                    <i class="fas fa-calendar-check"></i> Book Now
+                </a>
+                <p style="margin-top:1.5rem; font-size:0.9rem;">
+                    <i class="fas fa-arrow-right" style="color:var(--gold);"></i>
+                    Learn more about
+                    <a href="https://amerigoware1.wixsite.com/soundluminescence/light-sound-therapy" target="_blank">Sound &amp; Light Therapy</a>
+                    and
+                    <a href="https://amerigoware1.wixsite.com/soundluminescence/the-soul" target="_blank">The Soul</a>.
+                </p>
+            </section>
+
+            <!-- ─── THERAPY ─── -->
+            <section class="tab-panel" id="panel-therapy" role="tabpanel">
+                <h2>Sound &amp; Light Therapy</h2>
+                <p class="lead">The Journey</p>
+
+                <p>
+                    I will start by saying: I do not subscribe to nor believe in any kind of supernatural
+                    beings, powers, or magic. I do, however, believe in the natural energies of the Universe —
+                    from galactic clusters down to the tiniest sub-atomic particles.
+                </p>
+                <p>
+                    Every living creature and inanimate object is constantly bombarded with these energies,
+                    which are either reflected, refracted, or allowed to pass through partially or completely.
+                    More importantly, everyone and everything emits their own combination of measurable energies:
+                    sonic (sound), light (colors including invisible infrared and ultraviolet), and some other
+                    forms of radiation.
+                </p>
+                <p>
+                    All too often, this signature of emissions contains the phenomena of discord. For example,
+                    if your body emits sound waves corresponding with the musical notes C and D, there is discord;
+                    whereas with C and E there is harmony. Likewise, on the 49th octave — the color spectrum with
+                    its own 7 'notes' — the colors Red and Orange clash, but Red and Yellow are complementary or harmonic.
+                </p>
+                <blockquote>
+                    “With this in mind, one can say that the musical note middle C would be discordant with the color orange.
+                    As with musical notes, there exist half-notes in the color spectrum. Each octave throughout the
+                    electromagnetic spectrum has 7 notes — a total of 12 half-notes. All of this can be calculated
+                    mathematically to determine harmony or discord.”
+                </blockquote>
+                <p>
+                    By taking careful measurements of a person's emissions while in a meditative state, we can
+                    determine any and all discordant emanation. Because the output can vary based on activity,
+                    health, or mood, we establish a baseline measurement in deep meditation.
+                </p>
+                <p>
+                    With a baseline, we determine what is 'off', and through therapy we gently tune it toward
+                    the ideal frequency using intense light and/or sound vibrations. To take it a step further,
+                    we address the issue of what <em>Key</em> we're playing in. Different keys can sound sad,
+                    eerie, happy, etc. For an overall life experience, most of us would want a happy baseline —
+                    we strive to re-tune everything to the key of E (E, G-sharp, B) and the color equivalent
+                    (Yellow, Purple, Violet).
+                </p>
+                <p>
+                    Simultaneously, we address body and mind rhythms, ensuring everything is synchronized.
+                    Having accomplished internal harmony is only the beginning. We must also consider the
+                    effects and influences of those close to us. If their 'music' does not resonate with our own,
+                    it is advisable to bring them in so as to create a fully symphonic family.
+                </p>
+                <a href="https://amerigoware1.wixsite.com/soundluminescence/book-online" target="_blank" class="btn-gold">
+                    <i class="fas fa-calendar-check"></i> Begin Your Journey
+                </a>
+                <p style="margin-top:1.5rem;">
+                    <i class="fas fa-arrow-right" style="color:var(--gold);"></i>
+                    Explore the <a href="https://amerigoware1.wixsite.com/soundluminescence/the-soul" target="_blank">Soul</a>.
+                </p>
+            </section>
+
+            <!-- ─── THE SOUL ─── -->
+            <section class="tab-panel" id="panel-soul" role="tabpanel">
+                <h2>The Soul</h2>
+                <p class="lead">
+                    <i class="fas fa-quote-left" style="color:var(--gold); opacity:0.5; margin-right:0.3rem;"></i>
+                    It is my belief that the soul is not a separate entity living within a person.
+                    I believe it is the result of life.
+                </p>
+                <p>
+                    A person's consciousness, identity, awareness, thought process, character, dreams,
+                    desires, and so forth are part of his or her soul. It is the mind.
+                </p>
+
+                <blockquote>
+                    “And the Lord God formed man of the dust of the ground, and breathed into his nostrils
+                    the breath of life; and man received a living soul.”
+                    <cite>— commonly quoted, but compare with <a href="https://www.bible.com/bible/1/GEN.2.7" target="_blank">Gen 2:7</a></cite>
+                </blockquote>
+
+                <p>
+                    Did man <em>receive</em> a soul or <em>become</em> a soul? You might also look at
+                    <a href="https://www.bible.com/bible/1/ECC.9.5.kjv" target="_blank">Ecc 9:5</a>:
+                    <em>“For the living know that they shall die: but the dead know not any thing…”</em>
+                    (Until the resurrection — <a href="https://www.bible.com/bible/1/1TH.4.kjv" target="_blank">1 Thes 4:13–17</a>).
+                </p>
+                <p>
+                    As an atheist, I do not believe in any type of "afterlife," but even when I was a Christian (SDA),
+                    I believed that the soul dies with the body when the brain's electro-chemical functions cease.
+                </p>
+                <p>
+                    Now, if we are on the same page regarding the soul, let us proceed:
+                </p>
+                <p>
+                    The soul (or mind) is almost always kept secluded deep within — and that is a shame.
+                    One's soul should radiate beyond the flesh to be <em>seen</em> and <em>felt</em> by all.
+                    The corporeal body's purpose is to keep the brain (and thus the soul) alive and serve its needs and wants.
+                </p>
+                <p>
+                    With the body properly shrouded within the soul, one loses the suppositious need to adorn
+                    the carnal body. With the soul properly exposed, one will want to embellish it instead.
+                </p>
+                <p>
+                    It is not without cause that the soul is usually kept hidden away. We all have plenty of
+                    blemishes and perhaps festering sores within, making us ashamed of our own souls. However,
+                    it is only by bringing the soul to the surface — along with its baggage — that we can fix it
+                    and make it beautiful once more. Can there be anything more beautiful than the soul of an
+                    innocent young child? Let us make the return to that state our goal.
+                </p>
+                <p>
+                    Anyone who is determined to be evil and/or intentionally causes harm to others will not be
+                    willing to have his or her soul exposed. Luckily, actions speak volumes, so we may avoid them
+                    if we can maintain the clarity of mind to perceive them.
+                </p>
+                <div class="footnote">
+                    <em>*An exposed soul is not literally visible or tangible, yet its radiance can tend to blind
+                    the observer to physical blemishes, disfigurement, or generally unpicturesqueness of the owner.</em>
+                </div>
+            </section>
+
+            <!-- ─── SERVICES ─── -->
+            <section class="tab-panel" id="panel-services" role="tabpanel">
+                <h2>Services</h2>
+                <p class="lead">Begin your path to harmony with a session tailored to you.</p>
+
+                <div class="service-grid">
+                    <!-- Individual -->
+                    <div class="service-card">
+                        <h4><i class="fas fa-user" style="color:var(--gold); margin-right:0.4rem;"></i> Individual Therapy</h4>
+                        <div class="price">$25</div>
+                        <div class="meta"><i class="far fa-clock"></i> 1 hour · one-on-one</div>
+                        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">
+                            A private session focused entirely on your personal spectrum — tuning your
+                            inner frequencies and restoring balance.
+                        </p>
+                        <a href="https://amerigoware1.wixsite.com/soundluminescence/service-page/individual-therapy" target="_blank" class="btn-outline">
+                            Read More
+                        </a>
+                        <a href="https://amerigoware1.wixsite.com/soundluminescence/book-online" target="_blank" class="btn-gold" style="margin-left:0.5rem; padding:0.4rem 1.4rem; font-size:0.8rem;">
+                            Book Now
+                        </a>
+                    </div>
+
+                    <!-- Family -->
+                    <div class="service-card">
+                        <h4><i class="fas fa-users" style="color:var(--gold); margin-right:0.4rem;"></i> Family Therapy</h4>
+                        <div class="price">$400</div>
+                        <div class="meta"><i class="far fa-clock"></i> 4 hours · group session</div>
+                        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">
+                            Align your family's collective resonance. We work together to create a
+                            symphonic harmony that benefits every member.
+                        </p>
+                        <a href="https://amerigoware1.wixsite.com/soundluminescence/service-page/family-therapy" target="_blank" class="btn-outline">
+                            Read More
+                        </a>
+                        <a href="https://amerigoware1.wixsite.com/soundluminescence/book-online" target="_blank" class="btn-gold" style="margin-left:0.5rem; padding:0.4rem 1.4rem; font-size:0.8rem;">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+
+                <p style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-muted);">
+                    <i class="fas fa-info-circle" style="color:var(--gold);"></i>
+                    All sessions are conducted remotely in the comfort of your own home.
+                    <a href="https://amerigoware1.wixsite.com/soundluminescence/book-online" target="_blank">View full booking details →</a>
+                </p>
+            </section>
+
+            <!-- ─── CHAKRA LENS ─── -->
+            <section class="tab-panel" id="panel-chakra" role="tabpanel">
+                <h2>Chakra Light &amp; Sound Lens</h2>
+                <p class="lead">Press a key to illuminate — experience the resonance of each chakra.</p>
+
+                <div class="chakra-embed" id="chakraApp">
+                    <div class="lens-wrapper">
+                        <div class="lens-row">
+                            <!-- circle -->
+                            <div class="circle-wrap">
+                                <div class="ring"></div>
+                                <div id="colorCircle">
+                                    <div id="chakraSymbol"></div>
+                                </div>
+                            </div>
+                            <!-- info -->
+                            <div class="info-box" id="infoDisplay">
+                                <div class="empty">press a key to illuminate</div>
+                            </div>
+                        </div>
+
+                        <!-- keyboard -->
+                        <div class="keyboard-row" id="keyboard"></div>
+
+                        <!-- controls -->
+                        <div class="controls-row">
+                            <button id="speechToggle" class="on">
+                                <span class="dot-indicator on" id="speechDot"></span>
+                                <span id="speechLabel">Speech On</span>
+                            </button>
+                            <button id="resetSpoken"><i class="fas fa-undo-alt"></i> Reset Spoken</button>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top:1rem;">
+                    <i class="fas fa-headphones" style="color:var(--gold);"></i>
+                    Each key plays a pure tone and displays its corresponding chakra, color frequency,
+                    and a spoken narration. Toggle speech on/off below the keyboard.
+                </p>
+            </section>
+
+        </div><!-- /tab-panels -->
+    </div><!-- /app -->
+
+    <script>
+        // ─── TAB SWITCHING ───
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = {
+            home: document.getElementById('panel-home'),
+            therapy: document.getElementById('panel-therapy'),
+            soul: document.getElementById('panel-soul'),
+            services: document.getElementById('panel-services'),
+            chakra: document.getElementById('panel-chakra')
+        };
+
+        tabs.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                // deactivate all
+                tabs.forEach(b => b.classList.remove('active'));
+                Object.values(panels).forEach(p => p.classList.remove('active'));
+                // activate
+                this.classList.add('active');
+                if (panels[tab]) panels[tab].classList.add('active');
+            });
+        });
+
+        // ─── CHAKRA LENS ───
+        (function chakraApp() {
+            const synth = new Tone.Synth().toDestination();
+
+            const chakraData = {
+                'C': {
+                    name: 'root',
+                    sanskrit: 'Muladhara',
+                    colorName: 'deep red',
+                    lightFreq: '430',
+                    lore: 'ground your life force and awaken the dormant Kundalini energy at the base of the spine, fostering profound stability and survival.',
+                    svg: `<svg viewBox="0 0 100 100"><rect x="30" y="30" width="40" height="40" stroke="white" stroke-width="2" fill="none"/><polygon points="50,65 35,35 65,35" stroke="white" stroke-width="2" fill="none"/><circle cx="50" cy="50" r="42" stroke="white" stroke-width="1.5" stroke-dasharray="8 6" fill="none"/></svg>`
+                },
+                'D': {
+                    name: 'sacral',
+                    sanskrit: 'Svadhishthana',
+                    colorName: 'vibrant orange',
+                    lightFreq: '480',
+                    lore: 'unlock the waters of creativity and emotional balance, harmonizing the vital flow of Prana within the body.',
+                    svg: `<svg viewBox="0 0 100 100"><path d="M50 15 C45 35, 55 35, 50 15 Z" transform="rotate(0 50 50)" stroke="white" stroke-width="2" fill="none"/><path d="M50 15 C45 35, 55 35, 50 15 Z" transform="rotate(60 50 50)" stroke="white" stroke-width="2" fill="none"/><path d="M50 15 C45 35, 55 35, 50 15 Z" transform="rotate(120 50 50)" stroke="white" stroke-width="2" fill="none"/><path d="M50 15 C45 35, 55 35, 50 15 Z" transform="rotate(180 50 50)" stroke="white" stroke-width="2" fill="none"/><path d="M50 15 C45 35, 55 35, 50 15 Z" transform="rotate(240 50 50)" stroke="white" stroke-width="2" fill="none"/><path d="M50 15 C45 35, 55 35, 50 15 Z" transform="rotate(300 50 50)" stroke="white" stroke-width="2" fill="none"/><path d="M 50 28 A 22 22 0 1 0 72 50 A 17 17 0 1 1 50 28" stroke="white" stroke-width="2" fill="none"/></svg>`
+                },
+                'E': {
+                    name: 'solar plexus',
+                    sanskrit: 'Manipura',
+                    colorName: 'radiant yellow',
+                    lightFreq: '510',
+                    lore: 'ignite the inner fire of personal power and transformation, burning away impurities to illuminate your true will.',
+                    svg: `<svg viewBox="0 0 100 100"><polygon points="50,75 25,30 75,30" stroke="white" stroke-width="2" fill="none"/><circle cx="50" cy="50" r="30" stroke="white" stroke-width="1.5" stroke-dasharray="5 3" fill="none"/><circle cx="50" cy="50" r="42" stroke="white" stroke-width="1.5" stroke-dasharray="10 4" fill="none"/></svg>`
+                },
+                'F': {
+                    name: 'heart',
+                    sanskrit: 'Anahata',
+                    colorName: 'emerald green',
+                    lightFreq: '560',
+                    lore: 'open the unstruck sound of universal love, bridging the lower and higher realms of consciousness with boundless compassion.',
+                    svg: `<svg viewBox="0 0 100 100"><polygon points="50,18 22,66 78,66" stroke="white" stroke-width="2" fill="none"/><polygon points="50,82 22,34 78,34" stroke="white" stroke-width="2" fill="none"/><circle cx="50" cy="50" r="42" stroke="white" stroke-width="1.5" stroke-dasharray="6 4" fill="none"/></svg>`
+                },
+                'G': {
+                    name: 'throat',
+                    sanskrit: 'Vishuddha',
+                    colorName: 'sapphire blue',
+                    lightFreq: '630',
+                    lore: 'purify your expression and align your voice with cosmic truth, allowing the nectar of clarity to flow freely.',
+                    svg: `<svg viewBox="0 0 100 100"><polygon points="50,78 22,30 78,30" stroke="white" stroke-width="1.8" fill="none"/><circle cx="50" cy="45" r="18" stroke="white" stroke-width="1.8" fill="none"/><circle cx="50" cy="50" r="42" stroke="white" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/></svg>`
+                },
+                'A': {
+                    name: 'third eye',
+                    sanskrit: 'Ajna',
+                    colorName: 'indigo',
+                    lightFreq: '670',
+                    lore: 'awaken the inner gaze of intuition and wisdom, piercing through the illusion of Maya to perceive ultimate reality.',
+                    svg: `<svg viewBox="0 0 100 100"><path d="M50 50 C20 20, 20 80, 50 50 Z" stroke="white" stroke-width="2" fill="none"/><path d="M50 50 C80 20, 80 80, 50 50 Z" stroke="white" stroke-width="2" fill="none"/><circle cx="50" cy="50" r="22" stroke="white" stroke-width="2" fill="none"/><polygon points="50,68 34,41 66,41" stroke="white" stroke-width="1.8" fill="none"/><circle cx="50" cy="48" r="4" fill="white"/></svg>`
+                },
+                'B': {
+                    name: 'crown',
+                    sanskrit: 'Sahasrara',
+                    colorName: 'violet',
+                    lightFreq: '750',
+                    lore: 'dissolve the boundaries of the ego and connect to the infinite, blooming the thousand-petaled lotus of pure consciousness.',
+                    svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" stroke="white" stroke-width="1" stroke-dasharray="4 2" fill="none"/><circle cx="50" cy="50" r="34" stroke="white" stroke-width="1.2" stroke-dasharray="6 3" fill="none"/><circle cx="50" cy="50" r="26" stroke="white" stroke-width="1.5" stroke-dasharray="8 4" fill="none"/><circle cx="50" cy="50" r="18" stroke="white" stroke-width="2" fill="none"/><circle cx="50" cy="50" r="6" fill="white"/></svg>`
+                }
+            };
+
+            const baseHues = { C: 0, D: 30, E: 60, F: 120, G: 180, A: 240, B: 270 };
+            const FIXED_OCTAVE = 4;
+
+            let speechEnabled = true;
+            const spokenNotes = new Set();
+            let currentNote = null;
+            let speechTimeout = null;
+
+            const circle = document.getElementById('colorCircle');
+            const symbolContainer = document.getElementById('chakraSymbol');
+            const infoDisplay = document.getElementById('infoDisplay');
+            const keyboardEl = document.getElementById('keyboard');
+            const speechToggle = document.getElementById('speechToggle');
+            const speechDot = document.getElementById('speechDot');
+            const speechLabel = document.getElementById('speechLabel');
+            const resetBtn = document.getElementById('resetSpoken');
+
+            function getNoteFrequency(letter) {
+                const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                const idx = notes.indexOf(letter);
+                if (idx === -1) return 0;
+                const midi = (FIXED_OCTAVE + 1) * 12 + idx;
+                return 440 * Math.pow(2, (midi - 69) / 12);
+            }
+
+            function hslStr(h, l) { return `hsl(${h}, 100%, ${l}%)`; }
+
+            function getLensGradient(hue, lightness) {
+                const bright = `hsl(${hue}, 100%, ${Math.min(lightness + 15, 92)}%)`;
+                const mid = `hsl(${hue}, 100%, ${lightness}%)`;
+                const dark = `hsl(${hue}, 100%, ${Math.max(lightness - 30, 8)}%)`;
+                return `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95) 0%, ${bright} 18%, ${mid} 48%, ${dark} 78%, rgba(0,0,0,0.55) 100%)`;
+            }
+
+            function getGlowColor(hue, lightness) {
+                return `hsl(${hue}, 100%, ${Math.min(lightness + 20, 90)}%)`;
+            }
+
+            function setLensOff() {
+                circle.style.background = '#0a0a0f';
+                circle.style.boxShadow = 'none';
+                circle.style.filter = 'none';
+                circle.classList.remove('active');
+                symbolContainer.innerHTML = '';
+            }
+
+            function setLensOn(letter) {
+                const hue = baseHues[letter];
+                const light = 55 + (Math.random() * 6 - 3);
+                const grad = getLensGradient(hue, light);
+                const glow = getGlowColor(hue, light);
+                circle.style.setProperty('--active-grad', grad);
+                circle.style.setProperty('--glow-color', glow);
+                // Also set background directly for robustness
+                circle.style.background = grad;
+                if (chakraData[letter] && chakraData[letter].svg) {
+                    symbolContainer.innerHTML = chakraData[letter].svg;
+                }
+                circle.classList.add('active');
+            }
+
+            function renderInfo(letter, isSpoken) {
+                const data = chakraData[letter];
+                if (!data) return;
+                const freq = getNoteFrequency(letter);
+                const hue = baseHues[letter];
+                const colorHex = hslStr(hue, 55);
+                const badge = isSpoken ?
+                    '<span style="color:rgba(255,255,255,0.25);font-size:0.7rem;margin-left:8px;">✓ spoken</span>' :
+                    '';
+                infoDisplay.innerHTML = `
+              <div><span class="note-badge">${letter}</span>${badge}</div>
+              <div class="chakra-name" style="color:${colorHex};">
+                ${data.name} <span style="font-size:0.9em;opacity:0.8;font-style:italic;">(${data.sanskrit})</span> · ${data.colorName}
+              </div>
+              <div class="freq-row">
+                <span>🎵 ${freq.toFixed(2)} Hz</span>
+                <span>💡 ${data.lightFreq} THz</span>
+              </div>
+              <div class="lore">${data.lore}</div>
+            `;
+            }
+
+            function renderEmpty() {
+                infoDisplay.innerHTML = `<div class="empty">press a key to illuminate</div>`;
+            }
+
+            function speakNarration(letter, callback) {
+                if (!speechEnabled) { if (callback) callback(); return; }
+                const data = chakraData[letter];
+                const freq = getNoteFrequency(letter);
+                const text =
+                    `Note ${letter}, at a frequency of ${freq.toFixed(2)} Hertz, paired with the spectral color frequency of ${data.lightFreq} Terahertz, which our eyes interpret as ${data.colorName}, targeting your ${data.name} chakra, traditionally called ${data.sanskrit}, in a clinical setting with powerful amplification will ${data.lore}`;
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.cancel) responsiveVoice.cancel();
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.speak) {
+                    responsiveVoice.speak(text, 'Australian Male', {
+                        rate: 0.95,
+                        pitch: 1.0,
+                        onend: () => { if (callback) callback(); },
+                        onerror: () => { if (callback) callback(); }
+                    });
+                } else { if (callback) callback(); }
+            }
+
+            function handleKeyDown(letter) {
+                if (speechTimeout) { clearTimeout(speechTimeout);
+                    speechTimeout = null; }
+                synth.triggerRelease();
+                const noteWithOctave = letter + FIXED_OCTAVE;
+                synth.triggerAttack(noteWithOctave);
+                currentNote = letter;
+                setLensOn(letter);
+                const alreadySpoken = spokenNotes.has(letter);
+                renderInfo(letter, alreadySpoken);
+            }
+
+            function handleKeyUp(letter) {
+                synth.triggerRelease();
+                const alreadySpoken = spokenNotes.has(letter);
+                const shouldSpeak = speechEnabled && !alreadySpoken;
+
+                if (shouldSpeak) {
+                    speakNarration(letter, () => {
+                        spokenNotes.add(letter);
+                        renderInfo(letter, true);
+                        setLensOff();
+                        currentNote = null;
+                        speechTimeout = null;
+                    });
+                    speechTimeout = setTimeout(() => {
+                        if (currentNote === letter) {
+                            setLensOff();
+                            currentNote = null;
+                            spokenNotes.add(letter);
+                            renderInfo(letter, true);
+                            speechTimeout = null;
+                        }
+                    }, 8000);
+                } else {
+                    setLensOff();
+                    renderInfo(letter, alreadySpoken);
+                    currentNote = null;
+                }
+            }
+
+            function buildKeyboard() {
+                keyboardEl.innerHTML = '';
+                ['C', 'D', 'E', 'F', 'G', 'A', 'B'].forEach(letter => {
+                    const key = document.createElement('div');
+                    key.className = 'key';
+                    key.dataset.note = letter;
+                    const hue = baseHues[letter];
+                    key.style.borderColor = `hsl(${hue}, 100%, 30%)`;
+                    const label = document.createElement('span');
+                    label.textContent = letter;
+                    key.appendChild(label);
+                    const dot = document.createElement('span');
+                    dot.className = 'dot';
+                    dot.style.color = `hsl(${hue}, 100%, 55%)`;
+                    key.appendChild(dot);
+
+                    key.addEventListener('mousedown', (e) => { e.preventDefault();
+                        handleKeyDown(letter); });
+                    key.addEventListener('mouseup', (e) => { e.preventDefault(); if (currentNote === letter) handleKeyUp(
+                            letter); });
+                    key.addEventListener('mouseleave', () => { if (currentNote === letter) handleKeyUp(letter); });
+                    key.addEventListener('touchstart', (e) => { e.preventDefault();
+                        handleKeyDown(letter); }, { passive: false });
+                    key.addEventListener('touchend', (e) => { e.preventDefault(); if (currentNote === letter) handleKeyUp(
+                            letter); }, { passive: false });
+
+                    keyboardEl.appendChild(key);
+                });
+            }
+
+            function updateSpeechUI() {
+                if (speechEnabled) {
+                    speechToggle.className = 'on';
+                    speechDot.className = 'dot-indicator on';
+                    speechLabel.textContent = 'Speech On';
+                } else {
+                    speechToggle.className = 'off';
+                    speechDot.className = 'dot-indicator off';
+                    speechLabel.textContent = 'Speech Off';
+                }
+            }
+
+            speechToggle.addEventListener('click', () => {
+                speechEnabled = !speechEnabled;
+                updateSpeechUI();
+                if (!speechEnabled) {
+                    if (typeof responsiveVoice !== 'undefined' && responsiveVoice.cancel) responsiveVoice.cancel();
+                    if (speechTimeout) { clearTimeout(speechTimeout);
+                        speechTimeout = null; }
+                    setLensOff();
+                    if (currentNote) { renderInfo(currentNote, spokenNotes.has(currentNote));
+                        currentNote = null; } else renderEmpty();
+                }
+            });
+
+            resetBtn.addEventListener('click', () => {
+                spokenNotes.clear();
+                if (currentNote) renderInfo(currentNote, false);
+                else renderEmpty();
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.cancel) responsiveVoice.cancel();
+                if (speechTimeout) { clearTimeout(speechTimeout);
+                    speechTimeout = null; }
+                if (!currentNote) setLensOff();
+            });
+
+            // ─── init ───
+            buildKeyboard();
+            setLensOff();
+            renderEmpty();
+            updateSpeechUI();
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && currentNote) {
+                    synth.triggerRelease();
+                    setLensOff();
+                    if (speechTimeout) { clearTimeout(speechTimeout);
+                        speechTimeout = null; }
+                    renderInfo(currentNote, spokenNotes.has(currentNote));
+                    currentNote = null;
+                }
+            });
+
+            window.addEventListener('beforeunload', () => {
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.cancel) responsiveVoice.cancel();
+                synth.triggerRelease();
+            });
+        })();
+    </script>
+
+</body>
+</html>
