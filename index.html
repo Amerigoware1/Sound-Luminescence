@@ -741,6 +741,36 @@
                 font-size: 0.75rem;
             }
         }
+
+        .concept-notice {
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px dashed var(--gold);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes discordFlicker {
+
+            0%,
+            100% {
+                filter: hue-rotate(-15deg) saturate(0.5) brightness(0.8);
+                transform: scale(0.98);
+            }
+
+            50% {
+                filter: hue-rotate(15deg) saturate(0.7) brightness(0.6);
+                transform: scale(1.02);
+            }
+        }
+
+        .chakra-embed #colorCircle.discord {
+            animation: discordFlicker 0.3s infinite ease-in-out;
+            box-shadow: 0 0 30px rgba(100, 50, 50, 0.5) !important;
+
+        }
     </style>
 </head>
 
@@ -791,18 +821,17 @@
                     inside out, bringing internal harmony where there may be discord. Then we can
                     work on expanding and drawing your soul to the surface and into the light.
                 </p>
-                <a href="https://amerigoware1.wixsite.com/soundluminescence/book-online" target="_blank"
-                    class="btn-gold">
+                <a href="booking.html" target="_blank" class="btn-gold">
                     <i class="fas fa-calendar-check"></i> Book Now
                 </a>
-                <p style="margin-top:1.5rem; font-size:0.9rem;">
-                    <i class="fas fa-arrow-right" style="color:var(--gold);"></i>
-                    Learn more about
-                    <a href="https://amerigoware1.wixsite.com/soundluminescence/light-sound-therapy"
-                        target="_blank">Sound &amp; Light Therapy</a>
-                    and
-                    <a href="https://amerigoware1.wixsite.com/soundluminescence/the-soul" target="_blank">The Soul</a>.
-                </p>
+                <div class="concept-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Project Status:</strong> Sound Luminescence is currently in its primary development and
+                    hardware acquisition
+                    phase. Mobile and clinic-based appointments will commence upon completion of our custom
+                    photobiomodulation arrays
+                    and vibroacoustic resonance decks.
+                </div>
             </section>
 
             <!-- ─── THERAPY ─── -->
@@ -1015,6 +1044,10 @@
                                 <span id="speechLabel">Speech On</span>
                             </button>
                             <button id="resetSpoken"><i class="fas fa-undo-alt"></i> Reset Spoken</button>
+                            <button id="tuningToggle" class="off">
+                                <span class="dot-indicator off" id="tuningDot"></span>
+                                <span id="tuningLabel">Tuning Mode: Off</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1131,7 +1164,11 @@
             const speechDot = document.getElementById('speechDot');
             const speechLabel = document.getElementById('speechLabel');
             const resetBtn = document.getElementById('resetSpoken');
-
+            let tuningMode = false;
+            let glideInterval = null;
+            const tuningToggle = document.getElementById('tuningToggle');
+            const tuningDot = document.getElementById('tuningDot');
+            const tuningLabel = document.getElementById('tuningLabel');
             function getNoteFrequency(letter) {
                 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
                 const idx = notes.indexOf(letter);
@@ -1372,6 +1409,57 @@
                 if (typeof responsiveVoice !== 'undefined' && responsiveVoice.cancel) responsiveVoice.cancel();
                 synth.triggerRelease();
             });
+            // Update handleKeyDown to process the glide
+function handleKeyDown(letter) {
+    if (!audioInitialized) {
+        Tone.start();
+        audioInitialized = true;
+    }
+    if (speechTimeout) { clearTimeout(speechTimeout); speechTimeout = null; }
+    if (glideInterval) { clearInterval(glideInterval); }
+    
+    synth.triggerRelease();
+    currentNote = letter;
+
+    const targetFreq = getNoteFrequency(letter);
+    
+    if (tuningMode) {
+        // 1. Start Discordant: Detune flat by 30Hz and apply muddy CSS
+        const startFreq = targetFreq - 30; 
+        synth.triggerAttack(startFreq);
+        
+        // Render a muddy/clashing start color (brownish/grayish shift)
+        circle.classList.add('discord');
+        circle.style.background = 'radial-gradient(circle, #4a3c31 0%, #201a15 100%)';
+        renderInfo(letter, spokenNotes.has(letter));
+
+        // 2. Glide to Harmony over 3 seconds
+        let currentFreq = startFreq;
+        const steps = 30;
+        const stepTime = 100; // 100ms * 30 steps = 3 seconds
+        const freqIncrement = (targetFreq - startFreq) / steps;
+        let currentStep = 0;
+
+        glideInterval = setInterval(() => {
+            currentFreq += freqIncrement;
+            synth.oscillator.frequency.setValueAtTime(currentFreq, Tone.now());
+            currentStep++;
+
+            if (currentStep >= steps) {
+                clearInterval(glideInterval);
+                // 3. Resolve to Harmony!
+                circle.classList.remove('discord');
+                setLensOn(letter); // Switch to the pure, glowing gradient
+            }
+        }, stepTime);
+
+            } else {
+                // Standard instant perfect harmony mode
+                synth.triggerAttack(targetFreq);
+                setLensOn(letter);
+                renderInfo(letter, spokenNotes.has(letter));
+            }
+        }
         })();
     </script>
 
