@@ -1062,7 +1062,7 @@
         </div><!-- /tab-panels -->
     </div><!-- /app -->
 
-    <script>
+<script>
         // ─── TAB SWITCHING ───
         const tabs = document.querySelectorAll('.tab-btn');
         const panels = {
@@ -1160,15 +1160,21 @@
             const symbolContainer = document.getElementById('chakraSymbol');
             const infoDisplay = document.getElementById('infoDisplay');
             const keyboardEl = document.getElementById('keyboard');
+            
             const speechToggle = document.getElementById('speechToggle');
             const speechDot = document.getElementById('speechDot');
             const speechLabel = document.getElementById('speechLabel');
             const resetBtn = document.getElementById('resetSpoken');
+
+            // Tuning Mode State & Controls
             let tuningMode = false;
             let glideInterval = null;
             const tuningToggle = document.getElementById('tuningToggle');
             const tuningDot = document.getElementById('tuningDot');
             const tuningLabel = document.getElementById('tuningLabel');
+
+            let audioInitialized = false;
+
             function getNoteFrequency(letter) {
                 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
                 const idx = notes.indexOf(letter);
@@ -1195,6 +1201,7 @@
                 circle.style.boxShadow = 'none';
                 circle.style.filter = 'none';
                 circle.classList.remove('active');
+                circle.classList.remove('discord');
                 symbolContainer.innerHTML = '';
             }
 
@@ -1205,7 +1212,6 @@
                 const glow = getGlowColor(hue, light);
                 circle.style.setProperty('--active-grad', grad);
                 circle.style.setProperty('--glow-color', glow);
-                // Also set background directly for robustness
                 circle.style.background = grad;
                 if (chakraData[letter] && chakraData[letter].svg) {
                     symbolContainer.innerHTML = chakraData[letter].svg;
@@ -1223,16 +1229,16 @@
                     '<span style="color:rgba(255,255,255,0.25);font-size:0.7rem;margin-left:8px;">✓ spoken</span>' :
                     '';
                 infoDisplay.innerHTML = `
-              <div><span class="note-badge">${letter}</span>${badge}</div>
-              <div class="chakra-name" style="color:${colorHex};">
-                ${data.name} <span style="font-size:0.9em;opacity:0.8;font-style:italic;">(${data.sanskrit})</span> · ${data.colorName}
-              </div>
-              <div class="freq-row">
-                <span>🎵 ${freq.toFixed(2)} Hz</span>
-                <span>💡 ${data.lightFreq} THz</span>
-              </div>
-              <div class="lore">${data.lore}</div>
-            `;
+                  <div><span class="note-badge">${letter}</span>${badge}</div>
+                  <div class="chakra-name" style="color:${colorHex};">
+                    ${data.name} <span style="font-size:0.9em;opacity:0.8;font-style:italic;">(${data.sanskrit})</span> · ${data.colorName}
+                  </div>
+                  <div class="freq-row">
+                    <span>🎵 ${freq.toFixed(2)} Hz</span>
+                    <span>💡 ${data.lightFreq} THz</span>
+                  </div>
+                  <div class="lore">${data.lore}</div>
+                `;
             }
 
             function renderEmpty() {
@@ -1256,8 +1262,6 @@
                 } else { if (callback) callback(); }
             }
 
-            let audioInitialized = false;
-
             function handleKeyDown(letter) {
                 // Force browser to unlock the audio context on first click/touch
                 if (!audioInitialized) {
@@ -1269,16 +1273,56 @@
                     clearTimeout(speechTimeout);
                     speechTimeout = null;
                 }
+                if (glideInterval) { 
+                    clearInterval(glideInterval); 
+                }
+
                 synth.triggerRelease();
-                const noteWithOctave = letter + FIXED_OCTAVE;
-                synth.triggerAttack(noteWithOctave);
                 currentNote = letter;
-                setLensOn(letter);
-                const alreadySpoken = spokenNotes.has(letter);
-                renderInfo(letter, alreadySpoken);
+                const targetFreq = getNoteFrequency(letter);
+
+                if (tuningMode) {
+                    // 1. Start Discordant: Detune flat by 30Hz and apply muddy styles
+                    const startFreq = targetFreq - 30; 
+                    synth.triggerAttack(startFreq);
+                    
+                    circle.classList.add('discord');
+                    circle.style.background = 'radial-gradient(circle, #4a3c31 0%, #201a15 100%)';
+                    renderInfo(letter, spokenNotes.has(letter));
+
+                    // 2. Glide to Harmony over 3 seconds (30 steps * 100ms)
+                    let currentFreq = startFreq;
+                    const steps = 30;
+                    const stepTime = 100; 
+                    const freqIncrement = (targetFreq - startFreq) / steps;
+                    let currentStep = 0;
+
+                    glideInterval = setInterval(() => {
+                        currentFreq += freqIncrement;
+                        // Use Tone.now() to smoothly adjust active synth frequency
+                        synth.oscillator.frequency.setValueAtTime(currentFreq, Tone.now());
+                        currentStep++;
+
+                        if (currentStep >= steps) {
+                            clearInterval(glideInterval);
+                            // 3. Resolve to perfect harmony!
+                            circle.classList.remove('discord');
+                            setLensOn(letter);
+                        }
+                    }, stepTime);
+
+                } else {
+                    // Standard instant perfect harmony mode
+                    synth.triggerAttack(targetFreq);
+                    setLensOn(letter);
+                    renderInfo(letter, spokenNotes.has(letter));
+                }
             }
 
             function handleKeyUp(letter) {
+                if (glideInterval) {
+                    clearInterval(glideInterval);
+                }
                 synth.triggerRelease();
                 const alreadySpoken = spokenNotes.has(letter);
                 const shouldSpeak = speechEnabled && !alreadySpoken;
@@ -1328,17 +1372,19 @@
                         handleKeyDown(letter);
                     });
                     key.addEventListener('mouseup', (e) => {
-                        e.preventDefault(); if (currentNote === letter) handleKeyUp(
-                            letter);
+                        e.preventDefault(); 
+                        if (currentNote === letter) handleKeyUp(letter);
                     });
-                    key.addEventListener('mouseleave', () => { if (currentNote === letter) handleKeyUp(letter); });
+                    key.addEventListener('mouseleave', () => { 
+                        if (currentNote === letter) handleKeyUp(letter); 
+                    });
                     key.addEventListener('touchstart', (e) => {
                         e.preventDefault();
                         handleKeyDown(letter);
                     }, { passive: false });
                     key.addEventListener('touchend', (e) => {
-                        e.preventDefault(); if (currentNote === letter) handleKeyUp(
-                            letter);
+                        e.preventDefault(); 
+                        if (currentNote === letter) handleKeyUp(letter);
                     }, { passive: false });
 
                     keyboardEl.appendChild(key);
@@ -1373,6 +1419,22 @@
                     } else renderEmpty();
                 }
             });
+
+            // Click listener for the Tuning Mode button
+            if (tuningToggle) {
+                tuningToggle.addEventListener('click', () => {
+                    tuningMode = !tuningMode;
+                    if (tuningMode) {
+                        tuningToggle.className = 'on';
+                        tuningDot.className = 'dot-indicator on';
+                        tuningLabel.textContent = 'Tuning Mode: On';
+                    } else {
+                        tuningToggle.className = 'off';
+                        tuningDot.className = 'dot-indicator off';
+                        tuningLabel.textContent = 'Tuning Mode: Off';
+                    }
+                });
+            }
 
             resetBtn.addEventListener('click', () => {
                 spokenNotes.clear();
@@ -1409,57 +1471,6 @@
                 if (typeof responsiveVoice !== 'undefined' && responsiveVoice.cancel) responsiveVoice.cancel();
                 synth.triggerRelease();
             });
-            // Update handleKeyDown to process the glide
-function handleKeyDown(letter) {
-    if (!audioInitialized) {
-        Tone.start();
-        audioInitialized = true;
-    }
-    if (speechTimeout) { clearTimeout(speechTimeout); speechTimeout = null; }
-    if (glideInterval) { clearInterval(glideInterval); }
-    
-    synth.triggerRelease();
-    currentNote = letter;
-
-    const targetFreq = getNoteFrequency(letter);
-    
-    if (tuningMode) {
-        // 1. Start Discordant: Detune flat by 30Hz and apply muddy CSS
-        const startFreq = targetFreq - 30; 
-        synth.triggerAttack(startFreq);
-        
-        // Render a muddy/clashing start color (brownish/grayish shift)
-        circle.classList.add('discord');
-        circle.style.background = 'radial-gradient(circle, #4a3c31 0%, #201a15 100%)';
-        renderInfo(letter, spokenNotes.has(letter));
-
-        // 2. Glide to Harmony over 3 seconds
-        let currentFreq = startFreq;
-        const steps = 30;
-        const stepTime = 100; // 100ms * 30 steps = 3 seconds
-        const freqIncrement = (targetFreq - startFreq) / steps;
-        let currentStep = 0;
-
-        glideInterval = setInterval(() => {
-            currentFreq += freqIncrement;
-            synth.oscillator.frequency.setValueAtTime(currentFreq, Tone.now());
-            currentStep++;
-
-            if (currentStep >= steps) {
-                clearInterval(glideInterval);
-                // 3. Resolve to Harmony!
-                circle.classList.remove('discord');
-                setLensOn(letter); // Switch to the pure, glowing gradient
-            }
-        }, stepTime);
-
-            } else {
-                // Standard instant perfect harmony mode
-                synth.triggerAttack(targetFreq);
-                setLensOn(letter);
-                renderInfo(letter, spokenNotes.has(letter));
-            }
-        }
         })();
     </script>
 
