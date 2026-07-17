@@ -7,113 +7,121 @@
   <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon">
   <style>
     :root {
-      --overlay-bg: rgba(13, 11, 20, 0.85);
+      --sidebar-bg: #14101e;
+      --panel-bg: rgba(20, 16, 30, 0.75);
       --text-color: #e2daeb;
       --accent-color: #9d4edd;
+      --accent-hover: #c77dff;
       --border-color: #3c2f5c;
     }
 
     body {
       margin: 0;
-      padding: 20px;
+      padding: 0;
       font-family: 'Georgia', serif;
       color: var(--text-color);
-      min-height: 100vh;
-      box-sizing: border-box;
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 280px; /* Altar Space on Left, Sidebar Controls on Right */
       background-position: center;
       background-size: cover;
+      background-repeat: no-repeat;
       background-attachment: fixed;
+    }
+
+    /* --- PROFILE COSMETIC INDICATORS --- */
+    .profile-indicator {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 15px;
+      z-index: 10;
+    }
+    #zodiac-box { left: 15px; }
+    #stone-box { right: 295px; } /* Kept left of the sidebar */
+    .profile-indicator img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+
+    /* --- LEFT SIDE: THE ALTAR SURFACE --- */
+    .altar-table {
+      position: relative;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 100px 30px 30px 30px; /* Space for top cosmic badges */
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
     }
 
-    /* Top interactive controls bar */
-    .altar-controls {
-      background-color: var(--overlay-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 15px 25px;
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      margin-bottom: 30px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    }
-
-    button {
-      background-color: var(--accent-color);
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    button:hover {
-      background-color: #c77dff;
-    }
-
-    .nav-btn {
-      background-color: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-      text-decoration: none;
-      padding: 9px 18px;
-      border-radius: 4px;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-    }
-
-    .nav-btn:hover {
-      background-color: rgba(157, 78, 221, 0.2);
-      border-color: #c77dff;
-    }
-
-    /* Reading layout workspace */
-    .table-workspace {
-      width: 100%;
-      max-width: 1200px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .card-display-area {
+    .spread-grid-canvas {
       display: flex;
       justify-content: center;
-      gap: 25px;
+      gap: 20px;
       flex-wrap: wrap;
-      min-height: 320px;
-      margin-top: 20px;
-      padding: 20px;
       width: 100%;
+      max-width: 1100px;
     }
 
-    /* Card asset styling */
+    /* Target Slot Placeholders */
+    .spread-slot {
+      width: 150px;
+      min-height: 250px;
+      border: 2px dashed rgba(157, 78, 221, 0.3);
+      border-radius: 8px;
+      background: rgba(13, 11, 20, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+      text-align: center;
+    }
+
+    .slot-label {
+      font-size: 0.85rem;
+      color: #b0a4c4;
+      margin-top: 10px;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Card Layout Dimensions & Flips */
     .tarot-card-wrapper {
-      width: 160px;
-      height: 275px;
+      width: 130px;
+      height: 220px;
       perspective: 1000px;
+      position: absolute;
+      top: 10px;
     }
 
     .tarot-card-inner {
       position: relative;
       width: 100%;
       height: 100%;
-      text-align: center;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       transform-style: preserve-3d;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+      border-radius: 6px;
     }
 
-    /* Add the flipped class via JS to rotate face-up */
-    .tarot-card-inner.flipped {
-      transform: rotateY(180deg);
+    .tarot-card-inner.flipped { transform: rotateY(180deg); }
+    
+    /* Apply inversion if determined by the engine */
+    .tarot-card-inner.inverted .card-front img {
+      transform: rotateY(180deg) rotate(180deg);
     }
 
     .card-front, .card-back {
@@ -122,63 +130,189 @@
       height: 100%;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid var(--border-color);
       overflow: hidden;
-      box-sizing: border-box;
-      background-color: #111;
+      background-color: #0d0b14;
     }
 
     .card-back img, .card-front img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
     }
 
-    .card-front {
-      transform: rotateY(180deg);
+    .card-front { transform: rotateY(180deg); }
+
+    /* --- RIGHT SIDE: CONTROLS SIDEBAR --- */
+    .controls-sidebar {
+      background-color: var(--sidebar-bg);
+      border-left: 2px solid var(--border-color);
+      padding: 20px 15px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+    }
+
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-hover);
+    }
+
+    input, select {
+      background-color: #09070e;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 8px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background-color: var(--accent-hover); }
+    
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+    .secondary-btn:hover {
+      background: rgba(157, 78, 221, 0.15);
+      border-color: var(--accent-hover);
     }
   </style>
 </head>
 <body>
 
-  <div class="altar-controls">
-    <button id="draw-btn">Draw a Card</button>
-    <button id="clear-btn" style="background-color: #4a154b;">Clear Table</button>
-    <a href="settings.html" class="nav-btn">Configure Altar</a>
-    <a href="index.html" class="nav-btn">Exit Altar</a>
+  <!-- Dynamic Cosmetological Badges (Mirroring your original exe layout) -->
+  <div class="profile-indicator" id="zodiac-box">
+    <!-- Icon loads via script tracking sign -->
+  </div>
+  <div class="profile-indicator" id="stone-box">
+    <!-- Icon loads via script tracking birth month -->
   </div>
 
-  <div class="table-workspace">
-    <div class="card-display-area" id="table-surface">
-      <!-- Flipped cards will drop here dynamically -->
+  <!-- Left Altar Table Space -->
+  <div class="altar-table" id="altar-table">
+    <div class="spread-grid-canvas" id="canvas-surface">
+      <!-- Matrix Slots get appended here -->
+    </div>
+  </div>
+
+  <!-- Right Sidebar Controls -->
+  <div class="controls-sidebar">
+    <h3 style="margin:0; text-align:center; color: var(--accent-hover); border-bottom:1px solid var(--border-color); padding-bottom:10px;">— Controls —</h3>
+    
+    <div class="sidebar-section">
+      <label for="user-name">Target Name</label>
+      <input type="text" id="user-name" placeholder="Emmery">
+    </div>
+
+    <div class="sidebar-section">
+      <label for="user-birthday">Birthday</label>
+      <input type="date" id="user-birthday">
+    </div>
+
+    <div class="sidebar-section">
+      <label for="spread-matrix">Spread Layout</label>
+      <select id="spread-matrix">
+        <option value="single">Daily Influence (1 Card)</option>
+        <option value="past-present-future">Past, Present, Future</option>
+        <option value="celtic-cross">Celtic Cross</option>
+        <option value="astrological">Astrological Spread</option>
+        <option value="relationship">Relationship Layout</option>
+        <option value="planetary">Planetary Alignment</option>
+        <option value="birthday-spread">Birthday Mandala</option>
+        <option value="star">The Star Spread</option>
+        <option value="tree-of-life">Tree of Life</option>
+        <option value="cross-triangle">Cross and Triangle</option>
+        <option value="past-life">Past Life Regression</option>
+      </select>
+    </div>
+
+    <button id="deal-spread-btn">Cast Selected Spread</button>
+    
+    <div class="action-grid">
+      <button id="clear-btn" class="secondary-btn">Clear Table</button>
+      <button id="shuffle-btn" class="secondary-btn">Shuffle Deck</button>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:auto; gap:10px;">
+      <button onclick="window.location.href='settings.html'" class="secondary-btn" style="padding:8px; font-size:0.85rem;">Configure Table</button>
+      <button onclick="window.location.href='index.html'" class="secondary-btn" style="padding:8px; font-size:0.85rem;">Exit Altar</button>
     </div>
   </div>
 
   <script>
-    // --- 1. CONFIGURATION & RITUAL CUSTOMIZATION ---
+    // --- 1. THE ALTAR AMBIANCE SYNC ---
     window.addEventListener('DOMContentLoaded', () => {
       const customCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
       const customCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
 
-      // Apply the user's specific cloth preference with absolute structural layout safety
-      document.body.style.background = `linear-gradient(rgba(13, 11, 20, 0.75), rgba(13, 11, 20, 0.75)), url('${customCloth}')`;
+      document.body.style.background = `linear-gradient(rgba(13, 11, 20, 0.85), rgba(13, 11, 20, 0.85)), url('${customCloth}')`;
       document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundRepeat = 'no-repeat';
-      document.body.style.backgroundAttachment = 'fixed';
       
-      // Inject the saved ritual cursor globally across everything
       const globalStyle = document.createElement('style');
       globalStyle.innerHTML = `* { cursor: url('${customCursor}'), auto !important; }`;
       document.head.appendChild(globalStyle);
+      
+      // Build initial 1-card daily slot layout
+      generateMatrixSlots();
     });
 
-    // --- 2. DECK RESOURCE MANAGEMENT ---
-    // Full 78 map mapped perfectly to match your safe lowercased names
+    // --- 2. SPREAD DATABASE DICTIONARY ---
+    const spreadLayouts = {
+      "single": ["Daily Influence"],
+      "past-present-future": ["Past / Foundation", "Present / Challenge", "Future / Outcome"],
+      "celtic-cross": ["1. Present Focus", "2. Immediate Challenge", "3. Root Core", "4. Recent Past", "5. Potential Peak", "6. Immediate Future", "7. Internal State", "8. Environment", "9. Hopes & Fears", "10. Final Resolution"],
+      "astrological": ["House I: Self", "House II: Value", "House III: Mind", "House IV: Home", "House V: Creation", "House VI: Health", "House VII: Unions", "House VIII: Mystery", "House IX: Philosophy", "House X: Status", "House XI: Networks", "House XII: Unconscious"],
+      "relationship": ["Your State", "The Dynamic", "Their State", "Hidden Factors", "The Path Forward"],
+      "planetary": ["Sun (Core)", "Moon (Emotion)", "Mercury (Mind)", "Venus (Affection)", "Mars (Drive)", "Jupiter (Expansion)", "Saturn (Lessons)"],
+      "birthday-spread": ["Passed Year", "Current Lesson", "Emerging Self", "Gift of the Year", "The Horizon"],
+      "star": ["Central Focus", "Point 1: Light", "Point 2: Shadow", "Point 3: Cosmic Advice", "Point 4: Grounding", "Point 5: Direct Path"],
+      "tree-of-life": ["Kether", "Chokmah", "Binah", "Chesed", "Geburah", "Tiphereth", "Netzach", "Hod", "Yesod", "Malkuth"],
+      "cross-triangle": ["Base Left", "Base Center", "Base Right", "Cross Center", "Apex Peak"],
+      "past-life": ["Ancient Ancestry", "Karmic Debt", "Unresolved Lesson", "Current Advantage"]
+    };
+
+    // --- 3. HARMONIZED TAROT ASSETS MAPPING ---
     const tarotDeck = [
-      // Major Arcana
       { name: "The Fool", file: "the-fool.jpg" }, { name: "The Magician", file: "the-magician.jpg" },
       { name: "The High Priestess", file: "the-high-priestess.jpg" }, { name: "The Empress", file: "the-empress.jpg" },
       { name: "The Emperor", file: "the-emperor.jpg" }, { name: "The Hierophant", file: "the-hierophant.jpg" },
@@ -190,8 +324,6 @@
       { name: "The Tower", file: "the-tower.jpg" }, { name: "The Star", file: "the-star.jpg" },
       { name: "The Moon", file: "the-moon.jpg" }, { name: "The Sun", file: "the-sun.jpg" },
       { name: "Judgement", file: "judgement.jpg" }, { name: "The World", file: "the-world.jpg" },
-      
-      // Minor Arcana - Cups
       { name: "Ace of Cups", file: "ace-of-cups.jpg" }, { name: "2 of Cups", file: "2-of-cups.jpg" },
       { name: "3 of Cups", file: "3-of-cups.jpg" }, { name: "4 of Cups", file: "4-of-cups.jpg" },
       { name: "5 of Cups", file: "5-of-cups.jpg" }, { name: "6 of Cups", file: "6-of-cups.jpg" },
@@ -199,8 +331,6 @@
       { name: "9 of Cups", file: "9-of-cups.jpg" }, { name: "10 of Cups", file: "10-of-cups.jpg" },
       { name: "Page of Cups", file: "page-of-cups.jpg" }, { name: "Knight of Cups", file: "knight-of-cups.jpg" },
       { name: "Queen of Cups", file: "queen-of-cups.jpg" }, { name: "King of Cups", file: "king-of-cups.jpg" },
-
-      // Minor Arcana - Pentacles
       { name: "Ace of Pentacles", file: "ace-of-pentacles.jpg" }, { name: "2 of Pentacles", file: "2-of-pentacles.jpg" },
       { name: "3 of Pentacles", file: "3-of-pentacles.jpg" }, { name: "4 of Pentacles", file: "4-of-pentacles.jpg" },
       { name: "5 of Pentacles", file: "5-of-pentacles.jpg" }, { name: "6 of Pentacles", file: "6-of-pentacles.jpg" },
@@ -208,8 +338,6 @@
       { name: "9 of Pentacles", file: "9-of-pentacles.jpg" }, { name: "10 of Pentacles", file: "10-of-pentacles.jpg" },
       { name: "Page of Pentacles", file: "page-of-pentacles.jpg" }, { name: "Knight of Pentacles", file: "knight-of-pentacles.jpg" },
       { name: "Queen of Pentacles", file: "queen-of-pentacles.jpg" }, { name: "King of Pentacles", file: "king-of-pentacles.jpg" },
-
-      // Minor Arcana - Swords
       { name: "Ace of Swords", file: "ace-of-swords.jpg" }, { name: "2 of Swords", file: "2-of-swords.jpg" },
       { name: "3 of Swords", file: "3-of-swords.jpg" }, { name: "4 of Swords", file: "4-of-swords.jpg" },
       { name: "5 of Swords", file: "5-of-swords.jpg" }, { name: "6 of Swords", file: "6-of-swords.jpg" },
@@ -217,72 +345,94 @@
       { name: "9 of Swords", file: "9-of-swords.jpg" }, { name: "10 of Swords", file: "10-of-swords.jpg" },
       { name: "Page of Swords", file: "page-of-swords.jpg" }, { name: "Knight of Swords", file: "knight-of-swords.jpg" },
       { name: "Queen of Swords", file: "queen-of-swords.jpg" }, { name: "King of Swords", file: "king-of-swords.jpg" },
-
-      // Minor Arcana - Wands
       { name: "Ace of Wands", file: "ace-of-wands.jpg" }, { name: "2 of Wands", file: "2-of-wands.jpg" },
       { name: "3 of Wands", file: "3-of-wands.jpg" }, { name: "4 of Wands", file: "4-of-wands.jpg" },
       { name: "5 of Wands", file: "5-of-wands.jpg" }, { name: "6 of Wands", file: "6-of-wands.jpg" },
       { name: "7 of Wands", file: "7-of-wands.jpg" }, { name: "8 of Wands", file: "8-of-wands.jpg" },
       { name: "9 of Wands", file: "9-of-wands.jpg" }, { name: "10 of Wands", file: "10-of-wands.jpg" },
       { name: "Page of Wands", file: "page-of-wands.jpg" }, { name: "Knight of Wands", file: "knight-of-wands.jpg" },
-      { name: "Queen of Wands", file: "queen-of-wands.jpg" }
+      { name: "Queen of Wands", file: "queen-of-wands.jpg" }, { name: "King of Wands", file: "king-of-wands.jpg" }
     ];
 
-    // --- 3. SHUFFLE ENGINE & STATE ---
     let runtimeDeck = [...tarotDeck];
 
-    function shuffleDeck() {
-      // Classic Fisher-Yates ritual sorting
+    function shuffle() {
       for (let i = runtimeDeck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [runtimeDeck[i], runtimeDeck[j]] = [runtimeDeck[j], runtimeDeck[i]];
       }
     }
+    shuffle();
 
-    // Initial pool initialization
-    shuffleDeck();
+    // --- 4. ENGINE CONTROLS ---
+    const dropdown = document.getElementById('spread-matrix');
+    const surface = document.getElementById('canvas-surface');
 
-    // --- 4. INTERACTIVE DEALING AND FLIPPING ---
-    const surface = document.getElementById('table-surface');
+    dropdown.addEventListener('change', generateMatrixSlots);
 
-    document.getElementById('draw-btn').addEventListener('click', () => {
-      if (runtimeDeck.length === 0) {
-        alert("The deck is spent. Clear the table to shuffle the cards back in.");
-        return;
-      }
+    function generateMatrixSlots() {
+      surface.innerHTML = ''; // Wipe clean
+      const chosenSpread = dropdown.value;
+      const positions = spreadLayouts[chosenSpread];
 
-      // Draw the next card off the top
-      const cardData = runtimeDeck.pop();
+      positions.forEach((labelText, index) => {
+        const slot = document.createElement('div');
+        slot.className = 'spread-slot';
+        slot.id = `slot-${index}`;
+        slot.innerHTML = `<div class="slot-label">${labelText}</div>`;
+        surface.appendChild(slot);
+      });
+    }
+
+    // Dealing & Shuffling Event Triggers
+    document.getElementById('deal-spread-btn').addEventListener('click', () => {
+      const slots = document.querySelectorAll('.spread-slot');
       
-      // Build the card UI structures
-      const wrapper = document.createElement('div');
-      wrapper.className = 'tarot-card-wrapper';
+      slots.forEach((slot, idx) => {
+        // If slot is already full, don't double deal
+        if (slot.querySelector('.tarot-card-wrapper')) return;
 
-      wrapper.innerHTML = `
-        <div class="tarot-card-inner">
-          <div class="card-back">
-            <img src="assets/misc/back.jpg" alt="Card Back">
+        if (runtimeDeck.length === 0) {
+          alert("Deck exhausted! Shuffling cards back into rotation.");
+          runtimeDeck = [...tarotDeck];
+          shuffle();
+        }
+
+        const cardData = runtimeDeck.pop();
+        const wrapper = document.createElement('div');
+        wrapper.className = 'tarot-card-wrapper';
+
+        // Orientation Engine: 50/50 probability calculation for inverted states
+        const isInverted = Math.random() >= 0.5;
+
+        wrapper.innerHTML = `
+          <div class="tarot-card-inner ${isInverted ? 'inverted' : ''}">
+            <div class="card-back">
+              <img src="assets/misc/back.jpg" alt="Back">
+            </div>
+            <div class="card-front">
+              <img src="assets/tarot-cards/${cardData.file}" alt="${cardData.name}">
+            </div>
           </div>
-          <div class="card-front">
-            <img src="assets/tarot-cards/${cardData.file}" alt="${cardData.name}">
-          </div>
-        </div>
-      `;
+        `;
 
-      // Append to altar table surface
-      surface.appendChild(wrapper);
+        slot.appendChild(wrapper);
 
-      // Trigger animation frame split-second delay to cause CSS flip transition
-      setTimeout(() => {
-        wrapper.querySelector('.tarot-card-inner').classList.add('flipped');
-      }, 100);
+        // Stagger cards being revealed visually down the spread timeline
+        setTimeout(() => {
+          wrapper.querySelector('.tarot-card-inner').classList.add('flipped');
+        }, idx * 250 + 100);
+      });
     });
 
-    // Reset Table 
     document.getElementById('clear-btn').addEventListener('click', () => {
-      surface.innerHTML = '';
+      generateMatrixSlots();
+    });
+
+    document.getElementById('shuffle-btn').addEventListener('click', () => {
       runtimeDeck = [...tarotDeck];
-      shuffleDeck();
+      shuffle();
+      alert("The 78-card deck has been ritually reset and shuffled.");
     });
   </script>
 </body>
