@@ -254,9 +254,68 @@
   </div>
 
   <script>
-    // --- 1. THE ALTAR PATH FIXES & AMBIANCE ---
+   // ==========================================
+    // 1. MASTER DIVINATION DATABASE INTEGRATION
+    // ==========================================
+    const DivinationDatabase = {
+      tarot: {
+        "the-fool": { name: "The Fool", upright: "New beginnings, potential, spontaneous action, faith in the universe, innocence.", reversed: "Recklessness, risk-taking, consideration delays, naivety, holding back." },
+        "the-magician": { name: "The Magician", upright: "Manifestation, willpower, desire, resourcefulness, skill mastery.", reversed: "Manipulation, illusions, wasted latent talent, misdirected intentions." },
+        "the-high-priestess": { name: "The High Priestess", upright: "Intuition, sacred knowledge, divine feminine, subconscious insights.", reversed: "Secret motives, ignoring inner guidance, surface-level focus." },
+        "the-empress": { name: "The Empress", upright: "Abundance, creativity, nature, fertility, domestic comfort.", reversed: "Creative blocks, dependence on others, smothering behavior." },
+        "the-emperor": { name: "The Emperor", upright: "Authority, structure, solid foundation, protection, logical rule.", reversed: "Tyranny, rigidity, loss of control, overbearing boundaries." },
+        "the-hierophant": { name: "The Hierophant", upright: "Tradition, spiritual wisdom, orthodoxy, institutional alignment.", reversed: "Rebellion, unorthodox paths, breaking conventions, rigid dogma." },
+        "the-lovers": { name: "The Lovers", upright: "Harmony, relationships, deep choices, core values alignment.", reversed: "Disharmony, misalignment of values, avoidance of tough choices." },
+        "the-chariot": { name: "The Chariot", upright: "Direction, control, victory, overcoming obstacles through sheer will.", reversed: "Lack of direction, running out of control, internal aggression blocks." },
+        "strength": { name: "Strength", upright: "Fortitude, inner courage, quiet endurance, compassion, influence.", reversed: "Self-doubt, raw emotion outbursts, weakness, inadequacy." },
+        "the-hermit": { name: "The Hermit", upright: "Soul-searching, inner reflection, spiritual mentorship, isolation.", reversed: "Loneliness, withdrawal baggage, pariah behavior, rejecting wisdom." },
+        "the-wheel-of-fortune": { name: "The Wheel of Fortune", upright: "Good luck, destiny cycles, turning points, unseen synchronized forces.", reversed: "Bad luck, breaking cyclic habits, resisting change, external friction." },
+        "justice": { name: "Justice", upright: "Fairness, cosmic truth, causal accountability, systemic balance.", reversed: "Unfairness, lack of accountability, dishonesty, legal complications." },
+        "the-hanged-man": { name: "The Hanged Man", upright: "Sacrifice, new perspectives, pausing time, enlightened surrender.", reversed: "Stagnation, martyr complexes, useless delays, wasting dynamic time." },
+        "death": { name: "Death", upright: "Metamorphosis, absolute closure, purging dead roots, natural evolution.", reversed: "Resisting change, stagnant loops, clinging to dead weight." },
+        "temperance": { name: "Temperance", upright: "Alchemy, patience, middle path moderation, harmonious blending.", reversed: "Imbalance, excess, conflicting goals, chaotic combinations." },
+        "the-devil": { name: "The Devil", upright: "Shadow self, material attachments, addiction, illusion of restriction.", reversed: "Detachment, breaking structural chains, shadow work confrontation." },
+        "the-tower": { name: "The Tower", upright: "Sudden upheaval, broken foundations, revelation, unexpected truth sparks.", reversed: "Avoiding critical disasters, delayed cleanup, fear of structural change." },
+        "the-star": { name: "The Star", upright: "Hope, serenity, spiritual rejuvenation, cosmic guidance, healing.", reversed: "Despair, lost faith, dynamic creative blockages, discouragement." },
+        "the-moon": { name: "The Moon", upright: "Illusion, deep anxiety, hidden cyclical mechanics, vivid dreams.", reversed: "Release of deep fears, clarity dawning, unmasking structural illusions." },
+        "the-sun": { name: "The Sun", upright: "Radiant success, vitality, pure joy, truth illuminated, confidence.", reversed: "Temporary clouds, ego blocks, minor vitality depletion." },
+        "judgement": { name: "Judgement", upright: "Absolution, deep calling, self-evaluation, significant choices.", reversed: "Self-doubt, inner critic noise, ignoring a major calling." },
+        "the-world": { name: "The World", upright: "Fulfillment, cycle completion, integration, absolute achievement.", reversed: "Shortcuts, incomplete cycles, seeking closure elsewhere." }
+      },
+      zodiac: {
+        "aries": { name: "Aries", element: "Fire", traits: "Initiating, bold, courageous, competitive, protective." },
+        "taurus": { name: "Taurus", element: "Earth", traits: "Grounding, deliberate, artistic, loyal, persistent." },
+        "gemini": { name: "Gemini", element: "Air", traits: "Intellectual, adaptive, witty, dualistic nature, curious." },
+        "cancer": { name: "Cancer", element: "Water", traits: "Nurturing, intuitive, protective sanctuary builders, deep emotion." },
+        "leo": { name: "Leo", element: "Fire", traits: "Radiant, expressive, proud, protective, deeply creative." },
+        "virgo": { name: "Virgo", element: "Earth", traits: "Analytical, methodical, dedicated craftspeople, health-focused." },
+        "libra": { name: "Libra", element: "Air", traits: "Harmonious, tactical peacemakers, justice-oriented, social." },
+        "scorpio": { name: "Scorpio", element: "Water", traits: "Transformative, investigative, intense, master of alchemy." },
+        "sagittarius": { name: "Sagittarius", element: "Fire", traits: "Philosophical, freedom-seeking, expansive visionaries." },
+        "capricorn": { name: "Capricorn", element: "Earth", traits: "Disciplined, systematic architectural builders, patient status focus." },
+        "aquarius": { name: "Aquarius", element: "Air", traits: "Innovative, independent global networkers, unconventional visionaries." },
+        "pisces": { name: "Pisces", element: "Water", traits: "Mystical, deeply artistic, empathetic dreamers, fluid anchors." }
+      },
+      birthstones: {
+        1:  { month: "January",   modern: "Garnet",     mystical: "Emerald", properties: "Constancy, dynamic structural grounding, vital protection." },
+        2:  { month: "February",  modern: "Amethyst",   mystical: "Bloodstone", properties: "Absolute clarity, clearing emotional loops, spiritual temperance." },
+        3:  { month: "March",     modern: "Aquamarine", mystical: "Jade", properties: "Fluid communication lines, pure clear vision, courage." },
+        4:  { month: "April",     modern: "Diamond",    mystical: "Opal", properties: "Indestructible intent, amplifying divine light frequencies." },
+        5:  { month: "May",       modern: "Emerald",    mystical: "Sapphire", properties: "Abundant growth, heart center alignment, clear foresight." },
+        6:  { month: "June",      modern: "Pearl",      mystical: "Agate", properties: "Pure transformation integration, cyclical lunar sync." },
+        7:  { month: "July",      modern: "Ruby",       mystical: "Ruby", properties: "Primal fire passion, deep sovereign leadership, life force power." },
+        8:  { month: "August",    modern: "Peridot",    mystical: "Diamond", properties: "Shielding clearing grids, joyous heart expression, manifestation." },
+        9:  { month: "September", modern: "Sapphire",   mystical: "Chrysolite", properties: "Higher mental focus, structural cosmic order, absolute truth." },
+        10: { month: "October",   modern: "Opal",       mystical: "Aquamarine", properties: "Astral dream amplification, dynamic multidimensional vision." },
+        11: { month: "November",  modern: "Topaz",      mystical: "Pearl", properties: "Sovereign personal power focus, warmth, continuous abundance." },
+        12: { month: "December",  modern: "Turquoise",  mystical: "Ruby", properties: "Master communication channels, global astral protection, deep peace." }
+      }
+    };
+
+    // ==========================================
+    // 2. THE ALTAR PATH FIXES & AMBIANCE ---
+    // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
-      // Relative path handling safety for GitHub Pages hosting loops
       const savedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
       const cleanClothPath = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
       
@@ -271,12 +330,13 @@
       globalStyle.innerHTML = `* { cursor: url('${cleanCursorPath}'), auto !important; }`;
       document.head.appendChild(globalStyle);
       
-      // Initialize profiles and setup base slots
       updateProfiles();
       generateMatrixSlots();
     });
 
-    // --- 2. THE SPREAD MATRIX GEOMETRY SYSTEM ---
+    // ==========================================
+    // 3. SPREAD MATRIX GEOMETRY SYSTEM
+    // ==========================================
     const spreadLayouts = {
       "single": { class: "layout-single", labels: ["Daily Influence"] },
       "past-present-future": { class: "layout-past-present-future", labels: ["Past / Foundation", "Present / Challenge", "Future / Outcome"] },
@@ -284,16 +344,16 @@
       "celtic-cross": { class: "layout-celtic-cross", labels: ["1. Present Focus", "2. Challenge", "3. Subconscious", "4. Recent Past", "5. Goals", "6. Near Future", "7. Advice", "8. Environment", "9. Hopes/Fears", "10. Outcome"] }
     };
 
-    // --- 3. FULL PRODUCTION TAROT ENGINE (78 CARDS COMPLETE) ---
+    // Full 78 Engine Builder
     const suits = ['cups', 'pentacles', 'swords', 'wands'];
     const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'ace', 'king', 'knight', 'page', 'queen'];
     const majors = ['death', 'judgement', 'justice', 'strength', 'temperance', 'the-chariot', 'the-devil', 'the-emperor', 'the-empress', 'the-fool', 'the-hanged-man', 'the-hermit', 'the-hierophant', 'the-high-priestess', 'the-lovers', 'the-magician', 'the-moon', 'the-star', 'the-sun', 'the-tower', 'the-wheel-of-fortune', 'the-world'];
 
     const tarotDeck = [];
-    majors.forEach(m => tarotDeck.push({ name: m.replace(/-/g, ' '), file: `${m}.jpg` }));
+    majors.forEach(m => tarotDeck.push({ key: m, file: `${m}.jpg` }));
     suits.forEach(s => {
       ranks.forEach(r => {
-        tarotDeck.push({ name: `${r} of ${s}`, file: `${r}-of-${s}.jpg` });
+        tarotDeck.push({ key: `${r}-of-${s}`, file: `${r}-of-${s}.jpg` });
       });
     });
 
@@ -306,7 +366,9 @@
     }
     shuffle();
 
-    // --- 4. ZODIAC & BIRTHSTONE PROFILE CALCULATION ---
+    // ==========================================
+    // 4. PROFILE AUTOMATION ENGINE
+    // ==========================================
     const bdayInput = document.getElementById('user-birthday');
     bdayInput.addEventListener('change', updateProfiles);
 
@@ -316,28 +378,51 @@
       const month = date.getMonth() + 1;
       const day = date.getDate();
 
-      // Stone mapping
+      // Birthstone Rendering + Tooltip Data
       const stones = ['garnet2.gif','amethyst2.gif','aquamarine2.gif','diamond2.gif','emerald2.gif','pearl1.gif','ruby2.gif','peridot2.gif','saphire2.gif','opal2.gif','topaz2.gif','turquoise.gif'];
-      document.getElementById('stone-box').innerHTML = `<img src="assets/birthstones/${stones[month - 1]}" title="Ritual Birthstone">`;
-
-      // Zodiac calculations
-      let sign = "capricorn.jpg";
-      if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) sign = "aquarius.jpg";
-      else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) sign = "pisces.jpg";
-      else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) sign = "aries.jpg";
-      else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) sign = "taurus.jpg";
-      else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) sign = "gemini.jpg";
-      else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) sign = "cancer.jpg";
-      else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) sign = "leo.jpg";
-      else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) sign = "virgo.jpg";
-      else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) sign = "libra.jpg";
-      else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) sign = "scorpio.jpg";
-      else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) sign = "sagittarius.jpg";
+      const stoneData = DivinationDatabase.birthstones[month];
       
-      document.getElementById('zodiac-box').innerHTML = `<img src="assets/signs/${sign}" title="Target Zodiac Alignment">`;
+      const stoneBox = document.getElementById('stone-box');
+      stoneBox.innerHTML = `<img src="assets/birthstones/${stones[month - 1]}">`;
+      stoneBox.setAttribute('data-info', `Month: ${stoneData.month} | Modern: ${stoneData.modern} | Mystical: ${stoneData.mystical} \nProperties: ${stoneData.properties}`);
+
+      // Zodiac Configurations
+      let signKey = "capricorn";
+      let signImg = "capricorn.jpg";
+      
+      if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) { signKey = "aquarius"; signImg = "aquarius.jpg"; }
+      else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) { signKey = "pisces"; signImg = "pisces.jpg"; }
+      else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) { signKey = "aries"; signImg = "aries.jpg"; }
+      else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) { signKey = "taurus"; signImg = "taurus.jpg"; }
+      else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) { signKey = "gemini"; signImg = "gemini.jpg"; }
+      else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) { signKey = "cancer"; signImg = "cancer.jpg"; }
+      else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) { signKey = "leo"; signImg = "leo.jpg"; }
+      else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) { signKey = "virgo"; signImg = "virgo.jpg"; }
+      else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) { signKey = "libra"; signImg = "libra.jpg"; }
+      else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) { signKey = "scorpio"; signImg = "scorpio.jpg"; }
+      else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) { signKey = "sagittarius"; signImg = "sagittarius.jpg"; }
+      
+      const zodiacData = DivinationDatabase.zodiac[signKey];
+      const zodiacBox = document.getElementById('zodiac-box');
+      zodiacBox.innerHTML = `<img src="assets/signs/${signImg}">`;
+      zodiacBox.setAttribute('data-info', `${zodiacData.name} (${zodiacData.element})\nTraits: ${zodiacData.traits}`);
     }
 
-    // --- 5. INTERACTIVE CORE LOGIC ---
+    // Interactive Hover Listeners for Badges
+    [document.getElementById('zodiac-box'), document.getElementById('stone-box')].forEach(box => {
+      box.addEventListener('mouseenter', () => {
+        const info = box.getAttribute('data-info');
+        document.getElementById('meaning-sidebar').innerHTML = `
+          <h4 class="meaning-title">Cosmic Alignment</h4>
+          <p class="meaning-text" style="white-space: pre-line;">${info}</p>
+        `;
+      });
+      box.addEventListener('mouseleave', resetSidebar);
+    });
+
+    // ==========================================
+    // 5. INTERACTIVE SURFACE LOGIC
+    // ==========================================
     const dropdown = document.getElementById('spread-matrix');
     const surface = document.getElementById('canvas-surface');
     const sidebar = document.getElementById('meaning-sidebar');
@@ -360,7 +445,7 @@
     }
 
     function resetSidebar() {
-      sidebar.innerHTML = `<p class="meaning-text" style="font-style: italic; color: #a092b8; text-align: center;">Hover your ritual pointer over a face-up card to look up meanings.</p>`;
+      sidebar.innerHTML = `<p class="meaning-text" style="font-style: italic; color: #a092b8; text-align: center;">Hover your ritual pointer over a face-up card or cosmic badge to look up meanings.</p>`;
     }
 
     document.getElementById('deal-spread-btn').addEventListener('click', () => {
@@ -378,7 +463,7 @@
         wrapper.className = 'tarot-card-wrapper';
         const isInverted = Math.random() >= 0.5;
 
-        wrapper.setAttribute('data-name', cardData.name);
+        wrapper.setAttribute('data-key', cardData.key);
         wrapper.setAttribute('data-inverted', isInverted);
         wrapper.setAttribute('data-position', slot.querySelector('.slot-label').innerText);
 
@@ -390,17 +475,24 @@
         `;
 
         wrapper.addEventListener('mouseenter', () => {
-          const name = wrapper.getAttribute('data-name');
+          const key = wrapper.getAttribute('data-key');
           const inverted = wrapper.getAttribute('data-inverted') === 'true';
           const pos = wrapper.getAttribute('data-position');
           
+          // Fallback handling to ensure unmapped minor arcana still gracefully render
+          const info = DivinationDatabase.tarot[key] || { 
+            name: key.replace(/-/g, ' '), 
+            upright: "Esoteric definitions are flowing. Core card mechanics are online.", 
+            reversed: "Inverted alignment shifting interpretations. Core mechanics are online." 
+          };
+          
           sidebar.innerHTML = `
-            <h4 class="meaning-title" style="text-transform: capitalize;">${name}</h4>
+            <h4 class="meaning-title" style="text-transform: capitalize;">${info.name}</h4>
             <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
             <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
               ${inverted ? 'Reversed' : 'Upright'}
             </div>
-            <p class="meaning-text">Esoteric interpretations for this card are locked into memory. Hover active tool to focus dynamic energy channels.</p>
+            <p class="meaning-text">${inverted ? info.reversed : info.upright}</p>
           `;
         });
         wrapper.addEventListener('mouseleave', resetSidebar);
@@ -419,6 +511,7 @@
       runtimeDeck = [...tarotDeck];
       shuffle();
       resetSidebar();
+      alert("Deck shuffler reset complete.");
     });
   </script>
 </body>
