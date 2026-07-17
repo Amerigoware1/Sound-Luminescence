@@ -771,6 +771,40 @@
             box-shadow: 0 0 30px rgba(100, 50, 50, 0.5) !important;
 
         }
+        /* ─── AMBIENT LENS ─── */
+        .ambient-lens {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            /* Exact match of your desktop's diagonal rainbow gradient */
+            background: linear-gradient(135deg, #ff0000, #ffeb00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+            background-size: 200% 200%;
+            background-position: 0% 50%;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.6s ease, box-shadow 0.6s ease;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 -20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Smooth rotational spinning animation */
+        @keyframes spinRainbow {
+            0% { transform: rotate(0deg); background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { transform: rotate(360deg); background-position: 0% 50%; }
+        }
+
+        .ambient-lens.playing {
+            animation: spinRainbow 16s linear infinite;
+            box-shadow: 
+                0 0 70px rgba(0, 255, 255, 0.3),
+                0 0 140px rgba(255, 0, 255, 0.2),
+                inset 0 -20px 40px rgba(0,0,0,0.3) !important;
+        }
+
+        /* Pulsing swell on note triggering */
+        .ambient-lens.pulse {
+            transform: scale(1.08);
+            filter: brightness(1.2) saturate(1.1);
+        }
     </style>
 </head>
 
@@ -791,9 +825,9 @@
             <button class="tab-btn active" data-tab="home" role="tab"><i class="fas fa-home"></i> Home</button>
             <button class="tab-btn" data-tab="therapy" role="tab"><i class="fas fa-wave-square"></i> Therapy</button>
             <button class="tab-btn" data-tab="soul" role="tab"><i class="fas fa-spa"></i> The Soul</button>
-            <button class="tab-btn" data-tab="services" role="tab"><i class="fas fa-hand-holding-heart"></i>
-                Services</button>
+            <button class="tab-btn" data-tab="services" role="tab"><i class="fas fa-hand-holding-heart"></i> Services</button>
             <button class="tab-btn" data-tab="chakra" role="tab"><i class="fas fa-circle"></i> Chakra Lens</button>
+            <button class="tab-btn" data-tab="ambient" role="tab"><i class="fas fa-wand-magic-sparkles"></i> Ambient</button>
         </nav>
 
         <!-- ═══ TAB PANELS ═══ -->
@@ -1032,7 +1066,32 @@
                     Tuning mode provides a very condensed demonstration of the effect of tuning a discordant chakra to its target frequency.
                 </p>
             </section>
+            <!-- ─── AMBIENT HARMONY ─── -->
+            <section class="tab-panel" id="panel-ambient" role="tabpanel">
+                <h2>Ambient Harmony</h2>
+                <p class="lead">Immerse yourself in self-generating, mathematically harmonious light and sound.</p>
 
+                <div class="chakra-embed">
+                    <div class="lens-wrapper">
+                        <div class="circle-wrap" style="width: 250px; height: 250px; margin-bottom: 2rem;">
+                            <div class="ring" style="inset: -12px;"></div>
+                            <div id="ambientLens" class="ambient-lens"></div>
+                        </div>
+
+                        <div class="controls-row">
+                            <button id="ambientPlayBtn" class="off" style="font-size: 1rem; padding: 0.8rem 2rem;">
+                                <i class="fas fa-play"></i> Start Ambient Generator
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top:1.5rem; text-align: center;">
+                    <i class="fas fa-infinity" style="color:var(--gold);"></i>
+                    The generator relies on the Key of E Major Pentatonic, utilizing mathematical intervals that prevent discord. 
+                    The Aura Lens dynamically responds to the organic cadence of the music.
+                </p>
+            </section>
         </div><!-- /tab-panels -->
     </div><!-- /app -->
 
@@ -1044,7 +1103,8 @@
             therapy: document.getElementById('panel-therapy'),
             soul: document.getElementById('panel-soul'),
             services: document.getElementById('panel-services'),
-            chakra: document.getElementById('panel-chakra')
+            chakra: document.getElementById('panel-chakra'),
+            ambient: document.getElementById('panel-ambient') // <-- Add this line
         };
 
         tabs.forEach(btn => {
@@ -1421,7 +1481,92 @@
                 }
                 if (!currentNote) setLensOff();
             });
+// ─── AMBIENT GENERATOR LOGIC ───
+            let ambientPlaying = false;
+            let ambientInterval = null;
+            const ambientLens = document.getElementById('ambientLens');
+            const ambientPlayBtn = document.getElementById('ambientPlayBtn');
 
+            // 1. Ethereal Space Echo (Feedback Delay)
+            const ambientDelay = new Tone.FeedbackDelay("4n.", 0.55).toDestination();
+
+            // 2. Ultra-Soft Pad Synthesizer
+            const ambientSynth = new Tone.Synth({
+                oscillator: { type: "sine" }, // Purest waveform
+                envelope: {
+                    attack: 1.8,   // Very slow attack for a swelling pad sound
+                    decay: 2.5,
+                    sustain: 0.6,
+                    release: 4.0   // Long release for lingering tails
+                }
+            }).connect(ambientDelay);
+            ambientSynth.volume.value = -12; // Balanced background level
+
+            // 3. E Major Pentatonic Scale (The exact Key of E harmony)
+            const ambientScale = ["E3", "G#3", "B3", "C#4", "E4", "F#4", "G#4", "B4", "C#5", "E5"];
+
+            function playRandomAmbientNote() {
+                if (!ambientPlaying) return;
+
+                // Grab a random note from the scale
+                const randomNote = ambientScale[Math.floor(Math.random() * ambientScale.length)];
+                
+                // Trigger the soft synth pad
+                ambientSynth.triggerAttackRelease(randomNote, "1n");
+
+                // Trigger the visual lens "swell"
+                ambientLens.classList.add('pulse');
+                setTimeout(() => {
+                    ambientLens.classList.remove('pulse');
+                }, 900);
+            }
+
+            // Playback controls
+            ambientPlayBtn.addEventListener('click', async () => {
+                if (!audioInitialized) {
+                    await Tone.start();
+                    audioInitialized = true;
+                }
+
+                ambientPlaying = !ambientPlaying;
+
+                if (ambientPlaying) {
+                    ambientPlayBtn.className = 'on';
+                    ambientPlayBtn.innerHTML = '<i class="fas fa-pause"></i> Pause Ambient Harmony';
+                    ambientLens.classList.add('playing');
+
+                    // Play immediate first note
+                    playRandomAmbientNote();
+
+                    // Schedule notes randomly every 2.5 to 5.5 seconds
+                    const scheduleNext = () => {
+                        if (!ambientPlaying) return;
+                        playRandomAmbientNote();
+                        const randomDelay = 2500 + Math.random() * 3000;
+                        ambientInterval = setTimeout(scheduleNext, randomDelay);
+                    };
+                    ambientInterval = setTimeout(scheduleNext, 3500);
+
+                } else {
+                    ambientPlayBtn.className = 'off';
+                    ambientPlayBtn.innerHTML = '<i class="fas fa-play"></i> Start Ambient Generator';
+                    ambientLens.classList.remove('playing');
+                    if (ambientInterval) {
+                        clearTimeout(ambientInterval);
+                        ambientInterval = null;
+                    }
+                    ambientSynth.triggerRelease();
+                }
+            });
+
+            // Stop ambient generator if user leaves the tab
+            tabs.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab !== 'ambient' && ambientPlaying) {
+                        ambientPlayBtn.click();
+                    }
+                });
+            });
             // ─── init ───
             buildKeyboard();
             setLensOff();
