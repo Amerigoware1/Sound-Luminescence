@@ -1481,44 +1481,88 @@
                 }
                 if (!currentNote) setLensOff();
             });
-// ─── AMBIENT GENERATOR LOGIC ───
+// ─── UPGRADED AMBIENT GENERATOR LOGIC ───
             let ambientPlaying = false;
             let ambientInterval = null;
             const ambientLens = document.getElementById('ambientLens');
             const ambientPlayBtn = document.getElementById('ambientPlayBtn');
 
-            // 1. Ethereal Space Echo (Feedback Delay)
-            const ambientDelay = new Tone.FeedbackDelay("4n.", 0.55).toDestination();
+            // 1. Shared Ethereal Space Echo (Feedback Delay)
+            const ambientDelay = new Tone.FeedbackDelay("4n.", 0.6).toDestination();
 
-            // 2. Ultra-Soft Pad Synthesizer
-            const ambientSynth = new Tone.Synth({
-                oscillator: { type: "sine" }, // Purest waveform
+            // 2. Primary Instrument: Polyphonic Soft Pad (For Chords)
+            const chordSynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "sine" },
                 envelope: {
-                    attack: 1.8,   // Very slow attack for a swelling pad sound
-                    decay: 2.5,
-                    sustain: 0.6,
-                    release: 4.0   // Long release for lingering tails
+                    attack: 2.5,   // Slow, swelling entry for chords
+                    decay: 3.0,
+                    sustain: 0.7,
+                    release: 5.0   // Long, smooth bleed out
                 }
             }).connect(ambientDelay);
-            ambientSynth.volume.value = -12; // Balanced background level
+            chordSynth.volume.value = -16; // Kept lower to balance multi-note gain
 
-            // 3. E Major Pentatonic Scale (The exact Key of E harmony)
-            const ambientScale = ["E3", "G#3", "B3", "C#4", "E4", "F#4", "G#4", "B4", "C#5", "E5"];
+            // 3. Secondary Instrument: Shimmering FM Synth (For Random Melodic Accents)
+            const shimmerSynth = new Tone.FMSynth({
+                harmonicity: 3,
+                modulationIndex: 5,
+                oscillator: { type: "sine" },
+                modulation: { type: "triangle" },
+                envelope: {
+                    attack: 1.5,
+                    decay: 1.5,
+                    sustain: 0.4,
+                    release: 4.0
+                }
+            }).connect(ambientDelay);
+            shimmerSynth.volume.value = -22; // Delicate background texture
 
-            function playRandomAmbientNote() {
+            // 4. E Major Harmonious Chord Progressions (Root, Subdominant, Dominant, Relative Minor)
+            const ambientChords = [
+                ["E3", "B3", "E4", "G#4"],  // E Major (I) - Tonic Grounding
+                ["A3", "C#4", "E4", "A4"],  // A Major (IV) - Heart Opening
+                ["B3", "D#4", "F#4", "B4"],  // B Major (V) - Perfect Alignment
+                ["C#3", "G#3", "C#4", "E4"]  // C# Minor (vi) - Deep Intuition
+            ];
+
+            // High-register accent notes matching E Major Pentatonic
+            const accentNotes = ["B4", "C#5", "E5", "F#5", "G#5", "B5"];
+
+            function playAmbientTexture() {
                 if (!ambientPlaying) return;
 
-                // Grab a random note from the scale
-                const randomNote = ambientScale[Math.floor(Math.random() * ambientScale.length)];
-                
-                // Trigger the soft synth pad
-                ambientSynth.triggerAttackRelease(randomNote, "1n");
+                // Randomly choose: 70% chance of a chord progression, 30% chance of an isolated shimmer accent
+                if (Math.random() < 0.7) {
+                    // Pick a random chord array
+                    const currentChord = ambientChords[Math.floor(Math.random() * ambientChords.length)];
+                    
+                    // Trigger all notes in the chord simultaneously for 4 seconds
+                    chordSynth.triggerAttackRelease(currentChord, 4);
+                    
+                    // Occasionally layer a high shimmer note on top of the chord
+                    if (Math.random() > 0.5) {
+                        const randomAccent = accentNotes[Math.floor(Math.random() * accentNotes.length)];
+                        // Delay the accent slightly so it drops organically into the pad
+                        setTimeout(() => {
+                            if (ambientPlaying) shimmerSynth.triggerAttackRelease(randomAccent, 2);
+                        }, 1200);
+                    }
+                } else {
+                    // Play a soft, standalone cascading duet of high notes
+                    const note1 = accentNotes[Math.floor(Math.random() * accentNotes.length)];
+                    const note2 = accentNotes[Math.floor(Math.random() * accentNotes.length)];
+                    
+                    shimmerSynth.triggerAttackRelease(note1, 3);
+                    setTimeout(() => {
+                        if (ambientPlaying) shimmerSynth.triggerAttackRelease(note2, 3);
+                    }, 1500);
+                }
 
-                // Trigger the visual lens "swell"
+                // Dynamic visual pulse responding to the musical shift
                 ambientLens.classList.add('pulse');
                 setTimeout(() => {
                     ambientLens.classList.remove('pulse');
-                }, 900);
+                }, 1200);
             }
 
             // Playback controls
@@ -1535,27 +1579,30 @@
                     ambientPlayBtn.innerHTML = '<i class="fas fa-pause"></i> Pause Ambient Harmony';
                     ambientLens.classList.add('playing');
 
-                    // Play immediate first note
-                    playRandomAmbientNote();
+                    // Play immediate first layer
+                    playAmbientTexture();
 
-                    // Schedule notes randomly every 2.5 to 5.5 seconds
+                    // Loop structurally every 5 to 7 seconds to let chords drift and overlap beautifully
                     const scheduleNext = () => {
                         if (!ambientPlaying) return;
-                        playRandomAmbientNote();
-                        const randomDelay = 2500 + Math.random() * 3000;
-                        ambientInterval = setTimeout(scheduleNext, randomDelay);
+                        playAmbientTexture();
+                        const randomInterval = 5000 + Math.random() * 2000;
+                        ambientInterval = setTimeout(scheduleNext, randomInterval);
                     };
-                    ambientInterval = setTimeout(scheduleNext, 3500);
+                    ambientInterval = setTimeout(scheduleNext, 6000);
 
                 } else {
                     ambientPlayBtn.className = 'off';
                     ambientPlayBtn.innerHTML = '<i class="fas fa-play"></i> Start Ambient Generator';
                     ambientLens.classList.remove('playing');
+                    
                     if (ambientInterval) {
                         clearTimeout(ambientInterval);
                         ambientInterval = null;
                     }
-                    ambientSynth.triggerRelease();
+                    // Release all active voices smoothly
+                    chordSynth.releaseAll();
+                    shimmerSynth.triggerRelease();
                 }
             });
 
