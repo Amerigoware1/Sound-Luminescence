@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Altar Settings — Digital Divination</title>
+  <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon">
+  <style>
+    :root {
+      --bg-color: #0d0b14;
+      --card-bg: #181424;
+      --text-color: #e2daeb;
+      --accent-color: #9d4edd;
+      --accent-hover: #c77dff;
+      --border-color: #3c2f5c;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Georgia', serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: var(--accent-color);
+      text-shadow: 0 0 10px rgba(157, 78, 221, 0.3);
+      margin-bottom: 5px;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      color: var(--accent-hover);
+    }
+
+    /* Grid layout for the preview galleries */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      background: #09070e;
+      position: relative;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .card:hover {
+      border-color: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    .card.selected {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px rgba(157, 78, 221, 0.6);
+    }
+
+    .card img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+      background-color: #111;
+    }
+
+    .card span {
+      display: block;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      color: #b0a4c4;
+    }
+
+    /* Cursor specific gallery styling */
+    .cursor-gallery {
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    }
+
+    .cursor-preview-box {
+      width: 48px;
+      height: 48px;
+      margin: 10px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #14101e;
+      border: 1px dashed var(--border-color);
+      border-radius: 4px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-family: inherit;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .nav-link {
+      color: var(--text-color);
+      text-decoration: none;
+      font-size: 1.05rem;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--accent-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Altar Customization</h1>
+    <p>Configure your workspace background cloths and ritual tools.</p>
+  </header>
+
+  <div class="container">
+    <!-- BACKGROUND CLOTH SELECTION -->
+    <section>
+      <h2>Select Your Divination Cloth</h2>
+      <p style="color: #a092b8; margin-top: -10px; margin-bottom: 20px; font-size: 0.95rem;">
+        Choose the textile pattern to serve as the background of your reading table (skipping the specialized Ouija layout).
+      </p>
+      <div class="gallery" id="cloth-gallery"></div>
+    </section>
+
+    <!-- CURSOR TOOL SELECTION -->
+    <section>
+      <h2>Select Your Ritual Pointer</h2>
+      <p style="color: #a092b8; margin-top: -10px; margin-bottom: 20px; font-size: 0.95rem;">
+        Choose the custom physical cursor for pointing, channeling, and flipping cards.
+      </p>
+      <div class="gallery cursor-gallery" id="cursor-gallery"></div>
+    </section>
+
+    <!-- ACTION BUTTONS -->
+    <div class="actions">
+      <a href="index.html" class="nav-link">← Back to Main Altar</a>
+      <button id="save-btn">Apply Settings</button>
+    </div>
+  </div>
+
+  <script>
+    // List out our cloths with exact file extensions to handle the differences
+    // Skipping cloth-10 because it is your designated Ouija board cloth
+    const cloths = [
+      { id: 1,  file: 'cloth-1.jpg' },
+      { id: 2,  file: 'cloth-2.jpg' },
+      { id: 3,  file: 'cloth-3.jpg' },
+      { id: 4,  file: 'cloth-4.png' },
+      { id: 5,  file: 'cloth-5.JPG' },
+      { id: 6,  file: 'cloth-6.jpg' },
+      { id: 7,  file: 'cloth-7.jpg' },
+      { id: 8,  file: 'cloth-8.jpg' },
+      { id: 9,  file: 'cloth-9.jpg' },
+      // Skipping 10 (the ouija cloth)
+      { id: 11, file: 'cloth-11.jpg' },
+      { id: 12, file: 'cloth-12.jpg' },
+      { id: 13, file: 'cloth-13.jpg' },
+      { id: 14, file: 'cloth-14.jpg' },
+      { id: 15, file: 'cloth-15.jpg' },
+      { id: 16, file: 'cloth-16.jpg' },
+      { id: 17, file: 'cloth-17.jpg' },
+      { id: 18, file: 'cloth-18.jpeg' },
+      { id: 19, file: 'cloth-19.jpg' },
+      { id: 20, file: 'cloth-20.jpg' }
+    ];
+
+    // Cursors are neatly standardized 1 through 7
+    const totalCursors = 7;
+
+    // Load initial states from localStorage (or set defaults)
+    let selectedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
+    let selectedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
+
+    // Populate Cloth Gallery
+    const clothGallery = document.getElementById('cloth-gallery');
+    cloths.forEach(cloth => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const imgPath = `assets/cloths/${cloth.file}`;
+      
+      if (selectedCloth === imgPath) card.classList.add('selected');
+
+      card.innerHTML = `
+        <img src="${imgPath}" alt="Cloth design ${cloth.id}">
+        <span>Cloth #${cloth.id}</span>
+      `;
+
+      card.addEventListener('click', () => {
+        document.querySelectorAll('#cloth-gallery .card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedCloth = imgPath;
+      });
+
+      clothGallery.appendChild(card);
+    });
+
+    // Populate Cursor Gallery
+    const cursorGallery = document.getElementById('cursor-gallery');
+    for (let i = 1; i <= totalCursors; i++) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const curPath = `assets/cursors/cursor-${i}.cur`;
+
+      if (selectedCursor === curPath) card.classList.add('selected');
+
+      // We apply the custom cursor inline to each preview container so you can feel how it acts!
+      card.innerHTML = `
+        <div class="cursor-preview-box" style="cursor: url(${curPath}), auto;">
+          <img src="assets/misc/hand.jpg" style="width: 28px; height: 28px; pointer-events: none;" alt="Ritual Focus">
+        </div>
+        <span>Pointer #${i}</span>
+      `;
+
+      card.addEventListener('click', () => {
+        document.querySelectorAll('#cursor-gallery .card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedCursor = curPath;
+      });
+
+      cursorGallery.appendChild(card);
+    }
+
+    // Save Selection to Local Storage
+    document.getElementById('save-btn').addEventListener('click', () => {
+      localStorage.setItem('selectedCloth', selectedCloth);
+      localStorage.setItem('selectedCursor', selectedCursor);
+      
+      // Let the user know choice was recorded
+      const originalText = document.getElementById('save-btn').innerText;
+      document.getElementById('save-btn').innerText = 'Altar Prepared! ✓';
+      setTimeout(() => {
+        document.getElementById('save-btn').innerText = originalText;
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

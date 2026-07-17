@@ -1,0 +1,13 @@
+window.addEventListener('DOMContentLoaded', () => {
+  // Retrieve configuration
+  const customCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
+  const customCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
+
+  // Apply cloth background to body or target workspace element
+  document.body.style.backgroundImage = `url('${customCloth}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundAttachment = 'fixed';
+
+  // Apply custom cursor globally
+  document.body.style.cursor = `url('${customCursor}'), auto`;
+});
