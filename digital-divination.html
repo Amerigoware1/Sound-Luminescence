@@ -73,8 +73,14 @@
       display: grid;
       gap: 15px;
       box-sizing: border-box;
+      transition: background-image 0.5s ease-in-out; /* Smooth cloth changes */
+      z-index: 1; /* Ensures it stays below the cards if they have absolute positioning */
      }
-
+    /* Ensure cards sit ABOVE the cloth background */
+    .spread-grid-canvas > * {
+      position: relative;
+      z-index: 2; 
+    }
     /* Grid Layout Formats based on active selection */
     .layout-single {
       grid-template-columns: 1fr;
@@ -332,31 +338,43 @@
     // ==========================================
     // 2. THE ALTAR PATH FIXES & AMBIANCE ---
     // ==========================================
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
-      const savedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
+window.addEventListener('DOMContentLoaded', () => {
+  const savedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
+  const savedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
 
-      // Clean the paths to strip any duplicate leading slashes
-      let cleanCloth = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
-      let cleanCursor = savedCursor.startsWith('assets') ? savedCursor : savedCursor.substring(savedCursor.indexOf('assets'));
+  // Clean the paths to strip any duplicate leading slashes
+  let cleanCloth = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
+  let cleanCursor = savedCursor.startsWith('assets') ? savedCursor : savedCursor.substring(savedCursor.indexOf('assets'));
 
-      // GitHub Pages Subfolder Path Auto-Correction
-      const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
-      
-      // Apply the fixed background path
-      document.body.style.background = `linear-gradient(rgba(13, 11, 20, 0.88), rgba(13, 11, 20, 0.88)), url('${repoPath}${cleanCloth}')`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundRepeat = 'no-repeat';
-      document.body.style.backgroundAttachment = 'fixed';
-            
-      const globalStyle = document.createElement('style');
-      globalStyle.innerHTML = `* { cursor: url('${repoPath}${cleanCursor}'), auto !important; }`;
-      document.head.appendChild(globalStyle);
-      
-      updateProfiles();
-      generateMatrixSlots();
-    });
+  // GitHub Pages Subfolder Path Auto-Correction
+  const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
+  
+  // 1. Keep the overall page dark and atmospheric
+  document.body.style.backgroundColor = '#0d0b14'; // Hex for rgba(13, 11, 20)
+  document.body.style.backgroundImage = 'none'; // Ensure no old cloth remains on the body
+
+  // 2. Apply the cloth ONLY to the spread-grid-canvas
+  const canvas = document.querySelector('.spread-grid-canvas');
+  if (canvas) {
+    // Note: I reduced the gradient opacity to 0.3 so the cloth texture is actually visible! 
+    // Your original 0.88 opacity was very dark and might hide the cloth pattern.
+    canvas.style.background = `linear-gradient(rgba(13, 11, 20, 0.3), rgba(13, 11, 20, 0.3)), url('${repoPath}${cleanCloth}')`;
+    canvas.style.backgroundSize = 'cover';
+    canvas.style.backgroundPosition = 'center';
+    canvas.style.backgroundRepeat = 'no-repeat';
+    
+    // Optional but recommended: adds a nice finished "altar mat" look
+    canvas.style.borderRadius = '8px'; 
+    canvas.style.boxShadow = 'inset 0 0 30px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.5)';
+  }
+        
+  const globalStyle = document.createElement('style');
+  globalStyle.innerHTML = `* { cursor: url('${repoPath}${cleanCursor}'), auto !important; }`;
+  document.head.appendChild(globalStyle);
+  
+  updateProfiles();
+  generateMatrixSlots();
+});
 
     // ==========================================
     // 3. SPREAD MATRIX GEOMETRY SYSTEM
