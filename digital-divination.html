@@ -124,14 +124,32 @@
     }
 
     /* Card Layout Dimensions & Flips */
+/* Target Slot Placeholders */
+    .spread-slot {
+      border: 2px dashed rgba(157, 78, 221, 0.25);
+      border-radius: 8px;
+      background: rgba(13, 11, 20, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 6px;
+      box-sizing: border-box;
+      position: relative;
+      text-align: center;
+      overflow: hidden; /* Keeps things neat */
+    }
+
+    /* Card Layout Dimensions & Flips */
     .tarot-card-wrapper {
-      position: absolute;
-      top: 5px;
-      bottom: 30px;
-      left: 5px;
-      right: 5px;
+      position: relative; /* Changed from absolute to prevent horizontal layout stretching */
+      width: auto;
+      height: calc(100% - 28px); /* Dynamically leaves exact breathing room for the text label below */
+      aspect-ratio: 13 / 22; /* Force-locks perfect, traditional vertical tarot card proportions */
+      max-width: 100%;
       perspective: 1000px;
       z-index: 5;
+      margin: auto auto 4px auto; /* Centers the card perfectly within the grid cell slot space */
     }
 
     .tarot-card-inner {
@@ -142,7 +160,6 @@
       transform-style: preserve-3d;
       box-shadow: 0 6px 12px rgba(0,0,0,0.6);
       border-radius: 6px;
-      pointer-events: none;
     }
 
     .tarot-card-inner.flipped { transform: rotateY(180deg); }
