@@ -334,17 +334,24 @@
     // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
       const savedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
-      const cleanClothPath = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
-      
       const savedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
-      const cleanCursorPath = savedCursor.startsWith('assets') ? savedCursor : savedCursor.substring(savedCursor.indexOf('assets'));
 
-      document.body.style.background = `linear-gradient(rgba(13, 11, 20, 0.88), rgba(13, 11, 20, 0.88)), url('${cleanClothPath}')`;
+      // Clean the paths to strip any duplicate leading slashes
+      let cleanCloth = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
+      let cleanCursor = savedCursor.startsWith('assets') ? savedCursor : savedCursor.substring(savedCursor.indexOf('assets'));
+
+      // GitHub Pages Subfolder Path Auto-Correction
+      const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
+      
+      // Apply the fixed background path
+      document.body.style.background = `linear-gradient(rgba(13, 11, 20, 0.88), rgba(13, 11, 20, 0.88)), url('${repoPath}${cleanCloth}')`;
       document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundRepeat = 'no-repeat';
+      document.body.style.backgroundAttachment = 'fixed';
       
       const globalStyle = document.createElement('style');
-      globalStyle.innerHTML = `* { cursor: url('${cleanCursorPath}'), auto !important; }`;
+      globalStyle.innerHTML = `* { cursor: url('${repoPath}${cleanCursor}'), auto !important; }`;
       document.head.appendChild(globalStyle);
       
       updateProfiles();
@@ -491,23 +498,26 @@
           </div>
         `;
 
-        wrapper.addEventListener('mouseenter', () => {
+wrapper.addEventListener('mouseenter', () => {
           const key = wrapper.getAttribute('data-key');
           const inverted = wrapper.getAttribute('data-inverted') === 'true';
           const pos = wrapper.getAttribute('data-position');
           
-          // Fallback handling to ensure unmapped minor arcana still gracefully render
+          // Format keys neatly (e.g., "6-of-wands" becomes "6 Of Wands")
+          const cleanName = key.replace(/-/g, ' ');
+          
+          // Check if the specific card exists in the database, otherwise provide a smart contextual reading
           const info = DivinationDatabase.tarot[key] || { 
-            name: key.replace(/-/g, ' '), 
-            upright: "Esoteric definitions are flowing. Core card mechanics are online.", 
-            reversed: "Inverted alignment shifting interpretations. Core mechanics are online." 
+            name: cleanName, 
+            upright: `A powerful manifestation of the element of ${key.split('-').pop()}. It marks an phase of active cultivation, progression, and energetic alignment regarding your focus layout.`, 
+            reversed: `The inverted energy of ${key.split('-').pop()} warns of internal friction, blocked ambitions, or misdirected motivation. Look closer at your current foundations.` 
           };
           
           sidebar.innerHTML = `
             <h4 class="meaning-title" style="text-transform: capitalize;">${info.name}</h4>
-            <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
+            <div style="font-size: 0.75rem; color:#a092b8; margin-bottom: 4px;">Location: ${pos}</div>
             <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
-              ${inverted ? 'Reversed' : 'Upright'}
+              ${inverted ? 'Reversed Alignment' : 'Upright Alignment'}
             </div>
             <p class="meaning-text">${inverted ? info.reversed : info.upright}</p>
           `;
