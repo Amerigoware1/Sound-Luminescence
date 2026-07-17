@@ -162,8 +162,12 @@
       const customCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
       const customCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
 
-      // Apply the user's specific cloth preference
-      document.body.style.backgroundImage = `url('${customCloth}')`;
+      // Apply the user's specific cloth preference with absolute structural layout safety
+      document.body.style.background = `linear-gradient(rgba(13, 11, 20, 0.75), rgba(13, 11, 20, 0.75)), url('${customCloth}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundRepeat = 'no-repeat';
+      document.body.style.backgroundAttachment = 'fixed';
       
       // Inject the saved ritual cursor globally across everything
       const globalStyle = document.createElement('style');
