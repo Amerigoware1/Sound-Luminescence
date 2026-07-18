@@ -178,8 +178,6 @@
       height: 100%;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
-      /*border-radius: 6px;
-      border: 1px solid var(--border-color);*/
       overflow: hidden;
       background-color: transparent;
     }
@@ -230,8 +228,8 @@
     .altar-nav-pill-container {
       position: absolute;
       top: 15px;
-      /* Center the pill between zodiac and stone profile indicators */
-      left: calc(50% + 35px); /* 50% of the viewport width plus half the width of the zodiac box (70px / 2) */
+      /* Center the pill in altar table */
+      left: calc(50% - 150px); /* Adjust based on pill width */
       transform: translateX(-50%);
       z-index: 100;
       display: flex;
