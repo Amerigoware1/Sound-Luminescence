@@ -104,22 +104,9 @@
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(3, 1fr); /* Changed from 4 to 3 rows. Makes cards much larger */
     }
-
+    
+    /* Card Layout Dimensions & Flips */
     /* Target Slot Placeholders */
-    .spread-slot {
-      border: 2px dashed rgba(157, 78, 221, 0.0);
-      border-radius: 8px;
-      background: rgba(13, 11, 20, 0.0);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 8px;
-      box-sizing: border-box;
-      position: relative;
-      text-align: center;
-    }
-
     .slot-label {
       font-size: 0.75rem;
       color: #b0a4c4;
@@ -135,8 +122,7 @@
       text-overflow: ellipsis;
     }
 
-    /* Card Layout Dimensions & Flips */
-    /* Target Slot Placeholders */
+     /* Target Slot Placeholders */
     .spread-slot {
       border: 2px dashed rgba(157, 78, 221, 0.0);
       border-radius: 8px;
@@ -663,6 +649,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // --- MOUSEOVER TOOLTIP UPDATED FOR RUNES ---
         wrapper.addEventListener('mouseenter', () => {
           // Make hovered card or rune grow 2x for emphasis while maintaining aspect ratio
+          slot.style.transform = 'scale(2.0)'; // Make slot bigger to accommodate the enlarged card
           wrapper.style.transform = 'scale(2.0) translate(-50%, -50%)'; // Center the enlarged card over the slot
           const key = wrapper.getAttribute('data-key');
           const tool = wrapper.getAttribute('data-tool');
@@ -694,6 +681,7 @@ window.addEventListener('DOMContentLoaded', () => {
         
         wrapper.addEventListener('mouseleave', resetSidebar);
         wrapper.style.transform = 'scale(1.0)'; // Reset scale on mouse leave
+        slot.style.transform = 'scale(1.0)'; // Reset slot scale on mouse leave
         slot.appendChild(wrapper);
 
         setTimeout(() => {
