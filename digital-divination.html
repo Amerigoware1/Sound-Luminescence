@@ -611,49 +611,6 @@ document.getElementById('deal-spread-btn').addEventListener('click', () => {
       runtimeRunes = [...runeKeys];
       shuffleRunes();
     });
-
-wrapper.addEventListener('mouseenter', () => {
-          const key = wrapper.getAttribute('data-key');
-          const inverted = wrapper.getAttribute('data-inverted') === 'true';
-          const pos = wrapper.getAttribute('data-position');
-          
-          // Format keys neatly (e.g., "6-of-wands" becomes "6 Of Wands")
-          const cleanName = key.replace(/-/g, ' ');
-          
-          // Check if the specific card exists in the database, otherwise provide a smart contextual reading
-          const info = DivinationDatabase.tarot[key] || { 
-            name: cleanName, 
-            upright: `A powerful manifestation of the element of ${key.split('-').pop()}. It marks an phase of active cultivation, progression, and energetic alignment regarding your focus layout.`, 
-            reversed: `The inverted energy of ${key.split('-').pop()} warns of internal friction, blocked ambitions, or misdirected motivation. Look closer at your current foundations.` 
-          };
-          
-          sidebar.innerHTML = `
-            <h4 class="meaning-title" style="text-transform: capitalize;">${info.name}</h4>
-            <div style="font-size: 0.75rem; color:#a092b8; margin-bottom: 4px;">Location: ${pos}</div>
-            <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
-              ${inverted ? 'Reversed Alignment' : 'Upright Alignment'}
-            </div>
-            <p class="meaning-text">${inverted ? info.reversed : info.upright}</p>
-          `;
-        });
-        wrapper.addEventListener('mouseleave', resetSidebar);
-
-        slot.appendChild(wrapper);
-        setTimeout(() => {
-          const inner = wrapper.querySelector('.tarot-card-inner');
-          if(isInverted) inner.classList.add('inverted');
-          inner.classList.add('flipped');
-        }, idx * 200 + 100);
-      });
-    });
-
-    document.getElementById('clear-btn').addEventListener('click', generateMatrixSlots);
-    document.getElementById('shuffle-btn').addEventListener('click', () => {
-      runtimeDeck = [...tarotDeck];
-      shuffle();
-      resetSidebar();
-      alert("Deck shuffler reset complete.");
-    });
   </script>
 </body>
 </html>
