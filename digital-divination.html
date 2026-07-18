@@ -67,15 +67,21 @@
       position: relative;
       width: 100%;
       max-width: 950px;
-      height: 75vh;
-      max-height: 600px;
+      min-height: 75vh;       /* Changed from fixed 'height' to allow growth */
+      max-height: 85vh;       /* Increased from 600px to give cards more room */
       margin: auto;
       display: grid;
-      gap: 15px;
+      gap: 10px;              /* Reduced from 15px to bring cards closer together */
       box-sizing: border-box;
-      transition: background-image 0.5s ease-in-out; /* Smooth cloth changes */
-      z-index: 1; /* Ensures it stays below the cards if they have absolute positioning */
-     }
+      transition: background-image 0.5s ease-in-out;
+      z-index: 1;
+    }
+
+    /* Optional: Make gaps even tighter specifically for large spreads */
+    .layout-celtic-cross, 
+    .layout-tree-of-life {
+      gap: 8px; 
+    }
     /* Ensure cards sit ABOVE the cloth background */
     .spread-grid-canvas > * {
       position: relative;
@@ -92,11 +98,11 @@
     }
     .layout-tree-of-life {
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr); /* 10 cards fit well in 3x4 (12 slots) */
     }
     .layout-celtic-cross {
       grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr); /* Changed from 4 to 3 rows. Makes cards much larger */
     }
 
     /* Target Slot Placeholders */
@@ -269,6 +275,17 @@
       color: #fff;
       background-color: var(--accent-color);
       box-shadow: 0 2px 8px rgba(157, 78, 221, 0.4);
+    }
+    /* Force 1:1 ratio only when the wrapper has data-tool="runes" */
+    .tarot-card-wrapper[data-tool="runes"] {
+      aspect-ratio: 1 / 1;
+    }
+
+    /* Prevent the rune images from being cropped inside the new 1:1 wrapper */
+    .tarot-card-wrapper[data-tool="runes"] .card-front img,
+    .tarot-card-wrapper[data-tool="runes"] .card-back img {
+      object-fit: contain; /* Changed from 'cover' to ensure the whole stone is visible */
+      background-color: transparent; /* Ensures no weird box behind the rune */
     }
   </style>
 </head>
