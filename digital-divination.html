@@ -249,6 +249,12 @@
     </div>
 
     <div class="sidebar-section">
+      l;,<label for="divination-tool">Divination Focus</label>
+      <select id="divination-tool">
+        <option value="tarot">Tarot Deck (78 Cards)</option>
+        <option value="runes">Elder Futhark Runes (24 Stones)</option>
+      </select>
+    </div>
       <label for="spread-matrix">Spread Layout</label>
       <select id="spread-matrix">
         <option value="single">Daily Influence (1 Card)</option>
@@ -407,7 +413,22 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
     shuffle();
+    // --- RUNES RUNTIME ENGINE BUILDER ---
+    const runeKeys = [
+      "algiz", "ansuz", "berkano", "dagaz", "ehwaz", "eihwaz", "fehu", "gebo", 
+      "hagalaz", "ingwaz", "isa", "jera", "kenaz", "laguz", "mannaz", "nauthhiz", 
+      "othala", "perthro", "raidho", "sowilo", "thurisaz", "tiwaz", "uruz", "wunjo"
+    ];
 
+    let runtimeRunes = [...runeKeys];
+
+    function shuffleRunes() {
+      for (let i = runtimeRunes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [runtimeRunes[i], runtimeRunes[j]] = [runtimeRunes[j], runtimeRunes[i]];
+      }
+    }
+    shuffleRunes();
     // ==========================================
     // 4. PROFILE AUTOMATION ENGINE
     // ==========================================
@@ -490,31 +511,106 @@ window.addEventListener('DOMContentLoaded', () => {
       sidebar.innerHTML = `<p class="meaning-text" style="font-style: italic; color: #a092b8; text-align: center;">Hover your ritual pointer over a face-up card or cosmic badge to look up meanings.</p>`;
     }
 
-    document.getElementById('deal-spread-btn').addEventListener('click', () => {
+document.getElementById('deal-spread-btn').addEventListener('click', () => {
       const slots = document.querySelectorAll('.spread-slot');
+      const activeTool = document.getElementById('divination-tool').value;
+      
       slots.forEach((slot, idx) => {
+        // Prevent duplicate draws in already filled slots
         if (slot.querySelector('.tarot-card-wrapper')) return;
 
-        if (runtimeDeck.length === 0) {
-          runtimeDeck = [...tarotDeck];
-          shuffle();
+        let assetFile = "";
+        let assetKey = "";
+        let assetName = "";
+        let isInverted = false;
+
+        if (activeTool === 'tarot') {
+          if (runtimeDeck.length === 0) { runtimeDeck = [...tarotDeck]; shuffle(); }
+          const cardData = runtimeDeck.pop();
+          assetKey = cardData.key;
+          assetFile = `assets/tarot-cards/${cardData.file}`;
+          assetName = cardData.name;
+          isInverted = Math.random() >= 0.5;
+        } else {
+          // Casting Runes
+          if (runtimeRunes.length === 0) { runtimeRunes = [...runeKeys]; shuffleRunes(); }
+          assetKey = runtimeRunes.pop();
+          // Adjust filename handling for "nauthhiz.gif" spelling structural match
+          assetFile = `assets/runes/${assetKey}.gif`;
+          
+          const runeData = DivinationDatabase.runes[assetKey === "nauthhiz" ? "nauthiz" : assetKey];
+          assetName = runeData ? runeData.name : assetKey;
+          
+          // Check database to see if this rune is allowed to invert (symmetrical safety check)
+          const dataCheck = DivinationDatabase.runes[assetKey === "nauthhiz" ? "nauthiz" : assetKey];
+          if (dataCheck && dataCheck.reversed.includes("cannot be inverted")) {
+            isInverted = false;
+          } else {
+            isInverted = Math.random() >= 0.5;
+          }
         }
 
-        const cardData = runtimeDeck.pop();
         const wrapper = document.createElement('div');
         wrapper.className = 'tarot-card-wrapper';
-        const isInverted = Math.random() >= 0.5;
-
-        wrapper.setAttribute('data-key', cardData.key);
+        wrapper.setAttribute('data-key', assetKey);
+        wrapper.setAttribute('data-tool', activeTool);
         wrapper.setAttribute('data-inverted', isInverted);
         wrapper.setAttribute('data-position', slot.querySelector('.slot-label').innerText);
 
         wrapper.innerHTML = `
           <div class="tarot-card-inner">
             <div class="card-back"><img src="assets/misc/back.jpg"></div>
-            <div class="card-front"><img src="assets/tarot-cards/${cardData.file}"></div>
+            <div class="card-front"><img src="${assetFile}"></div>
           </div>
         `;
+
+        // --- MOUSEOVER TOOLTIP UPDATED FOR RUNES ---
+        wrapper.addEventListener('mouseenter', () => {
+          const key = wrapper.getAttribute('data-key');
+          const tool = wrapper.getAttribute('data-tool');
+          const inverted = wrapper.getAttribute('data-inverted') === 'true';
+          const pos = wrapper.getAttribute('data-position');
+          
+          let title = "";
+          let uprightText = "";
+          let reversedText = "";
+
+          if (tool === 'tarot') {
+            const info = DivinationDatabase.tarot[key] || { name: key.replace(/-/g, ' '), upright: "Esoteric definitions online.", reversed: "Inverted alignment active." };
+            title = info.name; uprightText = info.upright; reversedText = info.reversed;
+          } else {
+            const dbKey = key === "nauthhiz" ? "nauthiz" : key;
+            const info = DivinationDatabase.runes[dbKey] || { name: key, upright: "Runic energy casting.", reversed: "Symmetrical layout alignment." };
+            title = info.name; uprightText = info.upright; reversedText = info.reversed;
+          }
+          
+          sidebar.innerHTML = `
+            <h4 class="meaning-title" style="text-transform: capitalize;">${title}</h4>
+            <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
+            <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
+              ${inverted ? 'Reversed / Merkstave' : 'Upright Alignment'}
+            </div>
+            <p class="meaning-text">${inverted ? reversedText : uprightText}</p>
+          `;
+        });
+        
+        wrapper.addEventListener('mouseleave', resetSidebar);
+        slot.appendChild(wrapper);
+
+        setTimeout(() => {
+          const inner = wrapper.querySelector('.tarot-card-inner');
+          if (isInverted) inner.classList.add('inverted');
+          inner.classList.add('flipped');
+        }, idx * 200 + 100);
+      });
+    });
+
+    // Make sure Clear Table resets the rune bag too
+    document.getElementById('clear-btn').addEventListener('click', () => {
+      generateMatrixSlots();
+      runtimeRunes = [...runeKeys];
+      shuffleRunes();
+    });
 
 wrapper.addEventListener('mouseenter', () => {
           const key = wrapper.getAttribute('data-key');
