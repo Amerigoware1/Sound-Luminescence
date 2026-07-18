@@ -223,11 +223,64 @@
     .meaning-orientation { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; }
     .orientation-upright { color: #4ade80; }
     .orientation-reversed { color: #f87171; }
-    .meaning-text { font-size: 0.85rem; line-height: 1.4; color: #cbd5e1; margin: 5px 0 0 0; }
+    .meaning-text { font-size: 0.85rem; line-height: 1.4; color: #cbd5e1; margin: 5px 0 0 0; 
+    }
+    /* --- CENTERED PILL NAVIGATION BAR --- */
+    .altar-nav-pill-container {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      width: auto;
+    }
+
+    .altar-nav-pill {
+      background-color: rgba(20, 16, 30, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+      border-radius: 50px; /* Forces the perfect capsule pill shape */
+      display: flex;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 
+                  inset 0 0 10px rgba(157, 78, 221, 0.1);
+    }
+
+    .nav-pill-link {
+      color: #b0a4c4;
+      text-decoration: none;
+      font-family: 'Georgia', serif;
+      font-size: 0.9rem;
+      padding: 8px 18px;
+      border-radius: 25px;
+      transition: all 0.25s ease-in-out;
+    }
+
+    .nav-pill-link:hover {
+      color: #fff;
+      background-color: rgba(157, 78, 221, 0.2);
+    }
+
+    .nav-pill-link.active {
+      color: #fff;
+      background-color: var(--accent-color);
+      box-shadow: 0 2px 8px rgba(157, 78, 221, 0.4);
+    }
   </style>
 </head>
 <body>
-
+  <!-- Centered Cosmic Navigation Pill Bar -->
+  <div class="altar-nav-pill-container">
+    <nav class="altar-nav-pill">
+      <a href="digital-divination.html" class="nav-pill-link active">Main Altar</a>
+      <a href="ouija.html" class="nav-pill-link">Talking Board</a>
+      <a href="hypnotic.html" class="nav-pill-link">Hypnotic Core</a>
+    </nav>
+  </div>
   <div class="profile-indicator" id="zodiac-box"></div>
   <div class="profile-indicator" id="stone-box"></div>
 
