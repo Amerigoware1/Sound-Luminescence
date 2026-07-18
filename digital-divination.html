@@ -150,7 +150,7 @@
     .tarot-card-wrapper {
       position: relative; /* Changed from absolute to prevent horizontal layout stretching */
       width: auto;
-      height: calc(100% - 18px); /* Dynamically leaves exact breathing room for the text label below */
+      /*height: calc(100% - 18px); /* Dynamically leaves exact breathing room for the text label below */
       aspect-ratio: 13 / 22; /* Force-locks perfect, traditional vertical tarot card proportions */
       max-width: 100%;
       perspective: 1000px;
@@ -180,7 +180,7 @@
       border-radius: 6px;
       border: 1px solid var(--border-color);
       overflow: hidden;
-      background-color: #0d0b14;
+      background-color: transparent;
     }
 
     .card-back img, .card-front img {
