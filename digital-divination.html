@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Main Altar — Digital Divination</title>
-  <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon">
+  <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon" />
   <style>
+    /* ========== ROOT VARIABLES ========== */
     :root {
       --sidebar-bg: #14101e;
       --text-color: #e2daeb;
@@ -15,6 +16,7 @@
       --meaning-bg: #1b162a;
     }
 
+    /* ========== GLOBAL RESET ========== */
     body {
       margin: 0;
       padding: 0;
@@ -27,7 +29,7 @@
       background-color: #0d0b14;
     }
 
-    /* --- PROFILE COSMETIC INDICATORS --- */
+    /* ========== PROFILE BADGES ========== */
     .profile-indicator {
       position: absolute;
       width: 70px;
@@ -49,7 +51,7 @@
       object-fit: contain;
     }
 
-    /* --- LEFT SIDE: THE ALTAR SURFACE --- */
+    /* ========== ALTAR TABLE ========== */
     .altar-table {
       position: relative;
       height: 100vh;
@@ -62,32 +64,32 @@
       justify-content: center;
     }
 
-    /* Fixed Aspect Ratio Altar Matrix Canvas to prevent wrapping breakages */
+    /* ========== SPREAD GRID ========== */
     .spread-grid-canvas {
       position: relative;
       width: 100%;
       max-width: 950px;
-      min-height: 75vh;       /* Changed from fixed 'height' to allow growth */
-      max-height: 85vh;       /* Increased from 600px to give cards more room */
+      min-height: 75vh;
+      max-height: 85vh;
       margin: auto;
       display: grid;
-      gap: 10px;              /* Reduced from 15px to bring cards closer together */
+      gap: 10px;
       box-sizing: border-box;
       transition: background-image 0.5s ease-in-out;
       z-index: 1;
     }
 
-    /* Optional: Make gaps even tighter specifically for large spreads */
-    .layout-celtic-cross, 
+    .layout-celtic-cross,
     .layout-tree-of-life {
-      gap: 8px; 
+      gap: 8px;
     }
-    /* Ensure cards sit ABOVE the cloth background */
+
     .spread-grid-canvas > * {
       position: relative;
-      z-index: 2; 
+      z-index: 2;
     }
-    /* Grid Layout Formats based on active selection */
+
+    /* Grid layouts */
     .layout-single {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr;
@@ -98,15 +100,14 @@
     }
     .layout-tree-of-life {
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 1fr); /* 10 cards fit well in 3x4 (12 slots) */
+      grid-template-rows: repeat(4, 1fr);
     }
     .layout-celtic-cross {
       grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(3, 1fr); /* Changed from 4 to 3 rows. Makes cards much larger */
+      grid-template-rows: repeat(3, 1fr);
     }
-    
-    /* Card Layout Dimensions & Flips */
-    /* Target Slot Placeholders */
+
+    /* Slot labels */
     .slot-label {
       font-size: 0.75rem;
       color: #b0a4c4;
@@ -122,7 +123,6 @@
       text-overflow: ellipsis;
     }
 
-     /* Target Slot Placeholders */
     .spread-slot {
       border: 2px dashed rgba(157, 78, 221, 0.0);
       border-radius: 8px;
@@ -135,10 +135,10 @@
       box-sizing: border-box;
       position: relative;
       text-align: center;
-      overflow: visible; /* Keeps things neat */
+      overflow: visible;
     }
 
-    /* Card Layout Dimensions & Flips */
+    /* ========== CARDS ========== */
     .tarot-card-wrapper {
       position: relative;
       width: auto;
@@ -148,31 +148,37 @@
       perspective: 1000px;
       z-index: 5;
       margin: auto auto 4px auto;
-      /* Smooth scale transition, with a delayed z-index drop so it doesn't clip while shrinking */
+      will-change: transform;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0s 0.3s;
     }
-    /* --- HOVER ENLARGEMENT --- */
+
+    /* Hover enlargement - reduced to 2.0 for performance */
     .tarot-card-wrapper:hover {
-      transform: scale(4.0); /* Enlarge by 60% (adjust to 1.5 or 2.0 to your liking) */
-      z-index: 200; /* Ensures the enlarged card floats ABOVE all other cards and UI */
-      /* Immediate z-index rise, no delay */
-      transition: transform 0.9s ease-in-out, z-index 0s; 
-      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.9)); /* Optional: Adds a nice "lifted" shadow effect */
+      transform: scale(2.0);
+      z-index: 200;
+      transition: transform 0.4s ease-in-out, z-index 0s;
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.9));
     }
+
     .tarot-card-inner {
       position: relative;
       width: 100%;
       height: 100%;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       transform-style: preserve-3d;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
       border-radius: 6px;
     }
 
-    .tarot-card-inner.flipped { transform: rotateY(180deg); }
-    .tarot-card-inner.inverted .card-front img { transform: rotateY(180deg) rotate(180deg); }
+    .tarot-card-inner.flipped {
+      transform: rotateY(180deg);
+    }
+    .tarot-card-inner.inverted .card-front img {
+      transform: rotateY(180deg) rotate(180deg);
+    }
 
-    .card-front, .card-back {
+    .card-front,
+    .card-back {
       position: absolute;
       width: 100%;
       height: 100%;
@@ -182,14 +188,27 @@
       background-color: transparent;
     }
 
-    .card-back img, .card-front img {
+    .card-back img,
+    .card-front img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .card-front { transform: rotateY(180deg); }
+    .card-front {
+      transform: rotateY(180deg);
+    }
 
-    /* --- RIGHT SIDE: CONTROLS SIDEBAR --- */
+    /* Runes: square aspect */
+    .tarot-card-wrapper[data-tool="runes"] {
+      aspect-ratio: 1 / 1;
+    }
+    .tarot-card-wrapper[data-tool="runes"] .card-front img,
+    .tarot-card-wrapper[data-tool="runes"] .card-back img {
+      object-fit: contain;
+      background-color: transparent;
+    }
+
+    /* ========== SIDEBAR ========== */
     .controls-sidebar {
       background-color: var(--sidebar-bg);
       border-left: 2px solid var(--border-color);
@@ -202,14 +221,53 @@
       z-index: 20;
     }
 
-    .sidebar-section { display: flex; flex-direction: column; gap: 5px; }
-    label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-hover); }
-    input, select { background-color: #09070e; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px; border-radius: 4px; font-family: inherit; }
-    button { background-color: var(--accent-color); color: #fff; border: none; padding: 12px; font-size: 0.95rem; font-family: inherit; border-radius: 4px; cursor: pointer; }
-    button:hover { background-color: var(--accent-hover); }
-    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .secondary-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
-    .secondary-btn:hover { background: rgba(157, 78, 221, 0.15); border-color: var(--accent-hover); }
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-hover);
+    }
+    input,
+    select {
+      background-color: #09070e;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 8px;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+    button {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: var(--accent-hover);
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .secondary-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+    .secondary-btn:hover {
+      background: rgba(157, 78, 221, 0.15);
+      border-color: var(--accent-hover);
+    }
 
     .meaning-panel {
       background-color: var(--meaning-bg);
@@ -218,18 +276,36 @@
       padding: 12px;
       min-height: 150px;
     }
-    .meaning-title { font-size: 1.1rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin: 0 0 5px 0; }
-    .meaning-orientation { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; }
-    .orientation-upright { color: #4ade80; }
-    .orientation-reversed { color: #f87171; }
-    .meaning-text { font-size: 0.85rem; line-height: 1.4; color: #cbd5e1; margin: 5px 0 0 0; 
+    .meaning-title {
+      font-size: 1.1rem;
+      color: #fff;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 4px;
+      margin: 0 0 5px 0;
     }
-    /* --- CENTERED PILL NAVIGATION BAR --- */
+    .meaning-orientation {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    .orientation-upright {
+      color: #4ade80;
+    }
+    .orientation-reversed {
+      color: #f87171;
+    }
+    .meaning-text {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #cbd5e1;
+      margin: 5px 0 0 0;
+    }
+
+    /* ========== NAV PILL ========== */
     .altar-nav-pill-container {
       position: absolute;
       top: 15px;
-      /* Center the pill in altar table */
-      left: calc(50% - 150px); /* Adjust based on pill width */
+      left: calc(50% - 150px);
       transform: translateX(-50%);
       z-index: 100;
       display: flex;
@@ -243,11 +319,11 @@
       -webkit-backdrop-filter: blur(8px);
       border: 1px solid var(--border-color);
       padding: 6px 10px;
-      border-radius: 50px; /* Forces the perfect capsule pill shape */
+      border-radius: 50px;
       display: flex;
       gap: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 
-      inset 0 0 10px rgba(157, 78, 221, 0.1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
+        inset 0 0 10px rgba(157, 78, 221, 0.1);
     }
 
     .nav-pill-link {
@@ -270,45 +346,39 @@
       background-color: var(--accent-color);
       box-shadow: 0 2px 8px rgba(157, 78, 221, 0.4);
     }
-    /* Force 1:1 ratio only when the wrapper has data-tool="runes" */
-    .tarot-card-wrapper[data-tool="runes"] {
-      aspect-ratio: 1 / 1;
-    }
-
-    /* Prevent the rune images from being cropped inside the new 1:1 wrapper */
-    .tarot-card-wrapper[data-tool="runes"] .card-front img,
-    .tarot-card-wrapper[data-tool="runes"] .card-back img {
-      object-fit: contain; /* Changed from 'cover' to ensure the whole stone is visible */
-      background-color: transparent; /* Ensures no weird box behind the rune */
-    }
   </style>
 </head>
+
 <body>
-  <!-- Centered Cosmic Navigation Pill Bar -->
+  <!-- ===== NAV PILL ===== -->
   <div class="altar-nav-pill-container">
     <nav class="altar-nav-pill">
       <a href="ouija.html" class="nav-pill-link">Talking Board</a>
       <a href="hypnotic.html" class="nav-pill-link">Hypnotic Core</a>
     </nav>
   </div>
+
+  <!-- ===== PROFILE BADGES ===== -->
   <div class="profile-indicator" id="zodiac-box"></div>
   <div class="profile-indicator" id="stone-box"></div>
 
+  <!-- ===== ALTAR TABLE ===== -->
   <div class="altar-table" id="altar-table">
     <div class="spread-grid-canvas" id="canvas-surface"></div>
   </div>
 
+  <!-- ===== SIDEBAR ===== -->
   <div class="controls-sidebar">
     <h3 style="margin:0; text-align:center; color: var(--accent-hover); border-bottom:1px solid var(--border-color); padding-bottom:10px;">— Controls —</h3>
-    
+
     <div class="sidebar-section">
       <label for="user-name">Target Name</label>
-      <input type="text" id="user-name" value="Emmery">
+      <input type="text" id="user-name" value="Emmery" />
     </div>
 
     <div class="sidebar-section">
       <label for="user-birthday">Birthday</label>
-      <input type="date" id="user-birthday" value="1973-07-20">
+      <input type="date" id="user-birthday" value="1973-07-20" />
     </div>
 
     <div class="sidebar-section">
@@ -318,6 +388,7 @@
         <option value="runes">Elder Futhark Runes (24 Stones)</option>
       </select>
     </div>
+
     <div>
       <label for="spread-matrix">Spread Layout</label>
       <select id="spread-matrix">
@@ -329,7 +400,7 @@
     </div>
 
     <button id="deal-spread-btn">Cast Selected Spread</button>
-    
+
     <div class="action-grid">
       <button id="clear-btn" class="secondary-btn">Clear Table</button>
       <button id="shuffle-btn" class="secondary-btn">Shuffle Deck</button>
@@ -346,10 +417,13 @@
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- ======================== SCRIPT ============================= -->
+  <!-- ============================================================ -->
   <script>
-   // ==========================================
-    // 1. MASTER DIVINATION DATABASE INTEGRATION
-    // ==========================================
+    // =============================================================
+    // 1. MASTER DIVINATION DATABASE
+    // =============================================================
     const DivinationDatabase = {
       tarot: {
         "the-fool": { name: "The Fool", upright: "New beginnings, potential, spontaneous action, faith in the universe, innocence.", reversed: "Recklessness, risk-taking, consideration delays, naivety, holding back." },
@@ -416,65 +490,122 @@
         "pisces": { name: "Pisces", element: "Water", traits: "Mystical, deeply artistic, empathetic dreamers, fluid anchors." }
       },
       birthstones: {
-        1:  { month: "January",   modern: "Garnet",     mystical: "Emerald", properties: "Constancy, dynamic structural grounding, vital protection." },
-        2:  { month: "February",  modern: "Amethyst",   mystical: "Bloodstone", properties: "Absolute clarity, clearing emotional loops, spiritual temperance." },
-        3:  { month: "March",     modern: "Aquamarine", mystical: "Jade", properties: "Fluid communication lines, pure clear vision, courage." },
-        4:  { month: "April",     modern: "Diamond",    mystical: "Opal", properties: "Indestructible intent, amplifying divine light frequencies." },
-        5:  { month: "May",       modern: "Emerald",    mystical: "Sapphire", properties: "Abundant growth, heart center alignment, clear foresight." },
-        6:  { month: "June",      modern: "Pearl",      mystical: "Agate", properties: "Pure transformation integration, cyclical lunar sync." },
-        7:  { month: "July",      modern: "Ruby",       mystical: "Ruby", properties: "Primal fire passion, deep sovereign leadership, life force power." },
-        8:  { month: "August",    modern: "Peridot",    mystical: "Diamond", properties: "Shielding clearing grids, joyous heart expression, manifestation." },
-        9:  { month: "September", modern: "Sapphire",   mystical: "Chrysolite", properties: "Higher mental focus, structural cosmic order, absolute truth." },
-        10: { month: "October",   modern: "Opal",       mystical: "Aquamarine", properties: "Astral dream amplification, dynamic multidimensional vision." },
-        11: { month: "November",  modern: "Topaz",      mystical: "Pearl", properties: "Sovereign personal power focus, warmth, continuous abundance." },
-        12: { month: "December",  modern: "Turquoise",  mystical: "Ruby", properties: "Master communication channels, global astral protection, deep peace." }
+        1: { month: "January", modern: "Garnet", mystical: "Emerald", properties: "Constancy, dynamic structural grounding, vital protection." },
+        2: { month: "February", modern: "Amethyst", mystical: "Bloodstone", properties: "Absolute clarity, clearing emotional loops, spiritual temperance." },
+        3: { month: "March", modern: "Aquamarine", mystical: "Jade", properties: "Fluid communication lines, pure clear vision, courage." },
+        4: { month: "April", modern: "Diamond", mystical: "Opal", properties: "Indestructible intent, amplifying divine light frequencies." },
+        5: { month: "May", modern: "Emerald", mystical: "Sapphire", properties: "Abundant growth, heart center alignment, clear foresight." },
+        6: { month: "June", modern: "Pearl", mystical: "Agate", properties: "Pure transformation integration, cyclical lunar sync." },
+        7: { month: "July", modern: "Ruby", mystical: "Ruby", properties: "Primal fire passion, deep sovereign leadership, life force power." },
+        8: { month: "August", modern: "Peridot", mystical: "Diamond", properties: "Shielding clearing grids, joyous heart expression, manifestation." },
+        9: { month: "September", modern: "Sapphire", mystical: "Chrysolite", properties: "Higher mental focus, structural cosmic order, absolute truth." },
+        10: { month: "October", modern: "Opal", mystical: "Aquamarine", properties: "Astral dream amplification, dynamic multidimensional vision." },
+        11: { month: "November", modern: "Topaz", mystical: "Pearl", properties: "Sovereign personal power focus, warmth, continuous abundance." },
+        12: { month: "December", modern: "Turquoise", mystical: "Ruby", properties: "Master communication channels, global astral protection, deep peace." }
       }
     };
 
-    // ==========================================
-    // 2. THE ALTAR PATH FIXES & AMBIANCE ---
-    // ==========================================
-window.addEventListener('DOMContentLoaded', () => {
-  const savedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
-  const savedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
+    // =============================================================
+    // 2. BUILD THE DECKS (ALL TAROT IMAGES NOW .webp)
+    // =============================================================
+    const suits = ['cups', 'pentacles', 'swords', 'wands'];
+    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'ace', 'king', 'knight', 'page', 'queen'];
+    const majors = [
+      'death', 'judgement', 'justice', 'strength', 'temperance',
+      'the-chariot', 'the-devil', 'the-emperor', 'the-empress',
+      'the-fool', 'the-hanged-man', 'the-hermit', 'the-hierophant',
+      'the-high-priestess', 'the-lovers', 'the-magician', 'the-moon',
+      'the-star', 'the-sun', 'the-tower', 'the-wheel-of-fortune',
+      'the-world'
+    ];
 
-  // Clean the paths to strip any duplicate leading slashes
-  let cleanCloth = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
-  let cleanCursor = savedCursor.startsWith('assets') ? savedCursor : savedCursor.substring(savedCursor.indexOf('assets'));
+    const tarotDeck = [];
+    majors.forEach(m => tarotDeck.push({ key: m, file: `${m}.webp` }));
+    suits.forEach(s => {
+      ranks.forEach(r => {
+        tarotDeck.push({ key: `${r}-of-${s}`, file: `${r}-of-${s}.webp` });
+      });
+    });
 
-  // GitHub Pages Subfolder Path Auto-Correction
-  const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
-  
-  // 1. Keep the overall page dark and atmospheric
-  document.body.style.backgroundColor = '#0d0b14'; // Hex for rgba(13, 11, 20)
-  document.body.style.backgroundImage = 'none'; // Ensure no old cloth remains on the body
+    // Rune keys – keep .gif
+    const runeKeys = [
+      "algiz", "ansuz", "berkano", "dagaz", "ehwaz", "eihwaz", "fehu", "gebo",
+      "hagalaz", "ingwaz", "isa", "jera", "kenaz", "laguz", "mannaz", "nauthiz",
+      "othala", "perthro", "raidho", "sowilo", "thurisaz", "tiwaz", "uruz", "wunjo"
+    ];
 
-  // 2. Apply the cloth ONLY to the spread-grid-canvas
-  const canvas = document.querySelector('.altar-table');
-  if (canvas) {
-    // Note: I reduced the gradient opacity to 0.3 so the cloth texture is actually visible! 
-    // Your original 0.88 opacity was very dark and might hide the cloth pattern.
-    canvas.style.background = `linear-gradient(rgba(13, 11, 20, 0.3), rgba(13, 11, 20, 0.3)), url('${repoPath}${cleanCloth}')`;
-    canvas.style.backgroundSize = 'cover';
-    canvas.style.backgroundPosition = 'center';
-    canvas.style.backgroundRepeat = 'no-repeat';
-    
-    // Optional but recommended: adds a nice finished "altar mat" look
-    canvas.style.borderRadius = '8px'; 
-    canvas.style.boxShadow = 'inset 0 0 30px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.5)';
-  }
-        
-  const globalStyle = document.createElement('style');
-  globalStyle.innerHTML = `* { cursor: url('${repoPath}${cleanCursor}'), auto !important; }`;
-  document.head.appendChild(globalStyle);
-  
-  updateProfiles();
-  generateMatrixSlots();
-});
+    // =============================================================
+    // 3. PRELOAD ALL IMAGES (CACHING)
+    // =============================================================
+    const IMAGE_CACHE = new Map();
 
-    // ==========================================
-    // 3. SPREAD MATRIX GEOMETRY SYSTEM
-    // ==========================================
+    function preloadImages(deck, tool = 'tarot') {
+      // Tarot uses .webp, runes stay .gif
+      const ext = tool === 'tarot' ? '.webp' : '.gif';
+      const basePath = tool === 'tarot' ? 'assets/tarot-cards/' : 'assets/runes/';
+
+      deck.forEach(item => {
+        const key = typeof item === 'string' ? item : item.key;
+        const src = `${basePath}${key}${ext}`;
+        if (!IMAGE_CACHE.has(src)) {
+          const img = new Image();
+          img.src = src;
+          img.onerror = () => {
+            img.src = 'assets/misc/placeholder.webp';
+          };
+          IMAGE_CACHE.set(src, img);
+        }
+      });
+    }
+
+    // Preload both decks
+    preloadImages(tarotDeck, 'tarot');
+    preloadImages(runeKeys, 'runes');
+
+    // Also preload the card back (now .webp)
+    (function preloadBack() {
+      const back = new Image();
+      back.src = 'assets/misc/back.webp';
+      back.onerror = () => { back.src = 'assets/misc/placeholder.webp'; };
+      IMAGE_CACHE.set('assets/misc/back.webp', back);
+    })();
+
+    // =============================================================
+    // 4. RUNTIME DECKS & SHUFFLERS
+    // =============================================================
+    let runtimeDeck = [...tarotDeck];
+    let runtimeRunes = [...runeKeys];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function shuffleTarot() {
+      runtimeDeck = shuffle([...tarotDeck]);
+    }
+
+    function shuffleRunes() {
+      runtimeRunes = shuffle([...runeKeys]);
+    }
+
+    shuffleTarot();
+    shuffleRunes();
+
+    // =============================================================
+    // 5. DOM REFS & GLOBALS
+    // =============================================================
+    const surface = document.getElementById('canvas-surface');
+    const sidebar = document.getElementById('meaning-sidebar');
+    const dropdown = document.getElementById('spread-matrix');
+    const dealBtn = document.getElementById('deal-spread-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const bdayInput = document.getElementById('user-birthday');
+
     const spreadLayouts = {
       "single": { class: "layout-single", labels: ["Daily Influence"] },
       "past-present-future": { class: "layout-past-present-future", labels: ["Past / Foundation", "Present / Challenge", "Future / Outcome"] },
@@ -482,114 +613,17 @@ window.addEventListener('DOMContentLoaded', () => {
       "celtic-cross": { class: "layout-celtic-cross", labels: ["1. Present Focus", "2. Challenge", "3. Subconscious", "4. Recent Past", "5. Goals", "6. Near Future", "7. Advice", "8. Environment", "9. Hopes/Fears", "10. Outcome"] }
     };
 
-    // Full 78 Engine Builder
-    const suits = ['cups', 'pentacles', 'swords', 'wands'];
-    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'ace', 'king', 'knight', 'page', 'queen'];
-    const majors = ['death', 'judgement', 'justice', 'strength', 'temperance', 'the-chariot', 'the-devil', 'the-emperor', 'the-empress', 'the-fool', 'the-hanged-man', 'the-hermit', 'the-hierophant', 'the-high-priestess', 'the-lovers', 'the-magician', 'the-moon', 'the-star', 'the-sun', 'the-tower', 'the-wheel-of-fortune', 'the-world'];
-
-    const tarotDeck = [];
-    majors.forEach(m => tarotDeck.push({ key: m, file: `${m}.jpg` }));
-    suits.forEach(s => {
-      ranks.forEach(r => {
-        tarotDeck.push({ key: `${r}-of-${s}`, file: `${r}-of-${s}.jpg` });
-      });
-    });
-
-    let runtimeDeck = [...tarotDeck];
-    function shuffle() {
-      for (let i = runtimeDeck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [runtimeDeck[i], runtimeDeck[j]] = [runtimeDeck[j], runtimeDeck[i]];
-      }
-    }
-    shuffle();
-    // --- RUNES RUNTIME ENGINE BUILDER ---
-    const runeKeys = [
-      "algiz", "ansuz", "berkano", "dagaz", "ehwaz", "eihwaz", "fehu", "gebo", 
-      "hagalaz", "ingwaz", "isa", "jera", "kenaz", "laguz", "mannaz", "nauthhiz", 
-      "othala", "perthro", "raidho", "sowilo", "thurisaz", "tiwaz", "uruz", "wunjo"
-    ];
-
-    let runtimeRunes = [...runeKeys];
-
-    function shuffleRunes() {
-      for (let i = runtimeRunes.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [runtimeRunes[i], runtimeRunes[j]] = [runtimeRunes[j], runtimeRunes[i]];
-      }
-    }
-    shuffleRunes();
-    // ==========================================
-    // 4. PROFILE AUTOMATION ENGINE
-    // ==========================================
-    const bdayInput = document.getElementById('user-birthday');
-    bdayInput.addEventListener('change', updateProfiles);
-
-    function updateProfiles() {
-      if (!bdayInput.value) return;
-      const date = new Date(bdayInput.value + 'T00:00:00');
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-
-      // Birthstone Rendering + Tooltip Data
-      const stones = ['garnet2.gif','amethyst2.gif','aquamarine2.gif','diamond2.gif','emerald2.gif','pearl1.gif','ruby2.gif','peridot2.gif','saphire2.gif','opal2.gif','topaz2.gif','turquoise.gif'];
-      const stoneData = DivinationDatabase.birthstones[month];
-      
-      const stoneBox = document.getElementById('stone-box');
-      stoneBox.innerHTML = `<img src="assets/birthstones/${stones[month - 1]}">`;
-      stoneBox.setAttribute('data-info', `Month: ${stoneData.month} | Modern: ${stoneData.modern} | Mystical: ${stoneData.mystical} \nProperties: ${stoneData.properties}`);
-
-      // Zodiac Configurations
-      let signKey = "capricorn";
-      let signImg = "capricorn.jpg";
-      
-      if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) { signKey = "aquarius"; signImg = "aquarius.jpg"; }
-      else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) { signKey = "pisces"; signImg = "pisces.jpg"; }
-      else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) { signKey = "aries"; signImg = "aries.jpg"; }
-      else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) { signKey = "taurus"; signImg = "taurus.jpg"; }
-      else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) { signKey = "gemini"; signImg = "gemini.jpg"; }
-      else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) { signKey = "cancer"; signImg = "cancer.jpg"; }
-      else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) { signKey = "leo"; signImg = "leo.jpg"; }
-      else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) { signKey = "virgo"; signImg = "virgo.jpg"; }
-      else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) { signKey = "libra"; signImg = "libra.jpg"; }
-      else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) { signKey = "scorpio"; signImg = "scorpio.jpg"; }
-      else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) { signKey = "sagittarius"; signImg = "sagittarius.jpg"; }
-      
-      const zodiacData = DivinationDatabase.zodiac[signKey];
-      const zodiacBox = document.getElementById('zodiac-box');
-      zodiacBox.innerHTML = `<img src="assets/signs/${signImg}">`;
-      zodiacBox.setAttribute('data-info', `${zodiacData.name} (${zodiacData.element})\nTraits: ${zodiacData.traits}`);
-    }
-
-    // Interactive Hover Listeners for Badges
-    [document.getElementById('zodiac-box'), document.getElementById('stone-box')].forEach(box => {
-      box.addEventListener('mouseenter', () => {
-        const info = box.getAttribute('data-info');
-        document.getElementById('meaning-sidebar').innerHTML = `
-          <h4 class="meaning-title">Cosmic Alignment</h4>
-          <p class="meaning-text" style="white-space: pre-line;">${info}</p>
-        `;
-      });
-      box.addEventListener('mouseleave', resetSidebar);
-    });
-
-    // ==========================================
-    // 5. INTERACTIVE SURFACE LOGIC
-    // ==========================================
-    const dropdown = document.getElementById('spread-matrix');
-    const surface = document.getElementById('canvas-surface');
-    const sidebar = document.getElementById('meaning-sidebar');
-
-    dropdown.addEventListener('change', generateMatrixSlots);
-
+    // =============================================================
+    // 6. GENERATE SLOTS
+    // =============================================================
     function generateMatrixSlots() {
       surface.innerHTML = '';
       resetSidebar();
-      
+
       const layoutData = spreadLayouts[dropdown.value];
       surface.className = `spread-grid-canvas ${layoutData.class}`;
 
-      layoutData.labels.forEach((labelText, index) => {
+      layoutData.labels.forEach(labelText => {
         const slot = document.createElement('div');
         slot.className = 'spread-slot';
         slot.innerHTML = `<div class="slot-label">${labelText}</div>`;
@@ -601,106 +635,263 @@ window.addEventListener('DOMContentLoaded', () => {
       sidebar.innerHTML = `<p class="meaning-text" style="font-style: italic; color: #a092b8; text-align: center;">Hover your ritual pointer over a face-up card or cosmic badge to look up meanings.</p>`;
     }
 
-      document.getElementById('deal-spread-btn').addEventListener('click', () => {
+    // =============================================================
+    // 7. PROFILE UPDATES (Zodiac signs now .webp, birthstones stay .gif)
+    // =============================================================
+    function updateProfiles() {
+      if (!bdayInput.value) return;
+      const date = new Date(bdayInput.value + 'T00:00:00');
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+
+      // Birthstone – stay .gif
+      const stones = ['garnet2.gif', 'amethyst2.gif', 'aquamarine2.gif', 'diamond2.gif',
+        'emerald2.gif', 'pearl1.gif', 'ruby2.gif', 'peridot2.gif', 'saphire2.gif',
+        'opal2.gif', 'topaz2.gif', 'turquoise.gif'
+      ];
+      const stoneData = DivinationDatabase.birthstones[month];
+      const stoneBox = document.getElementById('stone-box');
+      stoneBox.innerHTML = `<img src="assets/birthstones/${stones[month - 1]}" alt="${stoneData.modern}">`;
+      stoneBox.setAttribute('data-info',
+        `Month: ${stoneData.month} | Modern: ${stoneData.modern} | Mystical: ${stoneData.mystical}\nProperties: ${stoneData.properties}`
+      );
+
+      // Zodiac – now .webp
+      let signKey = "capricorn";
+      let signImg = "capricorn.webp";
+      if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) { signKey = "aquarius";
+        signImg = "aquarius.webp"; } else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) { signKey =
+          "pisces";
+        signImg = "pisces.webp"; } else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) { signKey = "aries";
+        signImg = "aries.webp"; } else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) { signKey = "taurus";
+        signImg = "taurus.webp"; } else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) { signKey = "gemini";
+        signImg = "gemini.webp"; } else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) { signKey = "cancer";
+        signImg = "cancer.webp"; } else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) { signKey = "leo";
+        signImg = "leo.webp"; } else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) { signKey = "virgo";
+        signImg = "virgo.webp"; } else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) { signKey = "libra";
+        signImg = "libra.webp"; } else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) { signKey = "scorpio";
+        signImg = "scorpio.webp"; } else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) { signKey =
+          "sagittarius";
+        signImg = "sagittarius.webp"; }
+
+      const zodiacData = DivinationDatabase.zodiac[signKey];
+      const zodiacBox = document.getElementById('zodiac-box');
+      zodiacBox.innerHTML = `<img src="assets/signs/${signImg}" alt="${zodiacData.name}">`;
+      zodiacBox.setAttribute('data-info', `${zodiacData.name} (${zodiacData.element})\nTraits: ${zodiacData.traits}`);
+    }
+
+    // Hover badge → sidebar
+    [document.getElementById('zodiac-box'), document.getElementById('stone-box')].forEach(box => {
+      box.addEventListener('mouseenter', () => {
+        const info = box.getAttribute('data-info');
+        sidebar.innerHTML = `
+          <h4 class="meaning-title">Cosmic Alignment</h4>
+          <p class="meaning-text" style="white-space: pre-line;">${info}</p>
+        `;
+      });
+      box.addEventListener('mouseleave', resetSidebar);
+    });
+
+    bdayInput.addEventListener('change', updateProfiles);
+
+    // =============================================================
+    // 8. CARD CREATION (caching + fallback .webp)
+    // =============================================================
+    function getCachedImage(src) {
+      if (!IMAGE_CACHE.has(src)) {
+        const img = new Image();
+        img.src = src;
+        img.onerror = () => {
+          img.src = 'assets/misc/placeholder.webp';
+        };
+        IMAGE_CACHE.set(src, img);
+      }
+      return IMAGE_CACHE.get(src);
+    }
+
+    function createCardElement(assetFile, assetKey, isInverted, slotLabel, activeTool) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'tarot-card-wrapper';
+      wrapper.setAttribute('data-key', assetKey);
+      wrapper.setAttribute('data-tool', activeTool);
+      wrapper.setAttribute('data-inverted', isInverted);
+      wrapper.setAttribute('data-position', slotLabel);
+
+      // Inner structure – back card now .webp
+      wrapper.innerHTML = `
+        <div class="tarot-card-inner">
+          <div class="card-back"><img src="assets/misc/back.webp" loading="lazy" alt="card back"></div>
+          <div class="card-front"></div>
+        </div>
+      `;
+
+      // Front image – use cached clone
+      const cachedImg = getCachedImage(assetFile);
+      const imgClone = cachedImg.cloneNode(true);
+      imgClone.loading = 'lazy';
+      imgClone.alt = assetKey.replace(/-/g, ' ');
+      wrapper.querySelector('.card-front').appendChild(imgClone);
+
+      // Hover meaning
+      wrapper.addEventListener('mouseenter', () => {
+        const key = wrapper.getAttribute('data-key');
+        const tool = wrapper.getAttribute('data-tool');
+        const inverted = wrapper.getAttribute('data-inverted') === 'true';
+        const pos = wrapper.getAttribute('data-position');
+
+        let title = "";
+        let uprightText = "";
+        let reversedText = "";
+
+        if (tool === 'tarot') {
+          const info = DivinationDatabase.tarot[key] || { name: key.replace(/-/g, ' '), upright: "Esoteric definitions online.",
+            reversed: "Inverted alignment active." };
+          title = info.name;
+          uprightText = info.upright;
+          reversedText = info.reversed;
+        } else {
+          const dbKey = key === "nauthiz" ? "nauthiz" : key;
+          const info = DivinationDatabase.runes[dbKey] || { name: key, upright: "Runic energy casting.",
+            reversed: "Symmetrical layout alignment." };
+          title = info.name;
+          uprightText = info.upright;
+          reversedText = info.reversed;
+        }
+
+        sidebar.innerHTML = `
+          <h4 class="meaning-title" style="text-transform: capitalize;">${title}</h4>
+          <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
+          <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
+            ${inverted ? 'Reversed / Merkstave' : 'Upright Alignment'}
+          </div>
+          <p class="meaning-text">${inverted ? reversedText : uprightText}</p>
+        `;
+      });
+
+      wrapper.addEventListener('mouseleave', resetSidebar);
+
+      return wrapper;
+    }
+
+    // =============================================================
+    // 9. DEAL SPREAD (BATCHED DOM UPDATES)
+    // =============================================================
+    dealBtn.addEventListener('click', () => {
       const slots = document.querySelectorAll('.spread-slot');
       const activeTool = document.getElementById('divination-tool').value;
-      
+      const fragment = document.createDocumentFragment();
+      const cardsToFlip = [];
+
       slots.forEach((slot, idx) => {
-        // Prevent duplicate draws in already filled slots
         if (slot.querySelector('.tarot-card-wrapper')) return;
 
         let assetFile = "";
         let assetKey = "";
-        let assetName = "";
         let isInverted = false;
 
         if (activeTool === 'tarot') {
-          if (runtimeDeck.length === 0) { runtimeDeck = [...tarotDeck]; shuffle(); }
+          if (runtimeDeck.length === 0) {
+            shuffleTarot();
+          }
           const cardData = runtimeDeck.pop();
           assetKey = cardData.key;
-          assetFile = `assets/tarot-cards/${cardData.file}`;
-          assetName = cardData.name;
+          assetFile = `assets/tarot-cards/${cardData.file}`; // .webp
           isInverted = Math.random() >= 0.5;
         } else {
-          // Casting Runes
-          if (runtimeRunes.length === 0) { runtimeRunes = [...runeKeys]; shuffleRunes(); }
+          // Runes – stay .gif
+          if (runtimeRunes.length === 0) {
+            shuffleRunes();
+          }
           assetKey = runtimeRunes.pop();
-          // Adjust filename handling for "nauthhiz.gif" spelling structural match
           assetFile = `assets/runes/${assetKey}.gif`;
-          
-          const runeData = DivinationDatabase.runes[assetKey === "nauthhiz" ? "nauthiz" : assetKey];
-          assetName = runeData ? runeData.name : assetKey;
-          
-          // Check database to see if this rune is allowed to invert (symmetrical safety check)
-          const dataCheck = DivinationDatabase.runes[assetKey === "nauthhiz" ? "nauthiz" : assetKey];
-          if (dataCheck && dataCheck.reversed.includes("cannot be inverted")) {
+          const dbKey = assetKey === "nauthiz" ? "nauthiz" : assetKey;
+          const info = DivinationDatabase.runes[dbKey];
+          if (info && info.reversed.includes("cannot be inverted")) {
             isInverted = false;
           } else {
             isInverted = Math.random() >= 0.5;
           }
         }
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'tarot-card-wrapper';
-        wrapper.setAttribute('data-key', assetKey);
-        wrapper.setAttribute('data-tool', activeTool);
-        wrapper.setAttribute('data-inverted', isInverted);
-        wrapper.setAttribute('data-position', slot.querySelector('.slot-label').innerText);
-
-        wrapper.innerHTML = `
-          <div class="tarot-card-inner">
-            <div class="card-back"><img src="assets/misc/back.jpg"></div>
-            <div class="card-front"><img src="${assetFile}"></div>
-          </div>
-        `;
-
-        // --- MOUSEOVER TOOLTIP UPDATED FOR RUNES ---
-        wrapper.addEventListener('mouseenter', () => {
-          const key = wrapper.getAttribute('data-key');
-          const tool = wrapper.getAttribute('data-tool');
-          const inverted = wrapper.getAttribute('data-inverted') === 'true';
-          const pos = wrapper.getAttribute('data-position');
-          
-          let title = "";
-          let uprightText = "";
-          let reversedText = "";
-
-          if (tool === 'tarot') {
-            const info = DivinationDatabase.tarot[key] || { name: key.replace(/-/g, ' '), upright: "Esoteric definitions online.", reversed: "Inverted alignment active." };
-            title = info.name; uprightText = info.upright; reversedText = info.reversed;
-          } else {
-            const dbKey = key === "nauthhiz" ? "nauthiz" : key;
-            const info = DivinationDatabase.runes[dbKey] || { name: key, upright: "Runic energy casting.", reversed: "Symmetrical layout alignment." };
-            title = info.name; uprightText = info.upright; reversedText = info.reversed;
-          }
-          
-          sidebar.innerHTML = `
-            <h4 class="meaning-title" style="text-transform: capitalize;">${title}</h4>
-            <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
-            <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
-              ${inverted ? 'Reversed / Merkstave' : 'Upright Alignment'}
-            </div>
-            <p class="meaning-text">${inverted ? reversedText : uprightText}</p>
-          `;
-        });
-        
-        wrapper.addEventListener('mouseleave', resetSidebar);
+        const slotLabel = slot.querySelector('.slot-label').innerText;
+        const wrapper = createCardElement(assetFile, assetKey, isInverted, slotLabel, activeTool);
         slot.appendChild(wrapper);
+        cardsToFlip.push({ wrapper, idx });
+      });
 
+      // Flip with staggered delay
+      cardsToFlip.forEach(({ wrapper, idx }) => {
         setTimeout(() => {
           const inner = wrapper.querySelector('.tarot-card-inner');
-          if (isInverted) inner.classList.add('inverted');
-          inner.classList.add('flipped');
-        }, idx * 200 + 100);
+          if (inner) {
+            if (wrapper.getAttribute('data-inverted') === 'true') {
+              inner.classList.add('inverted');
+            }
+            inner.classList.add('flipped');
+          }
+        }, idx * 150 + 100);
       });
     });
 
-    // Make sure Clear Table resets the rune bag too
-    document.getElementById('clear-btn').addEventListener('click', () => {
+    // =============================================================
+    // 10. CLEAR & SHUFFLE
+    // =============================================================
+    clearBtn.addEventListener('click', () => {
       generateMatrixSlots();
-      runtimeRunes = [...runeKeys];
       shuffleRunes();
+      shuffleTarot();
     });
+
+    shuffleBtn.addEventListener('click', () => {
+      shuffleTarot();
+      shuffleRunes();
+      sidebar.innerHTML = `<p class="meaning-text" style="color: #c77dff;">🔮 Decks have been reshuffled.</p>`;
+      setTimeout(resetSidebar, 2000);
+    });
+
+    // =============================================================
+    // 11. CLOTH & CURSOR SETUP (cloth now .webp, cursor stays .cur)
+    // =============================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Cloth now defaults to .webp
+      const savedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.webp';
+      const savedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
+
+      let cleanCloth = savedCloth.startsWith('assets') ? savedCloth : savedCloth.substring(savedCloth.indexOf('assets'));
+      let cleanCursor = savedCursor.startsWith('assets') ? savedCursor : savedCursor.substring(savedCursor.indexOf('assets'));
+
+      const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
+
+      document.body.style.backgroundColor = '#0d0b14';
+      document.body.style.backgroundImage = 'none';
+
+      const altar = document.getElementById('altar-table');
+      if (altar) {
+        altar.style.background = `linear-gradient(rgba(13, 11, 20, 0.3), rgba(13, 11, 20, 0.3)), url('${repoPath}${cleanCloth}')`;
+        altar.style.backgroundSize = 'cover';
+        altar.style.backgroundPosition = 'center';
+        altar.style.backgroundRepeat = 'no-repeat';
+        altar.style.borderRadius = '8px';
+        altar.style.boxShadow = 'inset 0 0 30px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.5)';
+      }
+
+      const style = document.createElement('style');
+      style.innerHTML = `* { cursor: url('${repoPath}${cleanCursor}'), auto !important; }`;
+      document.head.appendChild(style);
+
+      updateProfiles();
+      generateMatrixSlots();
+    });
+
+    // =============================================================
+    // 12. DROPDOWN CHANGE → REGENERATE SLOTS
+    // =============================================================
+    dropdown.addEventListener('change', generateMatrixSlots);
+
+    // =============================================================
+    // 13. INITIAL SIDEBAR MESSAGE
+    // =============================================================
+    resetSidebar();
   </script>
 </body>
 </html>
