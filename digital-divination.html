@@ -235,7 +235,7 @@
     .altar-nav-pill-container {
       position: absolute;
       top: 15px;
-      left: 3ch;
+      left: 35%;
       transform: translateX(-50%);
       z-index: 100;
       display: flex;
@@ -253,7 +253,7 @@
       display: flex;
       gap: 8px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 
-                  inset 0 0 10px rgba(157, 78, 221, 0.1);
+      inset 0 0 10px rgba(157, 78, 221, 0.1);
     }
 
     .nav-pill-link {
@@ -662,6 +662,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // --- MOUSEOVER TOOLTIP UPDATED FOR RUNES ---
         wrapper.addEventListener('mouseenter', () => {
+          // Make hovered card or rune grow slightly for emphasis
+          wrapper.style.transform = 'scale(2.0) translateY(-10px)';
           const key = wrapper.getAttribute('data-key');
           const tool = wrapper.getAttribute('data-tool');
           const inverted = wrapper.getAttribute('data-inverted') === 'true';
