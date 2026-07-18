@@ -135,21 +135,30 @@
       box-sizing: border-box;
       position: relative;
       text-align: center;
-      overflow: hidden; /* Keeps things neat */
+      overflow: visible; /* Keeps things neat */
     }
 
     /* Card Layout Dimensions & Flips */
     .tarot-card-wrapper {
-      position: relative; /* Changed from absolute to prevent horizontal layout stretching */
+      position: relative;
       width: auto;
-      height: calc(100% - 8px); /* Dynamically leaves exact breathing room for the text label below */
-      aspect-ratio: 13 / 22; /* Force-locks perfect, traditional vertical tarot card proportions */
+      height: calc(100% - 8px);
+      aspect-ratio: 13 / 22;
       max-width: 100%;
       perspective: 1000px;
       z-index: 5;
-      margin: auto auto 4px auto; /* Centers the card perfectly within the grid cell slot space */
+      margin: auto auto 4px auto;
+      /* Smooth scale transition, with a delayed z-index drop so it doesn't clip while shrinking */
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0s 0.3s;
     }
-
+    /* --- HOVER ENLARGEMENT --- */
+    .tarot-card-wrapper:hover {
+      transform: scale(2.0); /* Enlarge by 60% (adjust to 1.5 or 2.0 to your liking) */
+      z-index: 100; /* Ensures the enlarged card floats ABOVE all other cards and UI */
+      /* Immediate z-index rise, no delay */
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0s; 
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.8)); /* Optional: Adds a nice "lifted" shadow effect */
+    }
     .tarot-card-inner {
       position: relative;
       width: 100%;
@@ -648,9 +657,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // --- MOUSEOVER TOOLTIP UPDATED FOR RUNES ---
         wrapper.addEventListener('mouseenter', () => {
-          // Make hovered card or rune grow 2x for emphasis while maintaining aspect ratio
-          slot.style.transform = 'scale(2.0)'; // Make slot bigger to accommodate the enlarged card
-          wrapper.style.transform = 'scale(2.0) translate(-50%, -50%)'; // Center the enlarged card over the slot
           const key = wrapper.getAttribute('data-key');
           const tool = wrapper.getAttribute('data-tool');
           const inverted = wrapper.getAttribute('data-inverted') === 'true';
@@ -680,8 +686,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         
         wrapper.addEventListener('mouseleave', resetSidebar);
-        wrapper.style.transform = 'scale(1.0)'; // Reset scale on mouse leave
-        slot.style.transform = 'scale(1.0)'; // Reset slot scale on mouse leave
         slot.appendChild(wrapper);
 
         setTimeout(() => {
