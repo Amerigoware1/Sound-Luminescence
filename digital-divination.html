@@ -312,6 +312,32 @@
         "judgement": { name: "Judgement", upright: "Absolution, deep calling, self-evaluation, significant choices.", reversed: "Self-doubt, inner critic noise, ignoring a major calling." },
         "the-world": { name: "The World", upright: "Fulfillment, cycle completion, integration, absolute achievement.", reversed: "Shortcuts, incomplete cycles, seeking closure elsewhere." }
       },
+      runes: {
+        "algiz": { name: "Algiz (Z)", upright: "Divine ward, spiritual sanctuary, protective boundaries, higher self connection.", reversed: "Vulnerability, hidden ambush vectors, ignoring immediate guidance." },
+        "ansuz": { name: "Ansuz (A)", upright: "Divine inspiration, message signs, insight, voice articulation.", reversed: "Miscommunication, delusion, manipulation by elders, bad advice." },
+        "berkano": { name: "Berkano (B)", upright: "Birth, botanical growth, sanctuary nesting, complete rejuvenation.", reversed: "Stunted growth, family friction, delays in projects starting." },
+        "dagaz": { name: "Dagaz (D)", upright: "Daybreak illumination, cosmic balance, profound quantum shifts.", reversed: "Dagaz cannot be inverted." },
+        "ehwaz": { name: "Ehwaz (E)", upright: "The horse, trusted partnerships, synchronization, momentum shifts.", reversed: "Betrayical vectors, mechanical blockages, unexpected structural friction." },
+        "eihwaz": { name: "Eihwaz (Y)", upright: "Yggdrasil trunk, endurance, structural resilience, spiritual protection.", reversed: "Eihwaz cannot be inverted." },
+        "fehu": { name: "Fehu (F)", upright: "Wealth, abundance, liquid finances, dynamic material power.", reversed: "Financial loss, greed, creative blockages, material struggle." },
+        "gebo": { name: "Gebo (G)", upright: "Gifts, balanced partnerships, fair exchanges, spiritual bonds.", reversed: "Gebo cannot be inverted." },
+        "hagalaz": { name: "Hagalaz (H)", upright: "Disruptive hail, natural crisis, breakdown forcing growth.", reversed: "Hagalaz cannot be inverted." },
+        "ingwaz": { name: "Ingwaz (Ng)", upright: "Latent seed energy, safe incubation, inner potential ready to burst.", reversed: "Ingwaz cannot be inverted." },
+        "isa": { name: "Isa (I)", upright: "Glacial freeze, total stillness, processing delays, consolidation.", reversed: "Isa cannot be inverted." },
+        "jera": { name: "Jera (J)", upright: "Abundant harvest, karmic rewards, patient time cycles, prosperity.", reversed: "Jera cannot be inverted." },
+        "kenaz": { name: "Kenaz (K)", upright: "Torchlight, revelation, intellectual warmth, technical skill.", reversed: "Extinguished vision, artistic blocks, clarity fading, illness." },
+        "laguz": { name: "Laguz (L)", upright: "Deep ocean waters, flowing emotion, psychic depths, astral dreams.", reversed: "Emotional swamp loops, paranoia, blocked instinct signals." },
+        "mannaz": { name: "Mannaz (M)", upright: "The collective, self-awareness, social intelligence, humanity.", reversed: "Isolation, manipulation from shadows, political alienation." },
+        "nauthiz": { name: "Nauthiz (N)", upright: "Necessity, delay causes, internal resistance, survival drive.", reversed: "Frustration, desperate choices, uncalculated dependency loops." },
+        "othala": { name: "Othala (O)", upright: "Ancestral inheritance, physical property, permanent home roots.", reversed: "Family baggage loops, dispossession, loss of safety foundations." },
+        "perthro": { name: "Perthro (P)", upright: "Dice cup, mystery, occult secrets, luck dynamics, matrix probabilities.", reversed: "Exposed secrets, disappointment, stagnation of chance patterns." },
+        "raidho": { name: "Raidho (R)", upright: "Journey, cyclical rhythms, physical movement, evolution.", reversed: "Stagnation, crisis, broken transportation, path delays." },
+        "sowilo": { name: "Sowilo (S)", upright: "Solar flame, absolute breakthrough victory, vitality, core power.", reversed: "Sowilo cannot be inverted." },
+        "thurisaz": { name: "Thurisaz (Th)", upright: "Defense, catalyst forces, breaking barriers, dynamic thresholds.", reversed: "Vulnerability, compulsion, malicious blocks, poor timing." },
+        "tiwaz": { name: "Tiwaz (T)", upright: "Warrior spirit, focus, justice, discipline, necessary sacrifice.", reversed: "Lost drive, surrender, broken commitment lines, tactical failures." },
+        "uruz": { name: "Uruz (U)", upright: "Vitality, raw physical strength, untamed potential, courage.", reversed: "Weakness, misdirected force, poor health, missed momentum." },
+        "wunjo": { name: "Wunjo (W)", upright: "Joy, shared harmony, material satisfaction, success realization.", reversed: "Sorrow, alienation, delayed celebrations, internal friction." }
+      },
       zodiac: {
         "aries": { name: "Aries", element: "Fire", traits: "Initiating, bold, courageous, competitive, protective." },
         "taurus": { name: "Taurus", element: "Earth", traits: "Grounding, deliberate, artistic, loyal, persistent." },
@@ -512,7 +538,7 @@ window.addEventListener('DOMContentLoaded', () => {
       sidebar.innerHTML = `<p class="meaning-text" style="font-style: italic; color: #a092b8; text-align: center;">Hover your ritual pointer over a face-up card or cosmic badge to look up meanings.</p>`;
     }
 
-document.getElementById('deal-spread-btn').addEventListener('click', () => {
+      document.getElementById('deal-spread-btn').addEventListener('click', () => {
       const slots = document.querySelectorAll('.spread-slot');
       const activeTool = document.getElementById('divination-tool').value;
       
