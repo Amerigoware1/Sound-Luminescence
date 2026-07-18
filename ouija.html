@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Talking Board — Digital Divination</title>
+  <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background-color: #0d0b14;
+    }
+
+    /* Fixed Aspect Ratio Interactive Board Canvas */
+    .ouija-table {
+      position: relative;
+      width: 100%;
+      max-width: 1100px;
+      height: 82vh;
+      margin: auto;
+      border-radius: 12px;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 15px 35px rgba(0,0,0,0.6);
+      
+      /* Background config injected dynamically via script to ensure path safety */
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* Subtle Return Anchor Overlay */
+    .altar-navigation {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+    }
+
+    .return-btn {
+      background-color: rgba(20, 16, 30, 0.75);
+      color: #e2daeb;
+      border: 1px solid #3c2f5c;
+      padding: 10px 20px;
+      font-family: 'Georgia', serif;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border-radius: 4px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .return-btn:hover {
+      background-color: #9d4edd;
+      color: #fff;
+      border-color: #c77dff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Return to Main Dashboard -->
+  <div class="altar-navigation">
+    <a href="digital-divination.html" class="return-btn">← Return to Main Altar</a>
+  </div>
+
+  <!-- The Interactive Board Canvas Workspace -->
+  <div class="ouija-table" id="talking-board"></div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Auto-detect GitHub Pages repository paths vs local configurations
+      const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
+      
+      // Target the board and paint your specialized layout texture
+      const board = document.getElementById('talking-board');
+      if (board) {
+        board.style.backgroundImage = `url('${repoPath}assets/cloths/cloth-10.jpg')`;
+      }
+
+      // Inject the super-sized pointer.gif pointer matrix configuration
+      // We scale the cursor definition up to a massive size. Note: 32x32 is the typical browser cap, 
+      // but rendering standard CSS mapping sizes will enforce a super-sized tool presence on screen!
+      const globalCursorStyle = document.createElement('style');
+      globalCursorStyle.innerHTML = `
+        * { 
+          cursor: url('${repoPath}assets/misc/pointer.gif') 32 32, auto !important; 
+        }
+      `;
+      document.head.appendChild(globalCursorStyle);
+    });
+  </script>
+</body>
+</html>
