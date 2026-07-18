@@ -6,7 +6,7 @@
   <title>The Talking Board — Digital Divination</title>
   <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon">
   <style>
-body {
+    body {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -16,13 +16,14 @@ body {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center; /* Center the board vertically */
+      justify-content: center;
       background-color: #0d0b14;
+      cursor: none; /* Hide default cursor for the custom JS cursor */
     }
 
     /* Fixed Aspect Ratio Interactive Board Canvas */
     .ouija-table {
-      position: absolute; /* Set to absolute to fully occupy the viewing field */
+      position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
@@ -30,7 +31,7 @@ body {
       z-index: 1;
       
       /* Background configuration */
-      background-size: cover; /* Changed from contain to cover to fill the screen */
+      background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
@@ -76,8 +77,9 @@ body {
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      // Auto-detect GitHub Pages repository paths vs local configurations
-      const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '/';
+      // FIX 1: Use '' (relative path) instead of '/' as the fallback. 
+      // This ensures it works locally (file://) and at the root of any domain.
+      const repoPath = window.location.pathname.includes('/Sound-Luminescence/') ? '/Sound-Luminescence/' : '';
       
       // Target the board and paint your specialized layout texture
       const board = document.getElementById('talking-board');
@@ -85,16 +87,25 @@ body {
         board.style.backgroundImage = `url('${repoPath}assets/cloths/cloth-10.jpg')`;
       }
 
-      // Inject the super-sized pointer.gif pointer matrix configuration
-      // We scale the cursor definition up to a massive size. Note: 32x32 is the typical browser cap, 
-      // but rendering standard CSS mapping sizes will enforce a super-sized tool presence on screen!
-      const globalCursorStyle = document.createElement('style');
-      globalCursorStyle.innerHTML = `
-        * { 
-          cursor: url('${repoPath}assets/misc/pointer.gif') 32 32, auto !important; 
-        }
-      `;
-      document.head.appendChild(globalCursorStyle);
+      // FIX 2: Use a JS-driven custom cursor to bypass strict browser size limits (32px-128px max).
+      // This guarantees your "super-sized" cursor will render correctly on all devices.
+      const customCursor = document.createElement('img');
+      customCursor.src = `${repoPath}assets/misc/pointer.gif`;
+      customCursor.style.position = 'fixed';
+      customCursor.style.top = '0';
+      customCursor.style.left = '0';
+      customCursor.style.width = '128px'; // Adjust to your desired super-sized dimension
+      customCursor.style.height = '128px';
+      customCursor.style.pointerEvents = 'none'; // Crucial: lets clicks pass through to elements below
+      customCursor.style.zIndex = '10000';
+      customCursor.style.transform = 'translate(-50%, -50%)'; // Centers the image on the mouse tip
+      document.body.appendChild(customCursor);
+
+      // Track mouse movement to update cursor position
+      window.addEventListener('mousemove', (e) => {
+        customCursor.style.left = `${e.clientX}px`;
+        customCursor.style.top = `${e.clientY}px`;
+      });
     });
   </script>
 </body>
