@@ -356,7 +356,7 @@
       <a href="ouija.html" class="nav-pill-link">Talking Board</a>
       <a href="hypnotic.html" class="nav-pill-link">Hypnotic Core</a>
       <!-- open hand-guide in new stripped window -->
-      <a href="hand-guide.html" class="nav-pill-link" target="_blank">Palmistry Guide</a>
+      <button class="nav-pill-link" onclick="openSimpleWindow('hand-guide.html')">Palmistry Guide</button>
     </nav>
   </div>
 
@@ -423,6 +423,20 @@
   <!-- ======================== SCRIPT ============================= -->
   <!-- ============================================================ -->
   <script>
+    function openSimpleWindow(url) {
+      const features =
+        'popup,' +               // tells browser it's a popup (strips most chrome)
+        'width=650,' +
+        'height=800,' +
+        'menubar=no,' +
+        'toolbar=no,' +
+        'location=no,' +
+        'status=no,' +
+        'scrollbars=yes,' +
+        'resizable=yes';
+
+      window.open(url, '_blank', features);
+    }
     // =============================================================
     // 1. MASTER DIVINATION DATABASE
     // =============================================================
