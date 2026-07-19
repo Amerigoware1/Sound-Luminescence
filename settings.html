@@ -196,33 +196,33 @@
     // List out our cloths with exact file extensions to handle the differences
     // Skipping cloth-10 because it is your designated Ouija board cloth
     const cloths = [
-      { id: 1,  file: 'cloth-1.jpg' },
-      { id: 2,  file: 'cloth-2.jpg' },
-      { id: 3,  file: 'cloth-3.jpg' },
-      { id: 4,  file: 'cloth-4.png' },
-      { id: 5,  file: 'cloth-5.JPG' },
-      { id: 6,  file: 'cloth-6.jpg' },
-      { id: 7,  file: 'cloth-7.jpg' },
-      { id: 8,  file: 'cloth-8.jpg' },
-      { id: 9,  file: 'cloth-9.jpg' },
+      { id: 1,  file: 'cloth-1.webp' },
+      { id: 2,  file: 'cloth-2.webp' },
+      { id: 3,  file: 'cloth-3.webp' },
+      { id: 4,  file: 'cloth-4.webp' },
+      { id: 5,  file: 'cloth-5.webp' },
+      { id: 6,  file: 'cloth-6.webp' },
+      { id: 7,  file: 'cloth-7.webp' },
+      { id: 8,  file: 'cloth-8.webp' },
+      { id: 9,  file: 'cloth-9.webp' },
       // Skipping 10 (the ouija cloth)
-      { id: 11, file: 'cloth-11.jpg' },
-      { id: 12, file: 'cloth-12.jpg' },
-      { id: 13, file: 'cloth-13.jpg' },
-      { id: 14, file: 'cloth-14.jpg' },
-      { id: 15, file: 'cloth-15.jpg' },
-      { id: 16, file: 'cloth-16.jpg' },
-      { id: 17, file: 'cloth-17.jpg' },
+      { id: 11, file: 'cloth-11.webp' },
+      { id: 12, file: 'cloth-12.webp' },
+      { id: 13, file: 'cloth-13.webp' },
+      { id: 14, file: 'cloth-14.webp' },
+      { id: 15, file: 'cloth-15.webp' },
+      { id: 16, file: 'cloth-16.webp' },
+      { id: 17, file: 'cloth-17.webp' },
       { id: 18, file: 'cloth-18.jpeg' },
-      { id: 19, file: 'cloth-19.jpg' },
-      { id: 20, file: 'cloth-20.jpg' }
+      { id: 19, file: 'cloth-19.webp' },
+      { id: 20, file: 'cloth-20.webp' }
     ];
 
     // Cursors are neatly standardized 1 through 7
     const totalCursors = 7;
 
     // Load initial states from localStorage (or set defaults)
-    let selectedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.jpg';
+    let selectedCloth = localStorage.getItem('selectedCloth') || 'assets/cloths/cloth-1.webp';
     let selectedCursor = localStorage.getItem('selectedCursor') || 'assets/cursors/cursor-1.cur';
 
     // Populate Cloth Gallery
@@ -260,7 +260,7 @@
       // We apply the custom cursor inline to each preview container so you can feel how it acts!
       card.innerHTML = `
         <div class="cursor-preview-box" style="cursor: url(${curPath}), auto;">
-          <img src="assets/misc/hand.jpg" style="width: 28px; height: 28px; pointer-events: none;" alt="Ritual Focus">
+          <img src="assets/misc/hand.webp" style="width: 28px; height: 28px; pointer-events: none;" alt="Ritual Focus">
         </div>
         <span>Pointer #${i}</span>
       `;
