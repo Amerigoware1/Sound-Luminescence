@@ -527,7 +527,7 @@
       });
     });
 
-    // Rune keys – keep .gif
+    // Rune keys – keep .webp
     const runeKeys = [
       "algiz", "ansuz", "berkano", "dagaz", "ehwaz", "eihwaz", "fehu", "gebo",
       "hagalaz", "ingwaz", "isa", "jera", "kenaz", "laguz", "mannaz", "nauthiz",
@@ -540,8 +540,8 @@
     const IMAGE_CACHE = new Map();
 
     function preloadImages(deck, tool = 'tarot') {
-      // Tarot uses .webp, runes stay .gif
-      const ext = tool === 'tarot' ? '.webp' : '.gif';
+      // Tarot uses .webp, runes stay .webp
+      const ext = tool === 'tarot' ? '.webp' : '.webp';
       const basePath = tool === 'tarot' ? 'assets/tarot-cards/' : 'assets/runes/';
 
       deck.forEach(item => {
