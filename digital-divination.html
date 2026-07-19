@@ -355,8 +355,15 @@
     <nav class="altar-nav-pill">
       <a href="ouija.html" class="nav-pill-link">Talking Board</a>
       <a href="hypnotic.html" class="nav-pill-link">Hypnotic Core</a>
-      <!-- open hand-guide in new stripped window -->
-      <button class="nav-pill-link" onclick="openSimpleWindow('hand-guide.html')">Palmistry Guide</button>
+      <button 
+        class="nav-pill-link" 
+        onclick="openSimpleWindow('hand-guide.html')"
+        style="background:none; border:none; font-family:inherit; font-size:0.9rem; cursor:pointer; padding:8px 18px; border-radius:25px; transition:all 0.25s ease-in-out; color:#b0a4c4;"
+        onmouseover="this.style.backgroundColor='rgba(157,78,221,0.2)'; this.style.color='#fff';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#b0a4c4';"
+      >
+        Palmistry Guide
+      </button>
     </nav>
   </div>
 
