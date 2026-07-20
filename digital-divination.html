@@ -870,25 +870,18 @@
       wrapper.setAttribute('data-inverted', isInverted);
       wrapper.setAttribute('data-position', slotLabel);
 
-      // Inner structure – back card now .webp
-let backHtml = '';
-
-      if (tool === 'tarot') {
-        backHtml = `
-          <div class="card-back">
-            <img src="assets/misc/back.webp" loading="lazy" alt="card back">
-          </div>
-        `;
-      }
+      const isRune = activeTool === 'runes';
+      const backStyle = isRune ? 'style="opacity:0; pointer-events:none;"' : '';
 
       wrapper.innerHTML = `
         <div class="tarot-card-inner">
-          ${backHtml}
+          <div class="card-back" ${backStyle}>
+            <img src="assets/misc/back.webp" loading="lazy" alt="card back">
+          </div>
           <div class="card-front"></div>
         </div>
       `;
 
-      // Front image – use cached clone
       const cachedImg = getCachedImage(assetFile);
       const imgClone = cachedImg.cloneNode(true);
       imgClone.loading = 'lazy';
@@ -1001,9 +994,10 @@ let backHtml = '';
           const inner = wrapper.querySelector('.tarot-card-inner');
           if (inner) {
             if (isInverted) inner.classList.add('inverted');
+            // For runes, flip instantly; for tarot, stagger
             inner.classList.add('flipped');
           }
-        }, idx * 150 + 100);
+        }, activeTool === 'runes' ? 50 : idx * 150 + 100);
       });
     });
 
