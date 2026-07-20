@@ -629,241 +629,188 @@
     const shuffleBtn = document.getElementById('shuffle-btn');
     const bdayInput = document.getElementById('user-birthday');
 
-    const spreadLayouts = {
-      "single": { class: "layout-single", labels: ["Daily Influence"] },
-      "past-present-future": { class: "layout-past-present-future", labels: ["Past / Foundation", "Present / Challenge", "Future / Outcome"] },
-      "tree-of-life": { class: "layout-tree-of-life", labels: ["1. Kether (Crown)", "2. Chokmah (Wisdom)", "3. Binah (Understanding)", "4. Chesed (Mercy)", "5. Geburah (Severity)", "6. Tiphereth (Beauty)", "7. Netzach (Victory)", "8. Hod (Glory)", "9. Yesod (Foundation)", "10. Malkuth (Kingdom)"] },
-      "celtic-cross": { class: "layout-celtic-cross", labels: ["1. Present Focus", "2. Challenge", "3. Subconscious", "4. Recent Past", "5. Goals", "6. Near Future", "7. Advice", "8. Environment", "9. Hopes/Fears", "10. Outcome"] }
-    };
-
     // =============================================================
-    // 6. GENERATE SLOTS
-    // =============================================================
-    function generateMatrixSlots() {
-      surface.innerHTML = '';
-      resetSidebar();
+// 1. REPLACE THE OLD LAYOUTS WITH THESE NEW DEFINITIONS
+// =============================================================
+const LAYOUTS = {
+  "single": {
+    slots: [
+      { id: 1, label: "Daily Influence", x: 50, y: 50, rotate: 0 }
+    ]
+  },
+  "past-present-future": {
+    slots: [
+      { id: 1, label: "Past", x: 20, y: 50, rotate: 0 },
+      { id: 2, label: "Present", x: 50, y: 50, rotate: 0 },
+      { id: 3, label: "Future", x: 80, y: 50, rotate: 0 }
+    ]
+  },
+  "tree-of-life": {
+    slots: [
+      { id: 1, label: "1. Kether", x: 50, y: 5, rotate: 0 },
+      { id: 2, label: "2. Chokmah", x: 30, y: 20, rotate: 0 },
+      { id: 3, label: "3. Binah", x: 70, y: 20, rotate: 0 },
+      { id: 4, label: "4. Chesed", x: 20, y: 40, rotate: 0 },
+      { id: 5, label: "5. Geburah", x: 80, y: 40, rotate: 0 },
+      { id: 6, label: "6. Tiphereth", x: 50, y: 50, rotate: 0 },
+      { id: 7, label: "7. Netzach", x: 20, y: 70, rotate: 0 },
+      { id: 8, label: "8. Hod", x: 80, y: 70, rotate: 0 },
+      { id: 9, label: "9. Yesod", x: 50, y: 85, rotate: 0 },
+      { id: 10, label: "10. Malkuth", x: 50, y: 100, rotate: 0 }
+    ]
+  },
+  "celtic-cross": {
+    slots: [
+      { id: 1, label: "1. Present", x: 50, y: 40, rotate: 0 },
+      { id: 2, label: "2. Crossing", x: 35, y: 25, rotate: 90 },
+      { id: 3, label: "3. Foundation", x: 50, y: 65, rotate: 0 },
+      { id: 4, label: "4. Past", x: 15, y: 40, rotate: 0 },
+      { id: 5, label: "5. Crown", x: 85, y: 40, rotate: 0 },
+      { id: 6, label: "6. Future", x: 85, y: 65, rotate: 0 },
+      { id: 7, label: "7. Self", x: 15, y: 65, rotate: 0 },
+      { id: 8, label: "8. Environment", x: 30, y: 85, rotate: 0 },
+      { id: 9, label: "9. Hopes/Fears", x: 70, y: 85, rotate: 0 },
+      { id: 10, label: "10. Outcome", x: 95, y: 90, rotate: 0 }
+    ]
+  }
+};
 
-      const layoutData = spreadLayouts[dropdown.value];
-      surface.className = `spread-grid-canvas ${layoutData.class}`;
+// =============================================================
+// 2. REPLACE THE GENERATE SLOTS FUNCTION
+// =============================================================
+function generateMatrixSlots() {
+  const surface = document.getElementById('canvas-surface');
+  surface.innerHTML = '';
+  resetSidebar();
 
-      layoutData.labels.forEach(labelText => {
-        const slot = document.createElement('div');
-        slot.className = 'spread-slot';
-        slot.innerHTML = `<div class="slot-label">${labelText}</div>`;
-        surface.appendChild(slot);
-      });
+  // Clear any old grid classes and set up absolute positioning
+  surface.className = 'spread-grid-canvas';
+  surface.style.position = 'relative';
+  surface.style.width = '100%';
+  surface.style.height = '100%';
+  surface.style.minHeight = '70vh';
+
+  const layoutKey = document.getElementById('spread-matrix').value;
+  const layout = LAYOUTS[layoutKey];
+
+  if (!layout) return;
+
+  layout.slots.forEach(slotData => {
+    const slot = document.createElement('div');
+    slot.className = 'spread-slot';
+    slot.dataset.id = slotData.id;
+    
+    // --- ABSOLUTE POSITIONING MAGIC ---
+    slot.style.position = 'absolute';
+    slot.style.left = slotData.x + '%';
+    slot.style.top = slotData.y + '%';
+    slot.style.transform = `translate(-50%, -50%) rotate(${slotData.rotate || 0}deg)`;
+    slot.style.width = '22%'; // Base size for tarot
+    slot.style.maxWidth = '180px';
+    slot.style.aspectRatio = '13 / 22'; // Tarot aspect ratio
+    slot.style.margin = '0';
+    slot.style.padding = '0';
+    slot.style.border = 'none';
+    slot.style.background = 'none';
+    slot.style.display = 'flex';
+    slot.style.alignItems = 'center';
+    slot.style.justifyContent = 'center';
+    slot.style.zIndex = slotData.id; // Ensures proper layering (1 is bottom, 10 is top)
+
+    // Slot Label (Positioned below the card)
+    const label = document.createElement('div');
+    label.className = 'slot-label';
+    label.innerText = slotData.label;
+    label.style.position = 'absolute';
+    label.style.bottom = '-25px';
+    label.style.left = '50%';
+    label.style.transform = 'translateX(-50%)';
+    label.style.whiteSpace = 'nowrap';
+    label.style.fontSize = '0.7rem';
+    label.style.color = '#b0a4c4';
+    label.style.textShadow = '1px 1px 2px #000';
+    label.style.pointerEvents = 'none';
+    slot.appendChild(label);
+
+    surface.appendChild(slot);
+  });
+}
+
+// =============================================================
+// 3. UPDATE THE DEAL LOGIC (Works with the new slots)
+// =============================================================
+document.getElementById('deal-spread-btn').addEventListener('click', () => {
+  const slots = document.querySelectorAll('.spread-slot');
+  const activeTool = document.getElementById('divination-tool').value;
+  
+  // Adjust card size for runes (square)
+  const cardSize = activeTool === 'runes' ? '18%' : '22%';
+  slots.forEach(slot => {
+    slot.style.width = cardSize;
+    if (activeTool === 'runes') {
+      slot.style.aspectRatio = '1 / 1';
+    } else {
+      slot.style.aspectRatio = '13 / 22';
     }
+  });
 
-    function resetSidebar() {
-      sidebar.innerHTML = `<p class="meaning-text" style="font-style: italic; color: #a092b8; text-align: center;">Hover your ritual pointer over a face-up card or cosmic badge to look up meanings.</p>`;
-    }
+  slots.forEach((slot, idx) => {
+    // Clear previous card if any
+    const oldWrapper = slot.querySelector('.tarot-card-wrapper');
+    if (oldWrapper) oldWrapper.remove();
 
-    // =============================================================
-    // 7. PROFILE UPDATES (Zodiac signs now .webp, birthstones stay .gif)
-    // =============================================================
-    function updateProfiles() {
-      if (!bdayInput.value) return;
-      const date = new Date(bdayInput.value + 'T00:00:00');
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
+    let assetFile = "";
+    let assetKey = "";
+    let isInverted = false;
 
-      // Birthstone – stay .gif
-      const stones = ['garnet2.gif', 'amethyst2.gif', 'aquamarine2.gif', 'diamond2.gif',
-        'emerald2.gif', 'pearl1.gif', 'ruby2.gif', 'peridot2.gif', 'saphire2.gif',
-        'opal2.gif', 'topaz2.gif', 'turquoise.gif'
-      ];
-      const stoneData = DivinationDatabase.birthstones[month];
-      const stoneBox = document.getElementById('stone-box');
-      stoneBox.innerHTML = `<img src="assets/birthstones/${stones[month - 1]}" alt="${stoneData.modern}">`;
-      stoneBox.setAttribute('data-info',
-        `Month: ${stoneData.month} | Modern: ${stoneData.modern} | Mystical: ${stoneData.mystical}\nProperties: ${stoneData.properties}`
-      );
-
-      // Zodiac – now .webp
-      let signKey = "capricorn";
-      let signImg = "capricorn.webp";
-      if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) { signKey = "aquarius";
-        signImg = "aquarius.webp"; } else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) { signKey =
-          "pisces";
-        signImg = "pisces.webp"; } else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) { signKey = "aries";
-        signImg = "aries.webp"; } else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) { signKey = "taurus";
-        signImg = "taurus.webp"; } else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) { signKey = "gemini";
-        signImg = "gemini.webp"; } else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) { signKey = "cancer";
-        signImg = "cancer.webp"; } else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) { signKey = "leo";
-        signImg = "leo.webp"; } else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) { signKey = "virgo";
-        signImg = "virgo.webp"; } else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) { signKey = "libra";
-        signImg = "libra.webp"; } else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) { signKey = "scorpio";
-        signImg = "scorpio.webp"; } else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) { signKey =
-          "sagittarius";
-        signImg = "sagittarius.webp"; }
-
-      const zodiacData = DivinationDatabase.zodiac[signKey];
-      const zodiacBox = document.getElementById('zodiac-box');
-      zodiacBox.innerHTML = `<img src="assets/signs/${signImg}" alt="${zodiacData.name}">`;
-      zodiacBox.setAttribute('data-info', `${zodiacData.name} (${zodiacData.element})\nTraits: ${zodiacData.traits}`);
-    }
-
-    // Hover badge → sidebar
-    [document.getElementById('zodiac-box'), document.getElementById('stone-box')].forEach(box => {
-      box.addEventListener('mouseenter', () => {
-        const info = box.getAttribute('data-info');
-        sidebar.innerHTML = `
-          <h4 class="meaning-title">Cosmic Alignment</h4>
-          <p class="meaning-text" style="white-space: pre-line;">${info}</p>
-        `;
-      });
-      box.addEventListener('mouseleave', resetSidebar);
-    });
-
-    bdayInput.addEventListener('change', updateProfiles);
-
-    // =============================================================
-    // 8. CARD CREATION (caching + fallback .webp)
-    // =============================================================
-    function getCachedImage(src) {
-      if (!IMAGE_CACHE.has(src)) {
-        const img = new Image();
-        img.src = src;
-        img.onerror = () => {
-          img.src = 'assets/misc/placeholder.webp';
-        };
-        IMAGE_CACHE.set(src, img);
+    if (activeTool === 'tarot') {
+      if (runtimeDeck.length === 0) shuffleTarot();
+      const cardData = runtimeDeck.pop();
+      assetKey = cardData.key;
+      assetFile = `assets/tarot-cards/${cardData.file}`;
+      isInverted = Math.random() >= 0.5;
+    } else {
+      if (runtimeRunes.length === 0) shuffleRunes();
+      assetKey = runtimeRunes.pop();
+      assetFile = `assets/runes/${assetKey}.gif`;
+      const dbKey = assetKey === "nauthiz" ? "nauthiz" : assetKey;
+      const info = DivinationDatabase.runes[dbKey];
+      if (info && info.reversed.includes("cannot be inverted")) {
+        isInverted = false;
+      } else {
+        isInverted = Math.random() >= 0.5;
       }
-      return IMAGE_CACHE.get(src);
     }
 
-    function createCardElement(assetFile, assetKey, isInverted, slotLabel, activeTool) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'tarot-card-wrapper';
-      wrapper.setAttribute('data-key', assetKey);
-      wrapper.setAttribute('data-tool', activeTool);
-      wrapper.setAttribute('data-inverted', isInverted);
-      wrapper.setAttribute('data-position', slotLabel);
+    const slotLabel = slot.querySelector('.slot-label')?.innerText || `Position ${idx + 1}`;
+    const wrapper = createCardElement(assetFile, assetKey, isInverted, slotLabel, activeTool);
+    
+    // Ensure wrapper fills the slot
+    wrapper.style.width = '100%';
+    wrapper.style.height = '100%';
+    wrapper.style.margin = '0';
+    
+    slot.appendChild(wrapper);
 
-      // Inner structure – back card now .webp
-      wrapper.innerHTML = `
-        <div class="tarot-card-inner">
-          <div class="card-back"><img src="assets/misc/back.webp" loading="lazy" alt="card back"></div>
-          <div class="card-front"></div>
-        </div>
-      `;
+    // Flip animation
+    setTimeout(() => {
+      const inner = wrapper.querySelector('.tarot-card-inner');
+      if (inner) {
+        if (isInverted) inner.classList.add('inverted');
+        inner.classList.add('flipped');
+      }
+    }, idx * 150 + 100);
+  });
+});
 
-      // Front image – use cached clone
-      const cachedImg = getCachedImage(assetFile);
-      const imgClone = cachedImg.cloneNode(true);
-      imgClone.loading = 'lazy';
-      imgClone.alt = assetKey.replace(/-/g, ' ');
-      wrapper.querySelector('.card-front').appendChild(imgClone);
-
-      // Hover meaning
-      wrapper.addEventListener('mouseenter', () => {
-        const key = wrapper.getAttribute('data-key');
-        const tool = wrapper.getAttribute('data-tool');
-        const inverted = wrapper.getAttribute('data-inverted') === 'true';
-        const pos = wrapper.getAttribute('data-position');
-
-        let title = "";
-        let uprightText = "";
-        let reversedText = "";
-
-        if (tool === 'tarot') {
-          const info = DivinationDatabase.tarot[key] || { name: key.replace(/-/g, ' '), upright: "Esoteric definitions online.",
-            reversed: "Inverted alignment active." };
-          title = info.name;
-          uprightText = info.upright;
-          reversedText = info.reversed;
-        } else {
-          const dbKey = key === "nauthiz" ? "nauthiz" : key;
-          const info = DivinationDatabase.runes[dbKey] || { name: key, upright: "Runic energy casting.",
-            reversed: "Symmetrical layout alignment." };
-          title = info.name;
-          uprightText = info.upright;
-          reversedText = info.reversed;
-        }
-
-        sidebar.innerHTML = `
-          <h4 class="meaning-title" style="text-transform: capitalize;">${title}</h4>
-          <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
-          <div class="meaning-orientation ${inverted ? 'orientation-reversed' : 'orientation-upright'}">
-            ${inverted ? 'Reversed / Merkstave' : 'Upright Alignment'}
-          </div>
-          <p class="meaning-text">${inverted ? reversedText : uprightText}</p>
-        `;
-      });
-
-      wrapper.addEventListener('mouseleave', resetSidebar);
-
-      return wrapper;
-    }
-
-    // =============================================================
-    // 9. DEAL SPREAD (BATCHED DOM UPDATES)
-    // =============================================================
-    dealBtn.addEventListener('click', () => {
-      const slots = document.querySelectorAll('.spread-slot');
-      const activeTool = document.getElementById('divination-tool').value;
-      const fragment = document.createDocumentFragment();
-      const cardsToFlip = [];
-
-      slots.forEach((slot, idx) => {
-        if (slot.querySelector('.tarot-card-wrapper')) return;
-
-        let assetFile = "";
-        let assetKey = "";
-        let isInverted = false;
-
-        if (activeTool === 'tarot') {
-          if (runtimeDeck.length === 0) {
-            shuffleTarot();
-          }
-          const cardData = runtimeDeck.pop();
-          assetKey = cardData.key;
-          assetFile = `assets/tarot-cards/${cardData.file}`; // .webp
-          isInverted = Math.random() >= 0.5;
-        } else {
-          // Runes – stay .gif
-          if (runtimeRunes.length === 0) {
-            shuffleRunes();
-          }
-          assetKey = runtimeRunes.pop();
-          assetFile = `assets/runes/${assetKey}.gif`;
-          const dbKey = assetKey === "nauthiz" ? "nauthiz" : assetKey;
-          const info = DivinationDatabase.runes[dbKey];
-          if (info && info.reversed.includes("cannot be inverted")) {
-            isInverted = false;
-          } else {
-            isInverted = Math.random() >= 0.5;
-          }
-        }
-
-        const slotLabel = slot.querySelector('.slot-label').innerText;
-        const wrapper = createCardElement(assetFile, assetKey, isInverted, slotLabel, activeTool);
-        slot.appendChild(wrapper);
-        cardsToFlip.push({ wrapper, idx });
-      });
-
-      // Flip with staggered delay
-      cardsToFlip.forEach(({ wrapper, idx }) => {
-        setTimeout(() => {
-          const inner = wrapper.querySelector('.tarot-card-inner');
-          if (inner) {
-            if (wrapper.getAttribute('data-inverted') === 'true') {
-              inner.classList.add('inverted');
-            }
-            inner.classList.add('flipped');
-          }
-        }, idx * 150 + 100);
-      });
-    });
-
-    // =============================================================
-    // 10. CLEAR & SHUFFLE
-    // =============================================================
-    clearBtn.addEventListener('click', () => {
-      generateMatrixSlots();
-      shuffleRunes();
-      shuffleTarot();
-    });
+// =============================================================
+// 4. UPDATE THE CLEAR BUTTON
+// =============================================================
+document.getElementById('clear-btn').addEventListener('click', () => {
+  generateMatrixSlots();
+  shuffleRunes();
+  shuffleTarot();
+});
 
     shuffleBtn.addEventListener('click', () => {
       shuffleTarot();
