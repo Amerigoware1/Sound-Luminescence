@@ -871,9 +871,15 @@
       wrapper.setAttribute('data-position', slotLabel);
 
       // Inner structure – back card now .webp
-      const backHtml = tool === 'tarot'
-        ? '<div class="card-back"><img src="assets/misc/back.webp" loading="lazy" alt="card back"></div>'
-        : '';
+let backHtml = '';
+
+      if (tool === 'tarot') {
+        backHtml = `
+          <div class="card-back">
+            <img src="assets/misc/back.webp" loading="lazy" alt="card back">
+          </div>
+        `;
+      }
 
       wrapper.innerHTML = `
         <div class="tarot-card-inner">
