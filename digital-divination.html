@@ -873,7 +873,9 @@
       // Inner structure – back card now .webp
       wrapper.innerHTML = `
         <div class="tarot-card-inner">
-          <div class="card-back"><img src="assets/misc/back.webp" loading="lazy" alt="card back"></div>
+          if (tool === 'tarot') {
+            <div class="card-back"><img src="assets/misc/back.webp" loading="lazy" alt="card back"></div>
+          }
           <div class="card-front"></div>
         </div>
       `;
