@@ -966,7 +966,7 @@
         } else {
           if (runtimeRunes.length === 0) shuffleRunes();
           assetKey = runtimeRunes.pop();
-          assetFile = `assets/runes/${assetKey}.gif`;
+          assetFile = `assets/runes/${assetKey}.webp`;
           const dbKey = assetKey === "nauthiz" ? "nauthiz" : assetKey;
           const info = DivinationDatabase.runes[dbKey];
           if (info && info.reversed.includes("cannot be inverted")) {
