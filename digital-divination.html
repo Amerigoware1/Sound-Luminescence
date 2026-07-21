@@ -103,15 +103,17 @@
       text-align: center;
       overflow: visible;
     }
-
+    .spread-slot:hover {
+      z-index: 1000 !important;
+    }
     /* ========== CARDS ========== */
     .tarot-card-wrapper {
       position: relative;
       width: auto;
       height: calc(100% - 16px);
       aspect-ratio: 13 / 22;
-      max-width: 65%;
-      max-height: 65%;
+      max-width: 55%;
+      max-height: 55%;
       perspective: 1000px;
       z-index: 5;
       margin: auto auto 4px auto;
@@ -797,7 +799,11 @@
             reversedText = "Rune data missing.";
           }
         }
-
+        const slot = wrapper.closest('.spread-slot');
+          if (slot) {
+          slot.style.zIndex = 1000;
+          // Also optionally store original z-index to restore later
+        }
         sidebar.innerHTML = `
           <h4 class="meaning-title" style="text-transform: capitalize;">${title}</h4>
           <div style="font-size: 0.75rem; color:#a092b8;">Location: ${pos}</div>
@@ -809,7 +815,11 @@
       });
 
       wrapper.addEventListener('mouseleave', resetSidebar);
-
+        const slot = wrapper.closest('.spread-slot');
+        if (slot) {
+          const originalZ = slot.dataset.originalZ || slot.dataset.id || 5;
+          slot.style.zIndex = originalZ;
+        }
       return wrapper;
     }
 
