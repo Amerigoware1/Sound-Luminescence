@@ -108,9 +108,10 @@
     .tarot-card-wrapper {
       position: relative;
       width: auto;
-      height: calc(60% - 8px);
+      height: calc(100% - 16px);
       aspect-ratio: 13 / 22;
-      max-width: 60%;
+      max-width: 88%;
+      max-height: 88%;
       perspective: 1000px;
       z-index: 5;
       margin: auto auto 4px auto;
@@ -701,8 +702,8 @@
         slot.style.top = slotData.y + '%';
         slot.style.transform = `translate(-50%, -50%) rotate(${slotData.rotate || 0}deg)`;
         // Size will be set in deal based on tool
-        slot.style.width = '22%';
-        slot.style.maxWidth = '180px';
+        slot.style.width = '18%';
+        slot.style.maxWidth = '140px';
         slot.style.aspectRatio = '13 / 22';
         slot.style.margin = '0';
         slot.style.padding = '0';
