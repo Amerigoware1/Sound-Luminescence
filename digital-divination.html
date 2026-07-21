@@ -84,11 +84,13 @@
       gap: 8px;
     }
 
-    .spread-grid-canvas > * {
+/*     .spread-grid-canvas > * {
       position: relative;
       z-index: 2;
+    } */
+    .spread-slot:has(.tarot-card-wrapper:hover) {
+      z-index: 999; /* The slot itself jumps above other slots */
     }
-
     .spread-slot {
       border: 2px dashed rgba(157, 78, 221, 0.0);
       border-radius: 8px;
@@ -110,8 +112,8 @@
       width: auto;
       height: calc(100% - 16px);
       aspect-ratio: 13 / 22;
-      max-width: 88%;
-      max-height: 88%;
+      max-width: 75%;
+      max-height: 75%;
       perspective: 1000px;
       z-index: 5;
       margin: auto auto 4px auto;
