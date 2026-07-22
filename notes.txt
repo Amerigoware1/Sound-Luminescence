@@ -1,0 +1,9 @@
+Possible additions:
+
+House system – Add Placidus house calculation (needs latitude/longitude).
+
+Aspects – Calculate angles between planets (trine, square, opposition, etc.).
+
+More detailed interpretations – Use a richer template or connect to an AI API.
+
+Transits – Compare natal positions with current planet positions to show daily influences.
