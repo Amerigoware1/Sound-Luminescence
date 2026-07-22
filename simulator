@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth‑Centric Astrology Simulator</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #0a0a12; }
+        canvas { display: block; }
+        #info {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #cbd5e1;
+            font-family: 'Georgia', serif;
+            background: rgba(10, 10, 18, 0.8);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid #2a1f3d;
+            text-align: center;
+            font-size: 14px;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn {
+            background: rgba(20, 16, 30, 0.8);
+            color: #e2daeb;
+            border: 1px solid #3c2f5c;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .btn:hover {
+            background: #9d4edd;
+            border-color: #c77dff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="info">🌞 Earth‑Centric View | Sun in <span id="sunSign">♈ Aries</span></div>
+    <div class="controls">
+        <button class="btn" id="toggleAnim">⏸️ Pause</button>
+        <button class="btn" id="speedUp">⏩ Speed Up</button>
+        <button class="btn" id="slowDown">⏪ Slow Down</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // =============================================================
+        // 1. SETUP
+        // =============================================================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const sunSignEl = document.getElementById('sunSign');
+
+        let W, H, cx, cy, radius;
+        let animating = true;
+        let speed = 1;
+        let time = 0; // days since epoch
+
+        // Zodiac configuration
+        const zodiacSigns = [
+            { symbol: '♈', name: 'Aries', startAngle: 0 },
+            { symbol: '♉', name: 'Taurus', startAngle: 30 },
+            { symbol: '♊', name: 'Gemini', startAngle: 60 },
+            { symbol: '♋', name: 'Cancer', startAngle: 90 },
+            { symbol: '♌', name: 'Leo', startAngle: 120 },
+            { symbol: '♍', name: 'Virgo', startAngle: 150 },
+            { symbol: '♎', name: 'Libra', startAngle: 180 },
+            { symbol: '♏', name: 'Scorpio', startAngle: 210 },
+            { symbol: '♐', name: 'Sagittarius', startAngle: 240 },
+            { symbol: '♑', name: 'Capricorn', startAngle: 270 },
+            { symbol: '♒', name: 'Aquarius', startAngle: 300 },
+            { symbol: '♓', name: 'Pisces', startAngle: 330 }
+        ];
+
+        // Planets (data from Earth's perspective)
+        // Simplified – each planet's speed in degrees per day (geocentric)
+        const planets = {
+            Sun:   { color: '#FFD700', radius: 20, speed: 0.9856, angle: 0, label: '☀️' },
+            Moon:  { color: '#C0C0C0', radius: 6,  speed: 13.176, angle: 0, label: '🌙' },
+            Mercury: { color: '#B5B5B5', radius: 4,  speed: 1.383, angle: 0, label: '☿' },
+            Venus: { color: '#FFD700', radius: 7,  speed: 0.615, angle: 0, label: '♀' },
+            Mars:  { color: '#FF4500', radius: 6,  speed: 0.524, angle: 0, label: '♂' },
+            Jupiter: { color: '#DAA520', radius: 12, speed: 0.083, angle: 0, label: '♃' },
+            Saturn: { color: '#B8860B', radius: 10, speed: 0.033, angle: 0, label: '♄' }
+        };
+
+        // Distance from Earth (scaled for visual clarity)
+        const distances = {
+            Sun: 1.0,
+            Moon: 0.4,
+            Mercury: 0.6,
+            Venus: 0.8,
+            Mars: 1.4,
+            Jupiter: 2.5,
+            Saturn: 3.5
+        };
+
+        // =============================================================
+        // 2. RESIZE
+        // =============================================================
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            cx = W / 2;
+            cy = H / 2;
+            radius = Math.min(W, H) * 0.38;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // =============================================================
+        // 3. DRAW
+        // =============================================================
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+
+            // Background
+            const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.8);
+            bg.addColorStop(0, '#1a1a2e');
+            bg.addColorStop(1, '#0a0a12');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // ---- Zodiac Ring ----
+            const zodiacRadius = radius * 1.2;
+            ctx.strokeStyle = '#2a1f3d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, zodiacRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Draw zodiac segments and labels
+            zodiacSigns.forEach((sign, i) => {
+                const startAngle = (sign.startAngle - 90) * Math.PI / 180;
+                const endAngle = (sign.startAngle + 30 - 90) * Math.PI / 180;
+
+                // Arc segment
+                ctx.strokeStyle = '#3c2f5c';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(0, 0, zodiacRadius, startAngle, endAngle);
+                ctx.stroke();
+
+                // Label
+                const midAngle = (startAngle + endAngle) / 2;
+                const labelR = zodiacRadius + 25;
+                const x = labelR * Math.cos(midAngle);
+                const y = labelR * Math.sin(midAngle);
+
+                ctx.fillStyle = '#b0a4c4';
+                ctx.font = '16px Georgia';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${sign.symbol}`, x, y - 14);
+                ctx.font = '10px Georgia';
+                ctx.fillText(sign.name, x, y + 12);
+
+                // Tick marks at sign boundaries
+                const tickR = zodiacRadius + 6;
+                const tx = tickR * Math.cos(startAngle);
+                const ty = tickR * Math.sin(startAngle);
+                ctx.strokeStyle = '#4a3c5c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(zodiacRadius * Math.cos(startAngle), zodiacRadius * Math.sin(startAngle));
+                ctx.lineTo(tx, ty);
+                ctx.stroke();
+            });
+
+            // ---- Ecliptic grid lines (subtle) ----
+            for (let i = 0; i < 36; i++) {
+                const angle = (i * 10) * Math.PI / 180;
+                ctx.strokeStyle = 'rgba(30, 20, 40, 0.3)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(zodiacRadius * 1.3 * Math.cos(angle), zodiacRadius * 1.3 * Math.sin(angle));
+                ctx.stroke();
+            }
+
+            // ---- Planets ----
+            const planetKeys = Object.keys(planets);
+            planetKeys.forEach((key) => {
+                const p = planets[key];
+                const dist = distances[key] * radius * 0.3;
+                const angleRad = p.angle * Math.PI / 180;
+
+                const x = dist * Math.cos(angleRad);
+                const y = dist * Math.sin(angleRad);
+
+                // Glow
+                const glow = ctx.createRadialGradient(x, y, 0, x, y, p.radius * 3);
+                glow.addColorStop(0, p.color + '40');
+                glow.addColorStop(1, 'transparent');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(x, y, p.radius * 3, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Body
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(x, y, p.radius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Label
+                ctx.fillStyle = '#e2daeb';
+                ctx.font = '10px Georgia';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(p.label, x, y - p.radius - 4);
+            });
+
+            // ---- Earth centre marker ----
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#4ade80';
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#4ade8040';
+            ctx.beginPath();
+            ctx.arc(0, 0, 20, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#e2daeb';
+            ctx.font = '12px Georgia';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('🌍 Earth', 0, 10);
+
+            ctx.restore();
+
+            // ---- Update Sun sign ----
+            const sunAngle = planets.Sun.angle % 360;
+            let sunSign = '';
+            zodiacSigns.forEach((sign, i) => {
+                const start = sign.startAngle;
+                const end = sign.startAngle + 30;
+                if (sunAngle >= start && sunAngle < end) {
+                    sunSign = `${sign.symbol} ${sign.name}`;
+                }
+            });
+            if (!sunSign) sunSign = '♓ Pisces'; // fallback
+            sunSignEl.textContent = sunSign;
+        }
+
+        // =============================================================
+        // 4. UPDATE
+        // =============================================================
+        function update() {
+            if (!animating) return;
+
+            const dayIncrement = 0.5 * speed;
+            time += dayIncrement;
+
+            Object.keys(planets).forEach((key) => {
+                const p = planets[key];
+                p.angle = (p.angle + p.speed * dayIncrement) % 360;
+            });
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        // =============================================================
+        // 5. CONTROLS
+        // =============================================================
+        document.getElementById('toggleAnim').addEventListener('click', function() {
+            animating = !animating;
+            this.textContent = animating ? '⏸️ Pause' : '▶️ Play';
+            if (animating) update();
+        });
+
+        document.getElementById('speedUp').addEventListener('click', () => {
+            speed = Math.min(speed * 1.5, 20);
+        });
+
+        document.getElementById('slowDown').addEventListener('click', () => {
+            speed = Math.max(speed / 1.5, 0.1);
+        });
+
+        // =============================================================
+        // 6. START
+        // =============================================================
+        // Initialise planet angles to a plausible starting position
+        // (Sun in Aries, others spread out)
+        planets.Sun.angle = 0;
+        planets.Moon.angle = 60;
+        planets.Mercury.angle = 45;
+        planets.Venus.angle = 80;
+        planets.Mars.angle = 120;
+        planets.Jupiter.angle = 200;
+        planets.Saturn.angle = 280;
+
+        update();
+    </script>
+</body>
+</html>
