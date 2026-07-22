@@ -3,395 +3,235 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Astrology — Digital Divination</title>
+    <title>Zodiac — Earth‑Centric Astrology</title>
     <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon" />
     <style>
-        /* ===== Global ===== */
+        /* ===== Reset & Body ===== */
         body,
         html {
             margin: 0;
             padding: 0;
+            overflow: hidden;
             width: 100%;
-            min-height: 100vh;
+            height: 100%;
             font-family: 'Georgia', serif;
             background-color: #0a0a12;
             color: #e2daeb;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        /* ===== Nav Bar ===== */
-        .nav-bar {
-            width: 100%;
-            padding: 12px 20px;
-            background: rgba(10, 10, 18, 0.9);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #2a1f3d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-sizing: border-box;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .nav-bar .title {
-            font-size: 1.2rem;
-            color: #c77dff;
-        }
-        .nav-bar .back-btn {
-            color: #b0a4c4;
-            text-decoration: none;
-            padding: 6px 16px;
-            border: 1px solid #3c2f5c;
-            border-radius: 50px;
-            transition: all 0.25s;
-            font-size: 0.9rem;
-        }
-        .nav-bar .back-btn:hover {
-            background: #9d4edd;
-            color: #fff;
-            border-color: #c77dff;
-        }
-
-        /* ===== Container ===== */
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            justify-content: center;
-        }
-
-        /* ===== Form Panel ===== */
-        .form-panel {
-            flex: 1;
-            min-width: 280px;
-            max-width: 400px;
-            background: rgba(20, 16, 30, 0.6);
-            border: 1px solid #2a1f3d;
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(4px);
-            align-self: flex-start;
-        }
-        .form-panel h2 {
-            margin-top: 0;
-            color: #c77dff;
-            font-weight: normal;
-            border-bottom: 1px solid #2a1f3d;
-            padding-bottom: 8px;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #a092b8;
-            margin-bottom: 4px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px 12px;
-            background: #09070e;
-            border: 1px solid #2a1f3d;
-            border-radius: 8px;
-            color: #e2daeb;
-            font-family: inherit;
-            font-size: 0.95rem;
-            box-sizing: border-box;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #9d4edd;
-        }
-        .form-row {
-            display: flex;
-            gap: 12px;
-        }
-        .form-row .form-group {
-            flex: 1;
-        }
-        .btn-generate {
-            width: 100%;
-            padding: 12px;
-            background: #9d4edd;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: inherit;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-generate:hover {
-            background: #c77dff;
-        }
-        .btn-generate:active {
-            transform: scale(0.98);
-        }
-
-        /* ===== Chart Panel ===== */
-        .chart-panel {
-            flex: 2;
-            min-width: 400px;
-            max-width: 700px;
-            background: rgba(20, 16, 30, 0.4);
+        /* ===== Sidebar Info Panel (Left) ===== */
+        #sidebar {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            width: 220px;
+            max-height: calc(100vh - 40px);
+            background: rgba(10, 10, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid #2a1f3d;
             border-radius: 16px;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .chart-panel h2 {
-            margin-top: 0;
-            color: #c77dff;
-            font-weight: normal;
-        }
-        #chartCanvas {
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, #12101e, #0a0a12);
-        }
-        .chart-placeholder {
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, #12101e, #0a0a12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4a3c5c;
-            font-size: 1rem;
-            text-align: center;
-            border: 1px solid #2a1f3d;
-        }
-
-        /* ===== Interpretation Panel ===== */
-        .interpretation {
-            flex: 1;
-            min-width: 280px;
-            max-width: 400px;
-            background: rgba(20, 16, 30, 0.6);
-            border: 1px solid #2a1f3d;
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(4px);
-            align-self: flex-start;
-            max-height: 600px;
+            z-index: 10;
             overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            transition: transform 0.3s ease;
         }
-        .interpretation h3 {
-            color: #c77dff;
-            font-weight: normal;
-            border-bottom: 1px solid #2a1f3d;
-            padding-bottom: 8px;
-            margin-top: 0;
-        }
-        .interpretation .planet-entry {
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(42, 31, 61, 0.3);
-            font-size: 0.85rem;
-        }
-        .interpretation .planet-entry .symbol {
-            font-size: 1.2rem;
-            margin-right: 6px;
-        }
-        .interpretation .planet-entry .highlight {
-            color: #c77dff;
-        }
-        .interpretation::-webkit-scrollbar {
+        #sidebar::-webkit-scrollbar {
             width: 2px;
         }
-        .interpretation::-webkit-scrollbar-track {
+        #sidebar::-webkit-scrollbar-track {
             background: transparent;
         }
-        .interpretation::-webkit-scrollbar-thumb {
+        #sidebar::-webkit-scrollbar-thumb {
             background: #9d4edd;
             border-radius: 10px;
         }
 
-        /* ===== Daily Horoscope ===== */
-        #daily-horoscope {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #2a1f3d;
-            opacity: 0;
-            animation: wavyFadeIn 2.5s ease forwards;
-        }
-        #daily-horoscope .oracle {
-            font-style: italic;
+        #sidebar h2 {
+            margin: 0 0 6px 0;
+            font-size: 1.1rem;
+            font-weight: normal;
             color: #c77dff;
-            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #2a1f3d;
+            padding-bottom: 8px;
         }
-        #daily-horoscope .horoscope-text {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #cbd5e1;
-            margin-top: 8px;
+        #sidebar .subtitle {
+            font-size: 0.7rem;
+            color: #a092b8;
+            margin-top: -4px;
+            margin-bottom: 12px;
         }
-        #daily-horoscope .sign-badge {
-            display: inline-block;
-            background: rgba(157, 78, 221, 0.2);
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            border: 1px solid #3c2f5c;
-        }
-        /* Wavy fade-in animation */
-        @keyframes wavyFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.98);
-                filter: blur(4px);
-            }
-            30% {
-                opacity: 0.5;
-                transform: translateY(-4px) scale(1.01);
-                filter: blur(0);
-            }
-            60% {
-                opacity: 0.8;
-                transform: translateY(6px) scale(0.99);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
-            }
+        #sidebar hr {
+            border: none;
+            border-top: 1px solid #1f1a2e;
+            margin: 10px 0;
         }
 
-        /* ===== Responsive ===== */
+        .planet-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(42, 31, 61, 0.3);
+        }
+        .planet-row .symbol {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .planet-row .name {
+            flex: 1;
+            padding-left: 6px;
+            color: #cbd5e1;
+        }
+        .planet-row .sign {
+            font-weight: bold;
+            color: #fff;
+        }
+        .planet-row .status {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+        }
+        .planet-row .status.retrograde {
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.15);
+        }
+        .planet-row .status.direct {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        #datetime {
+            font-size: 0.8rem;
+            font-family: monospace;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        #user-info {
+            font-size: 0.85rem;
+            color: #e2daeb;
+            margin-bottom: 8px;
+        }
+        #user-info .highlight {
+            color: #c77dff;
+        }
+
+        /* ===== Back Button (Top Right) ===== */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            background: rgba(20, 16, 30, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #e2daeb;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 50px;
+            border: 1px solid #3c2f5c;
+            font-family: 'Georgia', serif;
+            font-size: 0.9rem;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .back-btn:hover {
+            background: #9d4edd;
+            color: #fff;
+            border-color: #c77dff;
+            box-shadow: 0 0 24px rgba(157, 78, 221, 0.3);
+        }
+
+        /* ===== Canvas ===== */
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* ===== Responsive tweaks ===== */
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                align-items: center;
+            #sidebar {
+                left: 10px;
+                top: 10px;
+                width: 160px;
+                padding: 12px;
+                font-size: 0.7rem;
             }
-            .form-panel,
-            .interpretation {
-                max-width: 100%;
-                width: 100%;
+            #sidebar h2 {
+                font-size: 0.9rem;
             }
-            .chart-panel {
-                min-width: unset;
-                width: 100%;
+            .planet-row {
+                font-size: 0.7rem;
             }
-            .nav-bar .title {
-                font-size: 1rem;
+            .back-btn {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+                font-size: 0.7rem;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== NAV BAR ===== -->
-    <div class="nav-bar">
-        <span class="title">✦ Astrology</span>
-        <div>
-            <a href="natal.html" class="back-btn">🌙 Natal Chart</a>
-            <a href="digital-divination.html" class="back-btn">← Altar</a>
+    <!-- ===== SIDEBAR ===== -->
+    <div id="sidebar">
+        <h2>✦ Celestial Watch</h2>
+        <div id="datetime">Loading time…</div>
+        <div id="user-info">Welcome, Traveller</div>
+
+        <hr />
+
+        <div id="planetary-info">
+            <!-- Planet rows will be injected here -->
+        </div>
+
+        <hr />
+        <div style="font-size:0.65rem; color:#4a3c5c; text-align:center; margin-top:6px;">
+            ⚡ Positions updated in real time
         </div>
     </div>
 
-    <!-- ===== MAIN CONTAINER ===== -->
-    <div class="container">
+    <!-- ===== BACK BUTTON ===== -->
+    <a href="digital-divination.html" class="back-btn">← Back to Altar</a>
 
-        <!-- ===== FORM PANEL ===== -->
-        <div class="form-panel">
-            <h2>📅 Birth Data</h2>
-            <form id="birthForm">
-                <div class="form-group">
-                    <label for="birthName">Name</label>
-                    <input type="text" id="birthName" placeholder="Your name" />
-                </div>
-                <div class="form-group">
-                    <label for="birthDate">Birth Date</label>
-                    <input type="date" id="birthDate" />
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="birthHour">Hour</label>
-                        <input type="number" id="birthHour" min="0" max="23" value="12" />
-                    </div>
-                    <div class="form-group">
-                        <label for="birthMinute">Minute</label>
-                        <input type="number" id="birthMinute" min="0" max="59" value="0" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="birthLocation">Location</label>
-                    <input type="text" id="birthLocation" placeholder="City, Country" />
-                </div>
-                <button type="submit" class="btn-generate">🔮 Generate Chart</button>
-            </form>
+    <!-- ===== CANVAS ===== -->
+    <canvas id="canvas"></canvas>
 
-            <div style="margin-top:12px; font-size:0.7rem; color:#4a3c5c; text-align:center;">
-                💾 Name &amp; date are pre‑filled from your Altar profile.
-            </div>
-        </div>
-
-        <!-- ===== CHART PANEL ===== -->
-        <div class="chart-panel">
-            <h2>🌀 Birth Chart</h2>
-            <canvas id="chartCanvas"></canvas>
-            <div id="chartInfo" style="margin-top:12px; font-size:0.85rem; color:#a092b8; text-align:center;">
-                Enter your birth details and click "Generate Chart"
-            </div>
-        </div>
-
-        <!-- ===== INTERPRETATION PANEL ===== -->
-        <div class="interpretation" id="interpretation">
-            <h3>📖 Interpretation</h3>
-            <div id="natal-interp">
-                <div style="color:#4a3c5c; font-style:italic; text-align:center; padding:20px 0;">
-                    A celestial map awaits your birth data.
-                </div>
-            </div>
-            <!-- Daily Horoscope placeholder -->
-            <div id="daily-horoscope">
-                <div id="horoscope-loading" style="color:#4a3c5c; font-style:italic; text-align:center; padding:10px 0;">
-                    🔮 Consulting the Oracle…
-                </div>
-                <div id="horoscope-content" style="display:none;"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- ======================== SCRIPT ============================= -->
-    <!-- ============================================================ -->
     <script>
         // =============================================================
-        // 1. ZODIAC & PLANET DATA
+        // 1. SETUP
         // =============================================================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let W, H, cx, cy, radius;
+
+        // Zodiac signs (fixed 30° segments)
         const zodiacSigns = [
-            { symbol: '♈', name: 'Aries', start: 0, element: 'Fire', ruler: 'Mars' },
-            { symbol: '♉', name: 'Taurus', start: 30, element: 'Earth', ruler: 'Venus' },
-            { symbol: '♊', name: 'Gemini', start: 60, element: 'Air', ruler: 'Mercury' },
-            { symbol: '♋', name: 'Cancer', start: 90, element: 'Water', ruler: 'Moon' },
-            { symbol: '♌', name: 'Leo', start: 120, element: 'Fire', ruler: 'Sun' },
-            { symbol: '♍', name: 'Virgo', start: 150, element: 'Earth', ruler: 'Mercury' },
-            { symbol: '♎', name: 'Libra', start: 180, element: 'Air', ruler: 'Venus' },
-            { symbol: '♏', name: 'Scorpio', start: 210, element: 'Water', ruler: 'Pluto' },
-            { symbol: '♐', name: 'Sagittarius', start: 240, element: 'Fire', ruler: 'Jupiter' },
-            { symbol: '♑', name: 'Capricorn', start: 270, element: 'Earth', ruler: 'Saturn' },
-            { symbol: '♒', name: 'Aquarius', start: 300, element: 'Air', ruler: 'Uranus' },
-            { symbol: '♓', name: 'Pisces', start: 330, element: 'Water', ruler: 'Neptune' }
+            { symbol: '♈', name: 'Aries', start: 0 },
+            { symbol: '♉', name: 'Taurus', start: 30 },
+            { symbol: '♊', name: 'Gemini', start: 60 },
+            { symbol: '♋', name: 'Cancer', start: 90 },
+            { symbol: '♌', name: 'Leo', start: 120 },
+            { symbol: '♍', name: 'Virgo', start: 150 },
+            { symbol: '♎', name: 'Libra', start: 180 },
+            { symbol: '♏', name: 'Scorpio', start: 210 },
+            { symbol: '♐', name: 'Sagittarius', start: 240 },
+            { symbol: '♑', name: 'Capricorn', start: 270 },
+            { symbol: '♒', name: 'Aquarius', start: 300 },
+            { symbol: '♓', name: 'Pisces', start: 330 }
         ];
 
+        // Get zodiac sign info from an angle in degrees
         function getZodiacSign(angleDeg) {
             const normalized = ((angleDeg % 360) + 360) % 360;
             for (let i = 0; i < zodiacSigns.length; i++) {
@@ -401,463 +241,316 @@
                     return zodiacSigns[i];
                 }
             }
-            return zodiacSigns[0];
+            return zodiacSigns[0]; // fallback
         }
 
-        // Get today's Sun sign (using current date and approximate Sun speed)
-        function getTodaySunSign() {
-            // Reference: Jan 1, 2025 at noon UTC, Sun was at ~280.46° (approximate)
-            const epoch = new Date(Date.UTC(2025, 0, 1, 12, 0, 0));
-            const now = new Date();
-            const diffDays = (now.getTime() - epoch.getTime()) / (1000 * 60 * 60 * 24);
-            const sunAngle = (280.46 + 0.9856 * diffDays) % 360;
-            return getZodiacSign(sunAngle);
-        }
-
-        // =============================================================
-        // 2. PLANETARY CALCULATION (for natal chart)
-        // =============================================================
-        const planetSpeeds = {
-            Sun: 0.9856,
-            Moon: 13.176,
-            Mercury: 1.383,
-            Venus: 0.615,
-            Mars: 0.524,
-            Jupiter: 0.083,
-            Saturn: 0.033
+        // Planet data
+        // Speeds are degrees per day (approximate geocentric mean motion)
+        const planetsConfig = {
+            Sun: { color: '#FFD700', radius: 18, speed: 0.9856, label: '☀️', name: 'Sun', wobble: 0 },
+            Moon: { color: '#C0C0C0', radius: 6, speed: 13.176, label: '🌙', name: 'Moon', wobble: 0 },
+            Mercury: { color: '#B5B5B5', radius: 4, speed: 1.383, label: '☿', name: 'Mercury', wobble: 2.5 },
+            Venus: { color: '#FFD700', radius: 7, speed: 0.615, label: '♀', name: 'Venus', wobble: 1.5 },
+            Mars: { color: '#FF4500', radius: 6, speed: 0.524, label: '♂', name: 'Mars', wobble: 1.2 },
+            Jupiter: { color: '#DAA520', radius: 12, speed: 0.083, label: '♃', name: 'Jupiter', wobble: 0.3 },
+            Saturn: { color: '#B8860B', radius: 10, speed: 0.033, label: '♄', name: 'Saturn', wobble: 0.1 }
         };
 
-        const planetDisplay = {
-            Sun: { symbol: '☀️', name: 'Sun' },
-            Moon: { symbol: '🌙', name: 'Moon' },
-            Mercury: { symbol: '☿', name: 'Mercury' },
-            Venus: { symbol: '♀', name: 'Venus' },
-            Mars: { symbol: '♂', name: 'Mars' },
-            Jupiter: { symbol: '♃', name: 'Jupiter' },
-            Saturn: { symbol: '♄', name: 'Saturn' }
+        // Distance from Earth (scaled for visual clarity)
+        const distances = {
+            Sun: 1.0,
+            Moon: 0.35,
+            Mercury: 0.55,
+            Venus: 0.75,
+            Mars: 1.3,
+            Jupiter: 2.4,
+            Saturn: 3.4
         };
 
-        const refAngles = {
-            Sun: 280.46,
-            Moon: 215.67,
-            Mercury: 245.12,
-            Venus: 185.34,
-            Mars: 120.78,
-            Jupiter: 45.23,
-            Saturn: 320.56
-        };
+        // State
+        let time = 0; // simulation days
+        let lastTimestamp = 0;
+        let animating = true;
 
-        function getPlanetAngle(planet, daysSinceEpoch) {
-            const baseAngle = refAngles[planet] || 0;
-            const speed = planetSpeeds[planet] || 0;
-            return (baseAngle + speed * daysSinceEpoch) % 360;
+        // =============================================================
+        // 2. RESIZE
+        // =============================================================
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            cx = W / 2;
+            cy = H / 2;
+            radius = Math.min(W, H) * 0.38;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // =============================================================
+        // 3. PLANET POSITIONS
+        // =============================================================
+        // We store angles in the planets object
+        const planets = {};
+        Object.keys(planetsConfig).forEach(key => {
+            planets[key] = {
+                angle: Math.random() * 360,
+                speed: planetsConfig[key].speed,
+                wobble: planetsConfig[key].wobble || 0
+            };
+        });
+
+        function getPlanetAngle(key, day) {
+            const p = planets[key];
+            const baseAngle = (p.angle + p.speed * day) % 360;
+            // Add wobble to simulate retrograde illusion for inner planets
+            if (p.wobble > 0) {
+                const wobbleFactor = 4 * p.wobble * Math.sin(2 * Math.PI * day / (360 / p.speed) * 0.5);
+                return (baseAngle + wobbleFactor + 360) % 360;
+            }
+            return baseAngle;
         }
 
-        function daysSinceEpoch(date) {
-            const epoch = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
-            const diffMs = date.getTime() - epoch.getTime();
-            return diffMs / (1000 * 60 * 60 * 24);
-        }
-
-        function calculatePlanets(birthDate) {
-            const days = daysSinceEpoch(birthDate);
-            const planets = {};
-            Object.keys(planetSpeeds).forEach(key => {
-                const angle = getPlanetAngle(key, days);
-                const sign = getZodiacSign(angle);
-                planets[key] = {
-                    angle: angle,
-                    sign: sign,
-                    display: planetDisplay[key]
-                };
-            });
-            return planets;
+        function isRetrograde(key, day) {
+            // Simple simulation: if the wobble causes the angle to decrease over a short interval
+            const a1 = getPlanetAngle(key, day);
+            const a2 = getPlanetAngle(key, day + 0.1);
+            let diff = a2 - a1;
+            if (diff < -180) diff += 360;
+            if (diff > 180) diff -= 360;
+            return diff < 0;
         }
 
         // =============================================================
-        // 3. DRAW CHART
+        // 4. DRAW
         // =============================================================
-        const canvas = document.getElementById('chartCanvas');
-        const ctx = canvas.getContext('2d');
+        function draw(day) {
+            ctx.clearRect(0, 0, W, H);
 
-        function resizeCanvas() {
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const size = Math.min(rect.width - 40, 500);
-            canvas.width = size;
-            canvas.height = size;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function drawChart(planets, birthName, birthDate) {
-            const w = canvas.width;
-            const h = canvas.height;
-            const cx = w / 2;
-            const cy = h / 2;
-            const radius = Math.min(w, h) * 0.42;
-
-            ctx.clearRect(0, 0, w, h);
-
-            const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.4);
+            // Background gradient
+            const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.8);
             bg.addColorStop(0, '#1a1a2e');
             bg.addColorStop(1, '#0a0a12');
             ctx.fillStyle = bg;
-            ctx.fillRect(0, 0, w, h);
+            ctx.fillRect(0, 0, W, H);
 
             ctx.save();
             ctx.translate(cx, cy);
 
-            // Outer ring
+            // ---- Zodiac Ring ----
+            const zodiacRadius = radius * 1.2;
             ctx.strokeStyle = '#2a1f3d';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.arc(0, 0, zodiacRadius, 0, 2 * Math.PI);
             ctx.stroke();
 
-            // Zodiac ring
+            // Draw zodiac segments and labels
             zodiacSigns.forEach((sign, i) => {
                 const startAngle = (sign.start - 90) * Math.PI / 180;
                 const endAngle = (sign.start + 30 - 90) * Math.PI / 180;
 
+                // Arc segment
                 ctx.strokeStyle = '#3c2f5c';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.arc(0, 0, radius, startAngle, endAngle);
+                ctx.arc(0, 0, zodiacRadius, startAngle, endAngle);
                 ctx.stroke();
 
+                // Label
                 const midAngle = (startAngle + endAngle) / 2;
-                const labelR = radius + 22;
+                const labelR = zodiacRadius + 24;
                 const x = labelR * Math.cos(midAngle);
                 const y = labelR * Math.sin(midAngle);
 
                 ctx.fillStyle = '#b0a4c4';
-                ctx.font = '13px Georgia';
+                ctx.font = '16px Georgia';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`${sign.symbol}`, x, y - 12);
-                ctx.font = '8px Georgia';
+                ctx.fillText(`${sign.symbol}`, x, y - 14);
+                ctx.font = '9px Georgia';
                 ctx.fillText(sign.name, x, y + 12);
             });
 
-            // Inner circles
-            ctx.strokeStyle = 'rgba(42, 31, 61, 0.3)';
-            ctx.lineWidth = 0.5;
-            [0.7, 0.4].forEach(ratio => {
-                ctx.beginPath();
-                ctx.arc(0, 0, radius * ratio, 0, 2 * Math.PI);
-                ctx.stroke();
-            });
-
-            // Grid lines
-            for (let i = 0; i < 12; i++) {
-                const angle = (i * 30 - 90) * Math.PI / 180;
-                ctx.strokeStyle = 'rgba(42, 31, 61, 0.2)';
+            // ---- Ecliptic grid lines ----
+            for (let i = 0; i < 36; i++) {
+                const angle = (i * 10) * Math.PI / 180;
+                ctx.strokeStyle = 'rgba(30, 20, 40, 0.3)';
                 ctx.lineWidth = 0.5;
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.lineTo(radius * 0.95 * Math.cos(angle), radius * 0.95 * Math.sin(angle));
+                ctx.lineTo(zodiacRadius * 1.3 * Math.cos(angle), zodiacRadius * 1.3 * Math.sin(angle));
                 ctx.stroke();
             }
 
-            // Planets
-            const planetKeys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-            const planetRadius = radius * 0.75;
-
+            // ---- Planets ----
+            const planetKeys = Object.keys(planetsConfig);
             planetKeys.forEach((key) => {
-                const data = planets[key];
-                if (!data) return;
-                const angleRad = (data.angle - 90) * Math.PI / 180;
-                const dist = planetRadius * (0.25 + (planetKeys.indexOf(key) / planetKeys.length) * 0.6);
+                const config = planetsConfig[key];
+                const angleRad = getPlanetAngle(key, day) * Math.PI / 180;
+                const dist = distances[key] * radius * 0.3;
+
                 const x = dist * Math.cos(angleRad);
                 const y = dist * Math.sin(angleRad);
 
-                const glow = ctx.createRadialGradient(x, y, 0, x, y, 12);
-                glow.addColorStop(0, '#c77dff30');
+                // Glow
+                const glow = ctx.createRadialGradient(x, y, 0, x, y, config.radius * 3);
+                glow.addColorStop(0, config.color + '40');
                 glow.addColorStop(1, 'transparent');
                 ctx.fillStyle = glow;
                 ctx.beginPath();
-                ctx.arc(x, y, 12, 0, 2 * Math.PI);
+                ctx.arc(x, y, config.radius * 3, 0, 2 * Math.PI);
                 ctx.fill();
 
-                ctx.fillStyle = '#c77dff';
+                // Body
+                ctx.shadowColor = config.color;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = config.color;
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.arc(x, y, config.radius, 0, 2 * Math.PI);
                 ctx.fill();
+                ctx.shadowBlur = 0;
 
+                // Label
                 ctx.fillStyle = '#e2daeb';
-                ctx.font = '8px Georgia';
+                ctx.font = '10px Georgia';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
-                const label = planetDisplay[key]?.symbol || key;
-                ctx.fillText(label, x, y - 8);
-
-                ctx.fillStyle = '#a092b8';
-                ctx.font = '7px Georgia';
-                ctx.textBaseline = 'top';
-                ctx.fillText(data.sign.symbol, x + 6, y + 4);
+                ctx.fillText(config.label, x, y - config.radius - 4);
             });
 
-            // Center label
+            // ---- Earth centre marker ----
+            ctx.shadowBlur = 0;
             ctx.fillStyle = '#4ade80';
-            ctx.font = '14px Georgia';
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#4ade8040';
+            ctx.beginPath();
+            ctx.arc(0, 0, 20, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#e2daeb';
+            ctx.font = '12px Georgia';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('☉', 0, -10);
-            ctx.fillStyle = '#a092b8';
-            ctx.font = '8px Georgia';
             ctx.textBaseline = 'top';
-            ctx.fillText(birthName || 'Birth Chart', 0, 8);
+            ctx.fillText('🌍 Earth', 0, 10);
 
             ctx.restore();
-
-            const infoEl = document.getElementById('chartInfo');
-            const dateStr = birthDate ? new Date(birthDate).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            }) : 'Unknown date';
-            infoEl.textContent = `${birthName || 'Your'} chart – ${dateStr}`;
         }
 
         // =============================================================
-        // 4. INTERPRETATION (Natal)
+        // 5. SIDEBAR UPDATE
         // =============================================================
-        function generateInterpretation(planets, birthName) {
-            const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+        const planetDisplayOrder = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+
+        function updateSidebar(day) {
+            // Date / Time
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            const timeStr = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('datetime').innerHTML =
+                `🕒 ${dateStr}<br><span style="font-size:0.7rem; color:#6a5c7c;">${timeStr} (your local time)</span>`;
+
+            // User info from localStorage
+            const userName = localStorage.getItem('user-name') || 'Traveller';
+            const userBirthday = localStorage.getItem('user-birthday');
+            let userInfoHtml = `👤 <span class="highlight">${userName}</span>`;
+            if (userBirthday) {
+                const bday = new Date(userBirthday + 'T00:00:00');
+                const bdayStr = bday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                userInfoHtml += ` &middot; 🎂 ${bdayStr}`;
+            }
+            document.getElementById('user-info').innerHTML = userInfoHtml;
+
+            // Planetary info
             let html = '';
+            planetDisplayOrder.forEach((key) => {
+                const config = planetsConfig[key];
+                const angle = getPlanetAngle(key, day);
+                const sign = getZodiacSign(angle);
+                const retro = isRetrograde(key, day);
 
-            keys.forEach(key => {
-                const data = planets[key];
-                if (!data) return;
-                const display = planetDisplay[key];
-                const sign = data.sign;
-
-                const interpretations = {
-                    Sun: `Your core identity and vitality. You express yourself through ${sign.name} energy.`,
-                    Moon: `Your emotional nature and inner world. You feel most at home with ${sign.name} qualities.`,
-                    Mercury: `Your communication style and thinking. You process information through ${sign.name} intuition.`,
-                    Venus: `Your love language and values. You attract and appreciate ${sign.name} energy.`,
-                    Mars: `Your drive and ambition. You pursue goals with ${sign.name} determination.`,
-                    Jupiter: `Your growth and expansion. You find meaning through ${sign.name} wisdom.`,
-                    Saturn: `Your discipline and structure. You build foundations with ${sign.name} integrity.`
-                };
+                const statusClass = retro ? 'retrograde' : 'direct';
+                const statusText = retro ? '⟲ Retro' : '⟳ Direct';
 
                 html += `
-                    <div class="planet-entry">
-                        <span class="symbol">${display.symbol}</span>
-                        <strong>${display.name}</strong> in <span class="highlight">${sign.symbol} ${sign.name}</span>
-                        <br />
-                        <span style="font-size:0.75rem; color:#94a3b8;">${interpretations[key] || 'A unique expression of this placement.'}</span>
+                    <div class="planet-row">
+                        <span class="symbol">${config.label}</span>
+                        <span class="name">${config.name}</span>
+                        <span class="sign">${sign.symbol} ${sign.name}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
                     </div>
                 `;
             });
-
-            return html;
+            document.getElementById('planetary-info').innerHTML = html;
         }
 
         // =============================================================
-        // 5. DAILY HOROSCOPE
+        // 6. ANIMATION LOOP
         // =============================================================
-        function generateDailyHoroscope(userName) {
-            const todaySign = getTodaySunSign();
-            const signName = todaySign.name;
+        let accumulatedTime = 0;
 
-            // Pre-written horoscope snippets for each sign (love, career, health)
-            const horoscopeTemplates = {
-                Aries: [
-                    "Today you feel a surge of energy – channel it into creative projects. Love may spark unexpectedly.",
-                    "Your natural leadership shines. Take the initiative at work; others will follow. Guard against impatience.",
-                    "Aries, your vitality is high. Use this time for physical activity and bold new beginnings."
-                ],
-                Taurus: [
-                    "Slow and steady wins the race. Focus on building something lasting today. Relationships deepen.",
-                    "Your persistence pays off. Financial matters improve. Enjoy the simple pleasures of life.",
-                    "Taurus, today is about comfort and security. Nurture your body and your home."
-                ],
-                Gemini: [
-                    "Curiosity leads you to new knowledge today. Conversations open doors. Stay adaptable.",
-                    "Your wit and charm are your superpowers. Use them to network and share ideas. Avoid scattering energy.",
-                    "Gemini, communication flows easily. Write, talk, and connect – inspiration is everywhere."
-                ],
-                Cancer: [
-                    "Your intuition is spot-on today. Trust your feelings and nurture those you love. A quiet evening heals.",
-                    "Home and family are your anchors. A domestic project brings satisfaction. Emotional honesty wins.",
-                    "Cancer, your caring nature attracts support. Accept help and offer comfort in return."
-                ],
-                Leo: [
-                    "Your confidence draws attention. Shine in social settings and express your creative vision.",
-                    "Leo, you're the centre of attention – use it to inspire others. Romance is highlighted.",
-                    "Your generosity and warmth make you magnetic. Share your light generously."
-                ],
-                Virgo: [
-                    "Precision and detail are your strengths. Organise something important today. Health improves with routine.",
-                    "Your analytical mind solves a tricky problem. Service to others brings satisfaction. Stay grounded.",
-                    "Virgo, focus on self‑improvement. Small steps lead to big progress."
-                ],
-                Libra: [
-                    "Balance is key. Seek harmony in relationships and beauty in your surroundings. A partnership flourishes.",
-                    "Your diplomatic skills resolve a conflict. Art and culture bring you joy. Socialise with grace.",
-                    "Libra, today is about connection. Forge a new alliance or strengthen an existing one."
-                ],
-                Scorpio: [
-                    "Depth and intensity define your day. A transformation is underway – embrace it. Intimacy deepens.",
-                    "Your investigative powers uncover hidden truths. Use them wisely. Power shifts in your favour.",
-                    "Scorpio, your passion is magnetic. Channel it into creative or spiritual pursuits."
-                ],
-                Sagittarius: [
-                    "Adventure calls. Expand your horizons through travel, study, or a philosophical conversation. Optimism abounds.",
-                    "Your enthusiasm is contagious. Take a risk – the universe supports your growth. Learn something new.",
-                    "Sagittarius, freedom is your goal. Break routine and explore the unknown."
-                ],
-                Capricorn: [
-                    "Discipline leads to success today. Focus on long‑term goals and practical steps. Authority is recognised.",
-                    "Your patient work pays off. A financial or career milestone approaches. Stay the course.",
-                    "Capricorn, structure your day for maximum productivity. You're building something enduring."
-                ],
-                Aquarius: [
-                    "Innovation flows through you. Share your unique ideas – they could change the world. Friend networks expand.",
-                    "Your humanitarian side shines. Get involved in a collective effort. Technology aids your plans.",
-                    "Aquarius, think outside the box. A breakthrough idea is on the horizon."
-                ],
-                Pisces: [
-                    "Dreams and intuition guide you. A creative project or spiritual practice brings deep fulfilment.",
-                    "Your empathy is your gift. Help someone in need – it heals you both. Artistic expression flows.",
-                    "Pisces, your sensitivity is your strength. Trust your visions and share them softly."
-                ]
-            };
+        function animate(timestamp) {
+            if (!animating) return;
 
-            // Select a random snippet for this sign
-            const snippets = horoscopeTemplates[signName] || ["Today is full of possibility. Trust your inner guidance."];
-            const randomIndex = Math.floor(Math.random() * snippets.length);
-            const horoscopeText = snippets[randomIndex];
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const delta = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // seconds
+            lastTimestamp = timestamp;
 
-            // Add a personal greeting
-            const greeting = userName ? `✨ ${userName}, your daily guidance for ${signName}:` :
-                `✨ Today's guidance for ${signName}:`;
+            // 1 second = 1 real day in the simulation? No, let's make it 1 minute = 1 day for visible motion.
+            // Actually, let's keep it slow enough to watch. 1 real second = 0.5 simulation days.
+            const dayIncrement = delta * 0.5;
+            time += dayIncrement;
 
-            return {
-                sign: todaySign,
-                greeting: greeting,
-                text: horoscopeText
-            };
+            // Cap time to avoid floating point issues
+            if (time > 100000) time = 0;
+
+            // Draw the canvas
+            draw(time);
+
+            // Update the sidebar (every frame is fine, but we can throttle if needed)
+            updateSidebar(time);
+
+            requestAnimationFrame(animate);
         }
 
         // =============================================================
-        // 6. DISPLAY DAILY HOROSCOPE (with wavy fade‑in)
+        // 7. START
         // =============================================================
-        function displayDailyHoroscope(userName) {
-            const loadingEl = document.getElementById('horoscope-loading');
-            const contentEl = document.getElementById('horoscope-content');
-            const container = document.getElementById('daily-horoscope');
-
-            if (!userName || !localStorage.getItem('user-birthday')) {
-                loadingEl.textContent = '🌙 Set your name and birthday in the Altar to receive daily guidance.';
-                return;
-            }
-
-            // Show loading message
-            loadingEl.textContent = '🔮 Consulting the Oracle…';
-            contentEl.style.display = 'none';
-
-            // After 3 seconds, generate and display
-            setTimeout(() => {
-                const horoscope = generateDailyHoroscope(userName);
-                loadingEl.style.display = 'none';
-                contentEl.style.display = 'block';
-                contentEl.innerHTML = `
-                    <div class="oracle">${horoscope.greeting}</div>
-                    <div class="sign-badge">${horoscope.sign.symbol} ${horoscope.sign.name}</div>
-                    <div class="horoscope-text">${horoscope.text}</div>
-                `;
-                // The animation is applied via CSS (opacity:0 → 1 with wavy keyframes)
-                container.style.animation = 'wavyFadeIn 2.5s ease forwards';
-            }, 3000);
-        }
-
-        // =============================================================
-        // 7. FORM HANDLER
-        // =============================================================
-        document.getElementById('birthForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('birthName').value || 'You';
-            const dateStr = document.getElementById('birthDate').value;
-            const hour = parseInt(document.getElementById('birthHour').value) || 12;
-            const minute = parseInt(document.getElementById('birthMinute').value) || 0;
-            const location = document.getElementById('birthLocation').value || 'Unknown';
-
-            if (!dateStr) {
-                alert('Please enter your birth date.');
-                return;
-            }
-
-            const birthDate = new Date(dateStr + 'T' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0') +
-                ':00');
-
-            const planets = calculatePlanets(birthDate);
-            drawChart(planets, name, birthDate);
-
-            const interpHtml = generateInterpretation(planets, name);
-            document.getElementById('natal-interp').innerHTML = `
-                <div style="font-size:0.75rem; color:#4a3c5c; margin-bottom:12px;">
-                    🕒 ${birthDate.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'})} &middot; 📍 ${location}
-                </div>
-                ${interpHtml}
-            `;
-
-            // Save to localStorage
-            localStorage.setItem('natal-name', name);
-            localStorage.setItem('natal-date', dateStr);
-            localStorage.setItem('natal-time', `${hour}:${String(minute).padStart(2,'0')}`);
-            localStorage.setItem('natal-location', location);
+        // Initialise planet angles to a nice starting layout
+        const startAngles = {
+            Sun: 45,
+            Moon: 120,
+            Mercury: 80,
+            Venus: 15,
+            Mars: 210,
+            Jupiter: 290,
+            Saturn: 345
+        };
+        Object.keys(planets).forEach(key => {
+            if (startAngles[key]) planets[key].angle = startAngles[key];
         });
 
+        // Start the loop
+        requestAnimationFrame(animate);
+
         // =============================================================
-        // 8. INIT – Pre‑fill and trigger daily horoscope
+        // 8. HANDLE WINDOW RESIZE (re-draw)
         // =============================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pre-fill from main altar profile
-            const savedName = localStorage.getItem('user-name') || '';
-            const savedBirthday = localStorage.getItem('user-birthday') || '';
-
-            if (savedName) document.getElementById('birthName').value = savedName;
-            if (savedBirthday) document.getElementById('birthDate').value = savedBirthday;
-
-            // Also check saved natal data
-            const natalName = localStorage.getItem('natal-name');
-            const natalDate = localStorage.getItem('natal-date');
-            const natalTime = localStorage.getItem('natal-time');
-            const natalLocation = localStorage.getItem('natal-location');
-
-            if (natalName && natalDate) {
-                document.getElementById('birthName').value = natalName;
-                document.getElementById('birthDate').value = natalDate;
-                if (natalTime) {
-                    const parts = natalTime.split(':');
-                    document.getElementById('birthHour').value = parseInt(parts[0]) || 12;
-                    document.getElementById('birthMinute').value = parseInt(parts[1]) || 0;
-                }
-                if (natalLocation) document.getElementById('birthLocation').value = natalLocation;
-
-                // Auto-generate chart
-                document.getElementById('birthForm').dispatchEvent(new Event('submit'));
-            }
-
-            // ---- Daily Horoscope ----
-            const userName = savedName || natalName || '';
-            if (userName && savedBirthday) {
-                // Display daily horoscope after a short delay
-                displayDailyHoroscope(userName);
-            } else {
-                // Show a message if no user data
-                document.getElementById('horoscope-loading').textContent =
-                    '🌙 Set your name and birthday in the Altar to receive daily guidance.';
-            }
+        window.addEventListener('resize', () => {
+            resize();
         });
 
-        console.log('✨ Astrology page loaded. Daily horoscope ready.');
+        console.log('✨ Astrology Simulator started.');
+        console.log('📡 Fetching user data from localStorage...');
     </script>
-
 </body>
 </html>
