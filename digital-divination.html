@@ -1112,6 +1112,7 @@
       dropdown.addEventListener('change', generateMatrixSlots);
 
       bdayInput.addEventListener('change', updateProfiles);
+      // --- Save user data to localStorage ---
       const nameInput = document.getElementById('user-name');
       const bdayInput = document.getElementById('user-birthday');
 
@@ -1120,12 +1121,9 @@
         localStorage.setItem('user-birthday', bdayInput.value);
       }
 
-      // Save on change
       nameInput.addEventListener('change', saveUserData);
       bdayInput.addEventListener('change', saveUserData);
-
-      // Also save on page load so they're always up to date
-      saveUserData();
+      saveUserData(); // initial save
       // Hover badges → sidebar
       [document.getElementById('zodiac-box'), document.getElementById('stone-box')].forEach(box => {
         if (!box) return;
