@@ -154,6 +154,24 @@
             border-color: #c77dff;
             color: #c77dff;
         }
+        .btn-print {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: transparent;
+            color: #a092b8;
+            border: 1px solid #2a1f3d;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            width: 100%;
+        }
+        .btn-print:hover {
+            background: #9d4edd;
+            color: #fff;
+            border-color: #c77dff;
+        }
 
         /* ===== Chart Panel ===== */
         .chart-panel {
@@ -255,6 +273,13 @@
             font-weight: bold;
             color: #c77dff;
         }
+        .interpretation .aspect-item .aspect-desc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-style: italic;
+            display: block;
+            margin-left: 20px;
+        }
         .interpretation .transit-item {
             font-size: 0.8rem;
             color: #cbd5e1;
@@ -265,6 +290,13 @@
             font-weight: bold;
             color: #4ade80;
         }
+        .interpretation .transit-item .transit-desc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-style: italic;
+            display: block;
+            margin-left: 20px;
+        }
         .interpretation::-webkit-scrollbar {
             width: 2px;
         }
@@ -274,6 +306,61 @@
         .interpretation::-webkit-scrollbar-thumb {
             background: #9d4edd;
             border-radius: 10px;
+        }
+
+        /* ===== Print Styles ===== */
+        @media print {
+            body,
+            html {
+                background: #fff !important;
+                color: #000 !important;
+            }
+            .nav-bar,
+            .form-panel,
+            .btn-print,
+            .btn-geocode,
+            .back-btn {
+                display: none !important;
+            }
+            .container {
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .chart-panel,
+            .interpretation {
+                background: #fff !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 10px !important;
+            }
+            .interpretation {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            .interpretation .planet-entry,
+            .interpretation .aspect-item,
+            .interpretation .transit-item {
+                border-bottom-color: #ccc !important;
+            }
+            .interpretation .highlight,
+            .interpretation .aspect-type,
+            .interpretation .transit-type,
+            .interpretation h3,
+            .interpretation h4 {
+                color: #000 !important;
+            }
+            #chartCanvas {
+                max-width: 400px !important;
+            }
+            .horoscope-text,
+            .sign-badge,
+            .date,
+            .lucky {
+                color: #000 !important;
+            }
+            .api-status {
+                display: none !important;
+            }
         }
 
         /* ===== Responsive ===== */
@@ -349,6 +436,7 @@
                     </div>
                 </div>
                 <button type="submit" class="btn-generate">🔮 Generate Chart</button>
+                <button type="button" class="btn-print" id="printBtn">🖨️ Print Chart</button>
             </form>
 
             <div style="margin-top:12px; font-size:0.7rem; color:#4a3c5c; text-align:center;">
@@ -475,34 +563,26 @@
         // 3. ASCENDANT & HOUSES
         // =============================================================
         function getLocalSiderealTime(date, longitude) {
-            // Julian Day Number
             const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
             const jd = (utcDate.getTime() / 86400000) + 2440587.5;
-            // GMST in degrees
             const gmst = (280.46061837 + 360.98564736629 * (jd - 2451545.0)) % 360;
-            // Local sidereal time (degrees)
             return (gmst + longitude) % 360;
         }
 
         function calculateAscendant(lstDeg, latitude) {
-            // Simplified formula using ecliptic obliquity (23.44°)
             const obliquity = 23.44;
             const lstRad = lstDeg * Math.PI / 180;
             const latRad = latitude * Math.PI / 180;
             const oblRad = obliquity * Math.PI / 180;
-
-            // Ascendant formula: tan(ASC) = -cos(LST) / (sin(LST)*cos(obliquity) + tan(latitude)*sin(obliquity))
             const num = -Math.cos(lstRad);
             const den = Math.sin(lstRad) * Math.cos(oblRad) + Math.tan(latRad) * Math.sin(oblRad);
             let ascRad = Math.atan2(num, den);
             let ascDeg = ascRad * 180 / Math.PI;
-            // Convert to 0-360 range
             ascDeg = ((ascDeg % 360) + 360) % 360;
             return ascDeg;
         }
 
         function getHouses(ascDeg) {
-            // Equal House system: each house is 30° wide, starting from the Ascendant
             const houses = [];
             for (let i = 0; i < 12; i++) {
                 const angle = (ascDeg + i * 30) % 360;
@@ -521,14 +601,13 @@
                 const end = (i < houses.length - 1) ? houses[i + 1].angle : houses[0].angle + 360;
                 let adjustedAngle = planetAngle;
                 if (start > end) {
-                    // Wrap around: if planet angle is less than start, add 360
                     if (adjustedAngle < start) adjustedAngle += 360;
                     if (adjustedAngle >= start && adjustedAngle < end + 360) return houses[i].number;
                 } else {
                     if (adjustedAngle >= start && adjustedAngle < end) return houses[i].number;
                 }
             }
-            return 12; // fallback
+            return 12;
         }
 
         // =============================================================
@@ -610,7 +689,137 @@
         }
 
         // =============================================================
-        // 6. DRAW CHART
+        // 6. INTERPRETATIONS
+        // =============================================================
+        function getAspectInterpretation(p1, p2, aspect) {
+            const templates = {
+                'Sun': {
+                    'Moon': {
+                        'conjunction': 'Your ego and emotions are aligned – you feel whole and authentic.',
+                        'sextile': 'Emotional understanding enhances your self‑expression.',
+                        'square': 'Inner conflict between what you want and what you feel.',
+                        'trine': 'Natural harmony between your heart and mind.',
+                        'opposition': 'You may feel torn between personal needs and others’ expectations.'
+                    },
+                    'Mercury': {
+                        'conjunction': 'Your thoughts and identity are fused – you communicate powerfully.',
+                        'sextile': 'Your mind supports your goals with clarity.',
+                        'square': 'Mental tension – your ideas may clash with your core beliefs.',
+                        'trine': 'Your intelligence flows naturally in alignment with your purpose.',
+                        'opposition': 'You may struggle to express your true self in words.'
+                    },
+                    'Venus': {
+                        'conjunction': 'Your values and identity are in harmony – you attract easily.',
+                        'sextile': 'Love and self‑expression complement each other.',
+                        'square': 'Conflict between personal desire and social expectations.',
+                        'trine': 'Natural charm and grace – you are magnetically attractive.',
+                        'opposition': 'You may feel pulled between relationships and personal freedom.'
+                    },
+                    'Mars': {
+                        'conjunction': 'Your drive and identity are one – you act with conviction.',
+                        'sextile': 'Your energy supports your ambitions.',
+                        'square': 'Inner restlessness – your actions may feel out of sync with your core.',
+                        'trine': 'You pursue your goals with courage and ease.',
+                        'opposition': 'Conflict between your desires and your sense of self.'
+                    },
+                    'Jupiter': {
+                        'conjunction': 'Your confidence and optimism are magnified.',
+                        'sextile': 'Opportunities come through your self‑expression.',
+                        'square': 'Over‑expansion – you may take on too much.',
+                        'trine': 'Your growth and identity are in natural alignment.',
+                        'opposition': 'You may feel torn between personal ambitions and broader responsibilities.'
+                    },
+                    'Saturn': {
+                        'conjunction': 'You take yourself seriously – maturity defines your purpose.',
+                        'sextile': 'Discipline supports your long‑term goals.',
+                        'square': 'Self‑doubt or restriction – you may feel burdened by duty.',
+                        'trine': 'Your sense of responsibility is natural and effective.',
+                        'opposition': 'You may feel conflicted between structure and personal freedom.'
+                    }
+                }
+                // ... add more planet combinations as needed
+            };
+
+            // Fallback if specific combination not found
+            const combo = templates[p1]?.[p2]?.[aspect.name];
+            if (combo) return combo;
+            return `${p1} ${aspect.name} ${p2} – a significant interaction between these parts of your psyche.`;
+        }
+
+        function getTransitInterpretation(transiting, natal, aspect) {
+            const transitTexts = {
+                'Sun': {
+                    'Sun': 'A powerful day – your core identity is strongly activated.',
+                    'Moon': 'Emotional clarity – your feelings are in the spotlight.',
+                    'Mercury': 'Mental agility – your thoughts are sharp and focused.',
+                    'Venus': 'Love and joy are emphasised – relationships flourish.',
+                    'Mars': 'Energetic drive – you have the momentum to take bold action.',
+                    'Jupiter': 'Expansion and luck – opportunities are abundant.',
+                    'Saturn': 'Responsibility calls – a moment to build foundations.'
+                },
+                'Moon': {
+                    'Sun': 'Your emotions colour your self‑expression today.',
+                    'Moon': 'Deep emotional processing – tune into your inner world.',
+                    'Mercury': 'Intuitive thinking – trust your gut instincts.',
+                    'Venus': 'Romantic and nurturing energies are strong.',
+                    'Mars': 'Passionate emotions – channelled into action.',
+                    'Jupiter': 'Emotional growth – you feel optimistic and generous.',
+                    'Saturn': 'Emotional maturity – you may confront deep‑seated fears.'
+                },
+                'Mercury': {
+                    'Sun': 'Communication is vital – speak your truth.',
+                    'Moon': 'Your thoughts and feelings are aligned.',
+                    'Mercury': 'Mental activity peaks – great for study or planning.',
+                    'Venus': 'Conversations are charming and creative.',
+                    'Mars': 'Ideas are assertive – you speak with conviction.',
+                    'Jupiter': 'Expansive thinking – new perspectives emerge.',
+                    'Saturn': 'Serious thinking – you consider long‑term consequences.'
+                },
+                'Venus': {
+                    'Sun': 'Your charm and values are prominent.',
+                    'Moon': 'Emotional bonding and comfort are highlighted.',
+                    'Mercury': 'Lovely communication – words are soft and healing.',
+                    'Venus': 'Love, beauty, and pleasure are intensified.',
+                    'Mars': 'Passion and desire – romance is fiery.',
+                    'Jupiter': 'Generosity and optimism in relationships.',
+                    'Saturn': 'Commitment and loyalty are tested or deepened.'
+                },
+                'Mars': {
+                    'Sun': 'You feel driven to act – a powerful day for ambition.',
+                    'Moon': 'Emotions are energised – you feel passionate.',
+                    'Mercury': 'Direct, assertive communication – you speak your mind.',
+                    'Venus': 'Passion and attraction – love is intense.',
+                    'Mars': 'Double the energy – great for physical activity.',
+                    'Jupiter': 'Bold actions lead to expansion and success.',
+                    'Saturn': 'Strategic action – you move with discipline.'
+                },
+                'Jupiter': {
+                    'Sun': 'Growth and optimism – you feel lucky and expansive.',
+                    'Moon': 'Emotional openness – you feel generous and caring.',
+                    'Mercury': 'Your mind is open to new ideas – great for learning.',
+                    'Venus': 'Relationships flourish with joy and generosity.',
+                    'Mars': 'Bold, ambitious actions – you aim high.',
+                    'Jupiter': 'Double fortune – a day of opportunity and success.',
+                    'Saturn': 'Balancing growth with responsibility – you build wisely.'
+                },
+                'Saturn': {
+                    'Sun': 'A day of discipline and focus – you are building something solid.',
+                    'Moon': 'Emotional maturity – you face your feelings with strength.',
+                    'Mercury': 'Practical thinking – you focus on what matters.',
+                    'Venus': 'Commitment and loyalty – relationships are tested.',
+                    'Mars': 'Determined action – you work hard for your goals.',
+                    'Jupiter': 'Expanding responsibilities – you grow through discipline.',
+                    'Saturn': 'Double Saturn – a time for serious reflection and structure.'
+                }
+            };
+
+            const combo = transitTexts[transiting]?.[natal];
+            if (combo) return combo;
+            return `${transiting} ${aspect.name} your natal ${natal} – a meaningful energetic connection.`;
+        }
+
+        // =============================================================
+        // 7. DRAW CHART
         // =============================================================
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
@@ -658,7 +867,6 @@
                 ctx.moveTo(0, 0);
                 ctx.lineTo(radius * 1.0 * Math.cos(angle), radius * 1.0 * Math.sin(angle));
                 ctx.stroke();
-                // House number
                 const labelR = radius * 0.9;
                 const lx = labelR * Math.cos(angle);
                 const ly = labelR * Math.sin(angle);
@@ -673,18 +881,15 @@
             zodiacSigns.forEach((sign, i) => {
                 const startAngle = (sign.start - 90) * Math.PI / 180;
                 const endAngle = (sign.start + 30 - 90) * Math.PI / 180;
-
                 ctx.strokeStyle = '#3c2f5c';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.arc(0, 0, radius, startAngle, endAngle);
                 ctx.stroke();
-
                 const midAngle = (startAngle + endAngle) / 2;
                 const labelR = radius + 22;
                 const x = labelR * Math.cos(midAngle);
                 const y = labelR * Math.sin(midAngle);
-
                 ctx.fillStyle = '#b0a4c4';
                 ctx.font = '13px Georgia';
                 ctx.textAlign = 'center';
@@ -774,7 +979,7 @@
         }
 
         // =============================================================
-        // 7. INTERPRETATION + ASPECTS + TRANSITS
+        // 8. GENERATE FULL INTERPRETATION
         // =============================================================
         function generateInterpretation(planets, birthName, aspects, houses, transits, ascDeg) {
             const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
@@ -814,18 +1019,19 @@
                 `;
             });
 
-            // ---- ASPECTS ----
+            // ---- ASPECTS with interpretations ----
             if (aspects && aspects.length > 0) {
                 html += `<div class="aspect-list"><h4>⚡ Natal Aspects</h4>`;
                 aspects.forEach(a => {
                     const sym1 = planetDisplay[a.planet1]?.symbol || a.planet1;
                     const sym2 = planetDisplay[a.planet2]?.symbol || a.planet2;
+                    const interpretation = getAspectInterpretation(a.planet1, a.planet2, a.aspect);
                     html += `
                         <div class="aspect-item">
                             ${sym1} ${a.aspect.symbol} ${sym2} — 
                             <span class="aspect-type">${a.aspect.name}</span>
                             <span style="color:#4a3c5c;"> (orb ${a.orb.toFixed(1)}°)</span>
-                            <span style="font-size:0.7rem; color:#6a5c7c;"> — ${a.aspect.description}</span>
+                            <span class="aspect-desc">${interpretation}</span>
                         </div>
                     `;
                 });
@@ -834,17 +1040,19 @@
                 html += `<div class="aspect-list"><p style="color:#4a3c5c; font-size:0.8rem;">No major aspects detected within 8° orb.</p></div>`;
             }
 
-            // ---- TRANSITS ----
+            // ---- TRANSITS with interpretations ----
             if (transits && transits.length > 0) {
                 html += `<div class="aspect-list"><h4>🌀 Today's Transits</h4>`;
                 transits.forEach(t => {
                     const symT = planetDisplay[t.transiting]?.symbol || t.transiting;
                     const symN = planetDisplay[t.natal]?.symbol || t.natal;
+                    const interpretation = getTransitInterpretation(t.transiting, t.natal, t.aspect);
                     html += `
                         <div class="transit-item">
                             ${symT} (today) ${t.aspect.symbol} ${symN} (natal) — 
                             <span class="transit-type">${t.aspect.name}</span>
                             <span style="color:#4a3c5c;"> (orb ${t.orb.toFixed(1)}°)</span>
+                            <span class="transit-desc">${interpretation}</span>
                         </div>
                     `;
                 });
@@ -857,7 +1065,7 @@
         }
 
         // =============================================================
-        // 8. TODAY'S PLANETS (for transits)
+        // 9. TODAY'S PLANETS
         // =============================================================
         function getTodayPlanets() {
             const now = new Date();
@@ -876,7 +1084,7 @@
         }
 
         // =============================================================
-        // 9. GEOCODE LOCATION
+        // 10. GEOCODE
         // =============================================================
         async function geocodeLocation(location) {
             try {
@@ -899,7 +1107,7 @@
         }
 
         // =============================================================
-        // 10. FORM HANDLER
+        // 11. FORM HANDLER
         // =============================================================
         document.getElementById('birthForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -917,7 +1125,6 @@
                 return;
             }
 
-            // If location is provided and coordinates are not, geocode
             if (location && location !== 'Unknown' && (isNaN(lat) || isNaN(lon))) {
                 const geoResult = await geocodeLocation(location);
                 if (geoResult) {
@@ -928,7 +1135,6 @@
                 }
             }
 
-            // If still no coordinates, use London as default
             if (isNaN(lat) || isNaN(lon)) {
                 lat = 51.5074;
                 lon = -0.1278;
@@ -936,29 +1142,19 @@
                 document.getElementById('birthLongitude').value = lon;
             }
 
-            // Create birth date
             const birthDate = new Date(dateStr + 'T' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0') +
                 ':00');
 
-            // Calculate planets
             const planets = calculatePlanets(birthDate);
-
-            // Calculate Ascendant & Houses
             const lst = getLocalSiderealTime(birthDate, lon);
             const ascDeg = calculateAscendant(lst, lat);
             const houses = getHouses(ascDeg);
-
-            // Calculate aspects
             const aspects = calculateAspects(planets, 8);
-
-            // Calculate transits
             const todayPlanets = getTodayPlanets();
             const transits = getTransits(planets, todayPlanets, 8);
 
-            // Draw chart
             drawChart(planets, name, birthDate, ascDeg, houses);
 
-            // Generate interpretation
             const interpHtml = generateInterpretation(planets, name, aspects, houses, transits, ascDeg);
             document.getElementById('natal-interp').innerHTML = `
                 <div style="font-size:0.75rem; color:#4a3c5c; margin-bottom:12px;">
@@ -967,7 +1163,6 @@
                 ${interpHtml}
             `;
 
-            // Save to localStorage
             localStorage.setItem('natal-name', name);
             localStorage.setItem('natal-date', dateStr);
             localStorage.setItem('natal-time', `${hour}:${String(minute).padStart(2,'0')}`);
@@ -977,7 +1172,7 @@
         });
 
         // =============================================================
-        // 11. GEOCODE BUTTON
+        // 12. GEOCODE BUTTON
         // =============================================================
         document.getElementById('geocodeBtn').addEventListener('click', async function() {
             const location = document.getElementById('birthLocation').value;
@@ -996,17 +1191,22 @@
         });
 
         // =============================================================
-        // 12. INIT – Pre‑fill and auto‑generate
+        // 13. PRINT BUTTON
+        // =============================================================
+        document.getElementById('printBtn').addEventListener('click', function() {
+            window.print();
+        });
+
+        // =============================================================
+        // 14. INIT
         // =============================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Pre-fill from main altar profile
             const savedName = localStorage.getItem('user-name') || '';
             const savedBirthday = localStorage.getItem('user-birthday') || '';
 
             if (savedName) document.getElementById('birthName').value = savedName;
             if (savedBirthday) document.getElementById('birthDate').value = savedBirthday;
 
-            // Also check saved natal data
             const natalName = localStorage.getItem('natal-name');
             const natalDate = localStorage.getItem('natal-date');
             const natalTime = localStorage.getItem('natal-time');
@@ -1026,13 +1226,12 @@
                 if (natalLat) document.getElementById('birthLatitude').value = parseFloat(natalLat);
                 if (natalLon) document.getElementById('birthLongitude').value = parseFloat(natalLon);
 
-                // Auto-generate chart
                 document.getElementById('birthForm').dispatchEvent(new Event('submit'));
             }
         });
 
-        console.log('✨ Natal Chart page loaded with houses + transits.');
-        console.log('📡 Reading from localStorage...');
+        console.log('✨ Natal Chart – full version with aspect & transit interpretations and print support.');
+        console.log('📡 Data loaded from localStorage.');
     </script>
 
 </body>
