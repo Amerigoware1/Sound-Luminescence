@@ -212,6 +212,20 @@
         .interpretation .planet-entry .highlight {
             color: #c77dff;
         }
+        .interpretation .aspect-list {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2a1f3d;
+        }
+        .interpretation .aspect-item {
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            padding: 2px 0;
+        }
+        .interpretation .aspect-item .aspect-type {
+            font-weight: bold;
+            color: #c77dff;
+        }
         .interpretation::-webkit-scrollbar {
             width: 2px;
         }
@@ -250,7 +264,7 @@
     <div class="nav-bar">
         <span class="title">✦ Natal Chart</span>
         <div>
-            <a href="zodiac.html" class="back-btn">🌌 Astrology</a>
+            <a href="astrology.html" class="back-btn">🌌 Astrology</a>
             <a href="digital-divination.html" class="back-btn">← Altar</a>
         </div>
     </div>
@@ -287,9 +301,8 @@
                 <button type="submit" class="btn-generate">🔮 Generate Chart</button>
             </form>
 
-            <!-- Quick fill from localStorage -->
             <div style="margin-top:12px; font-size:0.7rem; color:#4a3c5c; text-align:center;">
-                💾 Name &amp; date will be pre-filled from your Altar profile.
+                💾 Name &amp; date are pre‑filled from your Altar profile.
             </div>
         </div>
 
@@ -305,8 +318,10 @@
         <!-- ===== INTERPRETATION PANEL ===== -->
         <div class="interpretation" id="interpretation">
             <h3>📖 Interpretation</h3>
-            <div style="color:#4a3c5c; font-style:italic; text-align:center; padding:20px 0;">
-                A celestial map awaits your birth data.
+            <div id="natal-interp">
+                <div style="color:#4a3c5c; font-style:italic; text-align:center; padding:20px 0;">
+                    A celestial map awaits your birth data.
+                </div>
             </div>
         </div>
 
@@ -346,7 +361,9 @@
             return zodiacSigns[0];
         }
 
-        // Planetary speeds (degrees per day) – geocentric mean motion
+        // =============================================================
+        // 2. PLANETARY CALCULATION
+        // =============================================================
         const planetSpeeds = {
             Sun: 0.9856,
             Moon: 13.176,
@@ -357,7 +374,6 @@
             Saturn: 0.033
         };
 
-        // Planet symbols and names for display
         const planetDisplay = {
             Sun: { symbol: '☀️', name: 'Sun' },
             Moon: { symbol: '🌙', name: 'Moon' },
@@ -368,12 +384,6 @@
             Saturn: { symbol: '♄', name: 'Saturn' }
         };
 
-        // =============================================================
-        // 2. CALCULATE PLANET POSITIONS
-        // =============================================================
-        // Epoch: 2025-08-31 19:29:00 CDT = 2025-08-31 00:29:00 UTC
-        // We'll use a simpler reference: Jan 1, 2000 12:00 UTC = 0
-        // Reference angles for Jan 1, 2000 at noon (approximate)
         const refAngles = {
             Sun: 280.46,
             Moon: 215.67,
@@ -391,7 +401,6 @@
         }
 
         function daysSinceEpoch(date) {
-            // Reference: Jan 1, 2000 12:00 UTC
             const epoch = new Date(Date.UTC(2000, 0, 1, 12, 0, 0));
             const diffMs = date.getTime() - epoch.getTime();
             return diffMs / (1000 * 60 * 60 * 24);
@@ -413,7 +422,46 @@
         }
 
         // =============================================================
-        // 3. DRAW THE CHART
+        // 3. ASPECT CALCULATION
+        // =============================================================
+        function calculateAspects(planets, orb = 8) {
+            const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+            const aspects = [];
+            const aspectTypes = [
+                { name: 'conjunction', angle: 0, symbol: '☌', description: 'energies merge' },
+                { name: 'sextile', angle: 60, symbol: '⚹', description: 'opportunity' },
+                { name: 'square', angle: 90, symbol: '□', description: 'tension' },
+                { name: 'trine', angle: 120, symbol: '△', description: 'harmony' },
+                { name: 'opposition', angle: 180, symbol: '☍', description: 'polarity' }
+            ];
+
+            for (let i = 0; i < keys.length; i++) {
+                for (let j = i + 1; j < keys.length; j++) {
+                    const p1 = keys[i];
+                    const p2 = keys[j];
+                    const a1 = planets[p1].angle;
+                    const a2 = planets[p2].angle;
+                    let diff = ((a2 - a1) % 360 + 360) % 360;
+                    if (diff > 180) diff = 360 - diff;
+
+                    for (let at of aspectTypes) {
+                        if (Math.abs(diff - at.angle) < orb) {
+                            aspects.push({
+                                planet1: p1,
+                                planet2: p2,
+                                aspect: at,
+                                orb: Math.abs(diff - at.angle)
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+            return aspects;
+        }
+
+        // =============================================================
+        // 4. DRAW CHART
         // =============================================================
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
@@ -436,7 +484,6 @@
 
             ctx.clearRect(0, 0, w, h);
 
-            // Background
             const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.4);
             bg.addColorStop(0, '#1a1a2e');
             bg.addColorStop(1, '#0a0a12');
@@ -446,26 +493,24 @@
             ctx.save();
             ctx.translate(cx, cy);
 
-            // ---- Outer ring ----
+            // Outer ring
             ctx.strokeStyle = '#2a1f3d';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, 2 * Math.PI);
             ctx.stroke();
 
-            // ---- Zodiac ring ----
+            // Zodiac ring
             zodiacSigns.forEach((sign, i) => {
                 const startAngle = (sign.start - 90) * Math.PI / 180;
                 const endAngle = (sign.start + 30 - 90) * Math.PI / 180;
 
-                // Segment
                 ctx.strokeStyle = '#3c2f5c';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.arc(0, 0, radius, startAngle, endAngle);
                 ctx.stroke();
 
-                // Label
                 const midAngle = (startAngle + endAngle) / 2;
                 const labelR = radius + 22;
                 const x = labelR * Math.cos(midAngle);
@@ -480,7 +525,7 @@
                 ctx.fillText(sign.name, x, y + 12);
             });
 
-            // ---- Inner circles ----
+            // Inner circles
             ctx.strokeStyle = 'rgba(42, 31, 61, 0.3)';
             ctx.lineWidth = 0.5;
             [0.7, 0.4].forEach(ratio => {
@@ -489,7 +534,7 @@
                 ctx.stroke();
             });
 
-            // ---- Grid lines ----
+            // Grid lines
             for (let i = 0; i < 12; i++) {
                 const angle = (i * 30 - 90) * Math.PI / 180;
                 ctx.strokeStyle = 'rgba(42, 31, 61, 0.2)';
@@ -500,7 +545,7 @@
                 ctx.stroke();
             }
 
-            // ---- Planets ----
+            // Planets
             const planetKeys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
             const planetRadius = radius * 0.75;
 
@@ -512,7 +557,6 @@
                 const x = dist * Math.cos(angleRad);
                 const y = dist * Math.sin(angleRad);
 
-                // Glow
                 const glow = ctx.createRadialGradient(x, y, 0, x, y, 12);
                 glow.addColorStop(0, '#c77dff30');
                 glow.addColorStop(1, 'transparent');
@@ -521,13 +565,11 @@
                 ctx.arc(x, y, 12, 0, 2 * Math.PI);
                 ctx.fill();
 
-                // Dot
                 ctx.fillStyle = '#c77dff';
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, 2 * Math.PI);
                 ctx.fill();
 
-                // Label
                 ctx.fillStyle = '#e2daeb';
                 ctx.font = '8px Georgia';
                 ctx.textAlign = 'center';
@@ -535,14 +577,13 @@
                 const label = planetDisplay[key]?.symbol || key;
                 ctx.fillText(label, x, y - 8);
 
-                // Sign symbol near planet
                 ctx.fillStyle = '#a092b8';
                 ctx.font = '7px Georgia';
                 ctx.textBaseline = 'top';
                 ctx.fillText(data.sign.symbol, x + 6, y + 4);
             });
 
-            // ---- Center label ----
+            // Center label
             ctx.fillStyle = '#4ade80';
             ctx.font = '14px Georgia';
             ctx.textAlign = 'center';
@@ -555,7 +596,6 @@
 
             ctx.restore();
 
-            // ---- Update info text ----
             const infoEl = document.getElementById('chartInfo');
             const dateStr = birthDate ? new Date(birthDate).toLocaleDateString('en-US', {
                 weekday: 'long',
@@ -567,9 +607,9 @@
         }
 
         // =============================================================
-        // 4. INTERPRETATION
+        // 5. INTERPRETATION + ASPECTS
         // =============================================================
-        function generateInterpretation(planets, birthName) {
+        function generateInterpretation(planets, birthName, aspects) {
             const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
             let html = '';
 
@@ -579,7 +619,6 @@
                 const display = planetDisplay[key];
                 const sign = data.sign;
 
-                // Simple interpretation templates
                 const interpretations = {
                     Sun: `Your core identity and vitality. You express yourself through ${sign.name} energy.`,
                     Moon: `Your emotional nature and inner world. You feel most at home with ${sign.name} qualities.`,
@@ -600,11 +639,31 @@
                 `;
             });
 
+            // ---- ASPECTS SECTION ----
+            if (aspects && aspects.length > 0) {
+                html += `<div class="aspect-list"><h4 style="margin:8px 0 4px; color:#c77dff;">⚡ Aspects</h4>`;
+                aspects.forEach(a => {
+                    const sym1 = planetDisplay[a.planet1]?.symbol || a.planet1;
+                    const sym2 = planetDisplay[a.planet2]?.symbol || a.planet2;
+                    html += `
+                        <div class="aspect-item">
+                            ${sym1} ${a.aspect.symbol} ${sym2} — 
+                            <span class="aspect-type">${a.aspect.name}</span>
+                            <span style="color:#4a3c5c;"> (orb ${a.orb.toFixed(1)}°)</span>
+                            <span style="font-size:0.7rem; color:#6a5c7c;"> — ${a.aspect.description}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="aspect-list"><p style="color:#4a3c5c; font-size:0.8rem;">No major aspects detected within 8° orb.</p></div>`;
+            }
+
             return html;
         }
 
         // =============================================================
-        // 5. FORM HANDLER
+        // 6. FORM HANDLER
         // =============================================================
         document.getElementById('birthForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -620,20 +679,17 @@
                 return;
             }
 
-            // Create birth date (local time)
             const birthDate = new Date(dateStr + 'T' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0') +
                 ':00');
 
-            // Calculate planets
             const planets = calculatePlanets(birthDate);
-
-            // Draw chart
             drawChart(planets, name, birthDate);
 
-            // Generate interpretation
-            const interpHtml = generateInterpretation(planets, name);
-            document.getElementById('interpretation').innerHTML = `
-                <h3>📖 ${name}'s Chart</h3>
+            // Calculate aspects
+            const aspects = calculateAspects(planets, 8);
+
+            const interpHtml = generateInterpretation(planets, name, aspects);
+            document.getElementById('natal-interp').innerHTML = `
                 <div style="font-size:0.75rem; color:#4a3c5c; margin-bottom:12px;">
                     🕒 ${birthDate.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'})} &middot; 📍 ${location}
                 </div>
@@ -648,7 +704,7 @@
         });
 
         // =============================================================
-        // 6. PRE-FILL FROM localStorage
+        // 7. INIT – Pre‑fill and auto‑generate if data exists
         // =============================================================
         document.addEventListener('DOMContentLoaded', function() {
             // Pre-fill from main altar profile
@@ -658,7 +714,7 @@
             if (savedName) document.getElementById('birthName').value = savedName;
             if (savedBirthday) document.getElementById('birthDate').value = savedBirthday;
 
-            // Also check if there's a saved natal chart
+            // Also check saved natal data
             const natalName = localStorage.getItem('natal-name');
             const natalDate = localStorage.getItem('natal-date');
             const natalTime = localStorage.getItem('natal-time');
@@ -674,15 +730,12 @@
                 }
                 if (natalLocation) document.getElementById('birthLocation').value = natalLocation;
 
-                // Auto-generate if we have all data
-                if (natalName && natalDate) {
-                    // Trigger the form submission
-                    document.getElementById('birthForm').dispatchEvent(new Event('submit'));
-                }
+                // Auto-generate chart
+                document.getElementById('birthForm').dispatchEvent(new Event('submit'));
             }
         });
 
-        console.log('✨ Natal Chart page loaded.');
+        console.log('✨ Natal Chart page loaded with aspects.');
         console.log('📡 Reading from localStorage...');
     </script>
 
