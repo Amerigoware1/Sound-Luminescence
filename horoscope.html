@@ -234,6 +234,21 @@
             font-weight: bold;
         }
 
+        /* API status indicator */
+        .api-status {
+            font-size: 0.65rem;
+            color: #4a3c5c;
+            margin-top: 12px;
+            text-align: center;
+            font-style: italic;
+        }
+        .api-status.online {
+            color: #4ade80;
+        }
+        .api-status.offline {
+            color: #f87171;
+        }
+
         /* ===== Error / No Data ===== */
         .no-data {
             text-align: center;
@@ -318,6 +333,7 @@
                 <div class="lucky">😊 Mood: <span id="mood">—</span></div>
                 <div class="lucky">💞 Compatibility: <span id="compatibility">—</span></div>
             </div>
+            <div class="api-status" id="apiStatus">✦ Connected to the stars</div>
         </div>
 
     </div>
@@ -372,17 +388,6 @@
         // =============================================================
         function getMoonSign() {
             const now = new Date();
-            // Get moon position (ecliptic longitude)
-            const moonPos = SunCalc.getMoonPosition(now, 0, 0);
-            // Moon's ecliptic longitude is approximately its azimuth
-            // SunCalc gives us right ascension and declination, but we need ecliptic longitude.
-            // Alternative: use SunCalc.getMoonIllumination which gives phase, not position.
-            // We'll use a simple approximation: moon's zodiac sign can be estimated from its phase and position.
-            // A more accurate method: use the moon's ecliptic longitude.
-            // SunCalc doesn't directly give ecliptic longitude, but we can approximate.
-            // For our purposes, we'll use a simplified calculation based on the moon's age.
-            const illumination = SunCalc.getMoonIllumination(now);
-            // Moon's approximate ecliptic longitude: 0° at new moon, increases ~13.176° per day
             // Reference: New moon on 2025-01-29 12:36 UTC
             const newMoonRef = new Date(Date.UTC(2025, 0, 29, 12, 36, 0));
             const daysSinceNewMoon = (now.getTime() - newMoonRef.getTime()) / (1000 * 60 * 60 * 24);
@@ -392,7 +397,82 @@
         }
 
         // =============================================================
-        // 4. FETCH HOROSCOPE FROM Aztro API
+        // 4. LOCAL HOROSCOPE GENERATOR (FALLBACK)
+        // =============================================================
+        const horoscopeTemplates = {
+            Aries: [
+                "Today you feel a surge of energy – channel it into creative projects. Love may spark unexpectedly.",
+                "Your natural leadership shines. Take the initiative at work; others will follow. Guard against impatience.",
+                "Aries, your vitality is high. Use this time for physical activity and bold new beginnings."
+            ],
+            Taurus: [
+                "Slow and steady wins the race. Focus on building something lasting today. Relationships deepen.",
+                "Your persistence pays off. Financial matters improve. Enjoy the simple pleasures of life.",
+                "Taurus, today is about comfort and security. Nurture your body and your home."
+            ],
+            Gemini: [
+                "Curiosity leads you to new knowledge today. Conversations open doors. Stay adaptable.",
+                "Your wit and charm are your superpowers. Use them to network and share ideas. Avoid scattering energy.",
+                "Gemini, communication flows easily. Write, talk, and connect – inspiration is everywhere."
+            ],
+            Cancer: [
+                "Your intuition is spot-on today. Trust your feelings and nurture those you love. A quiet evening heals.",
+                "Home and family are your anchors. A domestic project brings satisfaction. Emotional honesty wins.",
+                "Cancer, your caring nature attracts support. Accept help and offer comfort in return."
+            ],
+            Leo: [
+                "Your confidence draws attention. Shine in social settings and express your creative vision.",
+                "Leo, you're the centre of attention – use it to inspire others. Romance is highlighted.",
+                "Your generosity and warmth make you magnetic. Share your light generously."
+            ],
+            Virgo: [
+                "Precision and detail are your strengths. Organise something important today. Health improves with routine.",
+                "Your analytical mind solves a tricky problem. Service to others brings satisfaction. Stay grounded.",
+                "Virgo, focus on self‑improvement. Small steps lead to big progress."
+            ],
+            Libra: [
+                "Balance is key. Seek harmony in relationships and beauty in your surroundings. A partnership flourishes.",
+                "Your diplomatic skills resolve a conflict. Art and culture bring you joy. Socialise with grace.",
+                "Libra, today is about connection. Forge a new alliance or strengthen an existing one."
+            ],
+            Scorpio: [
+                "Depth and intensity define your day. A transformation is underway – embrace it. Intimacy deepens.",
+                "Your investigative powers uncover hidden truths. Use them wisely. Power shifts in your favour.",
+                "Scorpio, your passion is magnetic. Channel it into creative or spiritual pursuits."
+            ],
+            Sagittarius: [
+                "Adventure calls. Expand your horizons through travel, study, or a philosophical conversation. Optimism abounds.",
+                "Your enthusiasm is contagious. Take a risk – the universe supports your growth. Learn something new.",
+                "Sagittarius, freedom is your goal. Break routine and explore the unknown."
+            ],
+            Capricorn: [
+                "Discipline leads to success today. Focus on long‑term goals and practical steps. Authority is recognised.",
+                "Your patient work pays off. A financial or career milestone approaches. Stay the course.",
+                "Capricorn, structure your day for maximum productivity. You're building something enduring."
+            ],
+            Aquarius: [
+                "Innovation flows through you. Share your unique ideas – they could change the world. Friend networks expand.",
+                "Your humanitarian side shines. Get involved in a collective effort. Technology aids your plans.",
+                "Aquarius, think outside the box. A breakthrough idea is on the horizon."
+            ],
+            Pisces: [
+                "Dreams and intuition guide you. A creative project or spiritual practice brings deep fulfilment.",
+                "Your empathy is your gift. Help someone in need – it heals you both. Artistic expression flows.",
+                "Pisces, your sensitivity is your strength. Trust your visions and share them softly."
+            ]
+        };
+
+        function generateLocalHoroscope(signName) {
+            const snippets = horoscopeTemplates[signName] || [
+                "Today is full of possibility. Trust your inner guidance.",
+                "The stars are aligned in your favour. Embrace the day."
+            ];
+            const randomIndex = Math.floor(Math.random() * snippets.length);
+            return snippets[randomIndex];
+        }
+
+        // =============================================================
+        // 5. FETCH HOROSCOPE FROM Aztro API (with fallback)
         // =============================================================
         async function fetchHoroscope(signName) {
             const signMap = {
@@ -416,24 +496,42 @@
                 const response = await fetch(url, { method: 'POST' });
                 if (!response.ok) throw new Error('API request failed');
                 const data = await response.json();
-                return data;
+                return { success: true, data: data, source: 'api' };
             } catch (error) {
-                console.warn('Horoscope API error:', error);
-                return null;
+                console.warn('Horoscope API error, using fallback:', error);
+
+                // Generate local fallback
+                const localText = generateLocalHoroscope(signName);
+                const fallbackData = {
+                    description: localText,
+                    lucky_number: Math.floor(Math.random() * 99) + 1,
+                    color: ['Red', 'Blue', 'Green', 'Gold', 'Silver', 'Purple', 'Orange', 'Pink'][Math.floor(Math.random() *
+                        8)],
+                    mood: ['Playful', 'Calm', 'Energetic', 'Reflective', 'Bold', 'Peaceful', 'Curious', 'Joyful'][Math.floor(
+                        Math.random() * 8)],
+                    compatibility: ['Taurus', 'Virgo', 'Capricorn', 'Cancer', 'Scorpio', 'Pisces', 'Gemini', 'Libra',
+                        'Aquarius', 'Leo', 'Sagittarius', 'Aries'
+                    ][Math.floor(Math.random() * 12)]
+                };
+                return { success: true, data: fallbackData, source: 'local' };
             }
         }
 
         // =============================================================
-        // 5. DISPLAY HOROSCOPE
+        // 6. DISPLAY HOROSCOPE
         // =============================================================
-        function displayHoroscope(data, userName, sunSign, moonSign) {
+        function displayHoroscope(result, userName, sunSign, moonSign) {
             const loadingEl = document.getElementById('oracle-loading');
             const cardEl = document.getElementById('horoscope-card');
+            const statusEl = document.getElementById('apiStatus');
 
-            if (!data) {
+            if (!result || !result.success) {
                 loadingEl.innerHTML = '🌙 The Oracle is silent…<br><span style="font-size:0.8rem;color:#4a3c5c;">Please try again later.</span>';
                 return;
             }
+
+            const data = result.data;
+            const source = result.source;
 
             // Hide loading, show card
             loadingEl.style.display = 'none';
@@ -461,10 +559,19 @@
             document.getElementById('luckyColor').textContent = data.color || '—';
             document.getElementById('mood').textContent = data.mood || '—';
             document.getElementById('compatibility').textContent = data.compatibility || '—';
+
+            // API status
+            if (source === 'api') {
+                statusEl.textContent = '✦ Connected to the stars ✦';
+                statusEl.className = 'api-status online';
+            } else {
+                statusEl.textContent = '✦ Oracle reading from the local spirits ✦';
+                statusEl.className = 'api-status offline';
+            }
         }
 
         // =============================================================
-        // 6. MAIN INIT
+        // 7. MAIN INIT
         // =============================================================
         async function initHoroscope() {
             // Get user data from localStorage
@@ -492,21 +599,21 @@
             const sunSign = getTodaySunSign();
             const moonSign = getMoonSign();
 
-            // Fetch horoscope from API
-            const horoscopeData = await fetchHoroscope(sunSign.name);
+            // Fetch horoscope from API (with fallback)
+            const result = await fetchHoroscope(sunSign.name);
 
             // Display after a short delay (for dramatic effect)
             setTimeout(() => {
-                displayHoroscope(horoscopeData, userName, sunSign, moonSign);
+                displayHoroscope(result, userName, sunSign, moonSign);
             }, 2200);
         }
 
         // =============================================================
-        // 7. START
+        // 8. START
         // =============================================================
         document.addEventListener('DOMContentLoaded', initHoroscope);
 
-        console.log('✨ Horoscope page loaded.');
+        console.log('✨ Horoscope page loaded (with fallback).');
         console.log('📡 Reading from localStorage...');
     </script>
 
