@@ -296,15 +296,17 @@
 
     /* ========== NAV PILL ========== */
     .altar-nav-pill-container {
-      position: absolute;
-      top: 15px;
-      left: calc(50% - 150px);
-      transform: translateX(-50%);
-      z-index: 100;
       display: flex;
       justify-content: center;
-      width: auto;
+      align-items: center;
+      flex-wrap: wrap;        /* allows wrapping */
+      gap: 10px;              /* spacing between pills */
+      margin: 15px auto;      /* keeps it centered between boxes */
+      width: 100%;            /* ensures it spans the available space */
+      max-width: 900px;       /* prevents stretching too wide */
+      z-index: 100;
     }
+
 
     .altar-nav-pill {
       background-color: rgba(20, 16, 30, 0.8);
@@ -351,6 +353,7 @@
     <nav class="altar-nav-pill">
       <a href="ouija.html" class="nav-pill-link">🌰 Talking Board</a>
       <a href="astrology.html" class="nav-pill-link">🌟 Astrology</a>
+      <a href="horoscope.html" class="nav-pill-link">🔮 Horoscope</a>
       <a href="natal.html" class="nav-pill-link">📅 Natal Chart</a>
       <a href="hypnotic.html" class="nav-pill-link">಄ Hypnotic Core</a>
       <button class="nav-pill-link" onclick="openSimpleWindow('hand-guide.html')">🕊️ Palmistry Guide</button>
