@@ -297,18 +297,18 @@
     /* ========== NAV PILL ========== */
     .altar-nav-pill-container {
       position: relative;
-      display: flex;
+      top: 15px;
+      left: calc(50% - 150px);
+      transform: translateX(-50%);
+      z-index: 100;
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;        /* allows wrapping */
-      gap: 2px;              /* spacing between pills */
-      top: 10px;
-      margin: 10px auto;      /* keeps it centered between boxes */
-      width: 100%;            /* ensures it spans the available space */
-      max-width: 700px;       /* prevents stretching too wide */
-      z-index: 100;
+      gap: 10px;              /* spacing between pills */
+      margin: 15px auto;      /* keeps it centered between boxes */
+      display: flex;
+      width: auto;
     }
-
 
     .altar-nav-pill {
       background-color: rgba(20, 16, 30, 0.8);
