@@ -1,556 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zodiac — Earth‑Centric Astrology</title>
-    <link rel="icon" href="assets/misc/divination-icon.ico" type="image/x-icon" />
-    <style>
-        /* ===== Reset & Body ===== */
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            font-family: 'Georgia', serif;
-            background-color: #0a0a12;
-            color: #e2daeb;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zodiac — Earth‑Centric Astrology</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #c8b87a;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  h1 {
+    margin-top: 24px;
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #e8d48b;
+    text-shadow: 0 0 12px rgba(232,212,139,.4);
+  }
+  .subtitle {
+    font-size: .85rem;
+    color: #7a7a9a;
+    margin: 4px 0 8px;
+    letter-spacing: 2px;
+  }
+  #clock {
+    font-size: .95rem;
+    color: #9a9abf;
+    margin-bottom: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  #chart-container {
+    position: relative;
+    width: min(90vw, 700px);
+    height: min(90vw, 700px);
+  }
+  svg { width: 100%; height: 100%; }
+  .back-link {
+    margin: 20px 0 30px;
+    color: #7a7a9a;
+    text-decoration: none;
+    font-size: .9rem;
+    letter-spacing: 1px;
+    transition: color .3s;
+  }
+  .back-link:hover { color: #e8d48b; }
 
-        /* ===== Sidebar Info Panel (Left) ===== */
-        #sidebar {
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            width: 220px;
-            max-height: calc(100vh - 40px);
-            background: rgba(10, 10, 18, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid #2a1f3d;
-            border-radius: 16px;
-            padding: 20px;
-            z-index: 10;
-            overflow-y: auto;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-            transition: transform 0.3s ease;
-        }
-        #sidebar::-webkit-scrollbar {
-            width: 2px;
-        }
-        #sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        #sidebar::-webkit-scrollbar-thumb {
-            background: #9d4edd;
-            border-radius: 10px;
-        }
-
-        #sidebar h2 {
-            margin: 0 0 6px 0;
-            font-size: 1.1rem;
-            font-weight: normal;
-            color: #c77dff;
-            letter-spacing: 1px;
-            border-bottom: 1px solid #2a1f3d;
-            padding-bottom: 8px;
-        }
-        #sidebar .subtitle {
-            font-size: 0.7rem;
-            color: #a092b8;
-            margin-top: -4px;
-            margin-bottom: 12px;
-        }
-        #sidebar hr {
-            border: none;
-            border-top: 1px solid #1f1a2e;
-            margin: 10px 0;
-        }
-
-        .planet-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 4px 0;
-            font-size: 0.8rem;
-            border-bottom: 1px solid rgba(42, 31, 61, 0.3);
-        }
-        .planet-row .symbol {
-            width: 20px;
-            text-align: center;
-            font-size: 1rem;
-        }
-        .planet-row .name {
-            flex: 1;
-            padding-left: 6px;
-            color: #cbd5e1;
-        }
-        .planet-row .sign {
-            font-weight: bold;
-            color: #fff;
-        }
-        .planet-row .status {
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #94a3b8;
-        }
-        .planet-row .status.retrograde {
-            color: #f87171;
-            background: rgba(248, 113, 113, 0.15);
-        }
-        .planet-row .status.direct {
-            color: #4ade80;
-            background: rgba(74, 222, 128, 0.1);
-        }
-
-        #datetime {
-            font-size: 0.8rem;
-            font-family: monospace;
-            color: #94a3b8;
-            margin-bottom: 8px;
-        }
-        #user-info {
-            font-size: 0.85rem;
-            color: #e2daeb;
-            margin-bottom: 8px;
-        }
-        #user-info .highlight {
-            color: #c77dff;
-        }
-
-        /* ===== Back Button (Top Right) ===== */
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 20;
-            background: rgba(20, 16, 30, 0.8);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: #e2daeb;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 50px;
-            border: 1px solid #3c2f5c;
-            font-family: 'Georgia', serif;
-            font-size: 0.9rem;
-            transition: all 0.25s ease-in-out;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-        }
-        .back-btn:hover {
-            background: #9d4edd;
-            color: #fff;
-            border-color: #c77dff;
-            box-shadow: 0 0 24px rgba(157, 78, 221, 0.3);
-        }
-
-        /* ===== Canvas ===== */
-        #canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* ===== Responsive tweaks ===== */
-        @media (max-width: 768px) {
-            #sidebar {
-                left: 10px;
-                top: 10px;
-                width: 160px;
-                padding: 12px;
-                font-size: 0.7rem;
-            }
-            #sidebar h2 {
-                font-size: 0.9rem;
-            }
-            .planet-row {
-                font-size: 0.7rem;
-            }
-            .back-btn {
-                top: 10px;
-                right: 10px;
-                padding: 6px 12px;
-                font-size: 0.7rem;
-            }
-        }
-    </style>
+  /* Moon phase canvas */
+  #moon-phase-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  #moon-canvas { display: block; margin: 0 auto 4px; }
+  #moon-label {
+    font-size: .7rem;
+    color: #9a9abf;
+    letter-spacing: 1px;
+  }
+</style>
 </head>
 <body>
 
-    <!-- ===== SIDEBAR ===== -->
-    <div id="sidebar">
-        <h2>✦ Celestial Watch</h2>
-        <div id="datetime">Loading time…</div>
-        <div id="user-info">Welcome, Traveller</div>
+<h1>✦ Celestial Watch</h1>
+<p class="subtitle">Real-Time Geocentric Positions</p>
+<div id="clock">Loading time…</div>
 
-        <hr />
+<div id="chart-container">
+  <svg id="zodiac-svg" viewBox="0 0 700 700"></svg>
+  <div id="moon-phase-box">
+    <canvas id="moon-canvas" width="60" height="60"></canvas>
+    <div id="moon-label">Moon Phase</div>
+  </div>
+</div>
 
-        <div id="planetary-info">
-            <!-- Planet rows will be injected here -->
-        </div>
+<a class="back-link" href="digital-divination.html">[← Back to Altar]</a>
 
-        <hr />
-        <div style="font-size:0.65rem; color:#4a3c5c; text-align:center; margin-top:6px;">
-            ⚡ Positions updated in real time
-        </div>
-    </div>
+<script>
+/* ── Constants ─────────────────────────────────────────── */
+const CX = 350, CY = 350;
+const R_OUTER = 320, R_SIGN = 290, R_PLANET = 240, R_INNER = 200;
+const DEG = Math.PI / 180;
 
-    <!-- ===== BACK BUTTON ===== -->
-    <a href="digital-divination.html" class="back-btn">← Back to Altar</a>
+const SIGNS = [
+  { sym: '♈', name: 'Aries' },       { sym: '♉', name: 'Taurus' },
+  { sym: '♊', name: 'Gemini' },      { sym: '♋', name: 'Cancer' },
+  { sym: '♌', name: 'Leo' },         { sym: '♍', name: 'Virgo' },
+  { sym: '♎', name: 'Libra' },       { sym: '♏', name: 'Scorpio' },
+  { sym: '♐', name: 'Sagittarius' }, { sym: '♑', name: 'Capricorn' },
+  { sym: '♒', name: 'Aquarius' },    { sym: '♓', name: 'Pisces' }
+];
 
-    <!-- ===== CANVAS ===== -->
-    <canvas id="canvas"></canvas>
+const BODIES = [
+  { id: 'sun',     sym: '☉', color: '#ffd966', name: 'Sun' },
+  { id: 'moon',    sym: '☽', color: '#d0d0e8', name: 'Moon' },
+  { id: 'mercury', sym: '☿', color: '#b0b0c0', name: 'Mercury' },
+  { id: 'venus',   sym: '♀', color: '#e8a0c0', name: 'Venus' },
+  { id: 'mars',    sym: '♂', color: '#e06040', name: 'Mars' },
+  { id: 'jupiter', sym: '♃', color: '#d4a050', name: 'Jupiter' },
+  { id: 'saturn',  sym: '♄', color: '#a09060', name: 'Saturn' },
+  { id: 'uranus',  sym: '♅', color: '#60c0d0', name: 'Uranus' },
+  { id: 'neptune', sym: '♆', color: '#5070d0', name: 'Neptune' }
+];
 
-    <script>
-        // =============================================================
-        // 1. SETUP
-        // =============================================================
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+/* ── Julian Date ───────────────────────────────────────── */
+function toJD(d) {
+  let y = d.getUTCFullYear(), m = d.getUTCMonth() + 1, day = d.getUTCDate();
+  const h = d.getUTCHours() + d.getUTCMinutes()/60 + d.getUTCSeconds()/3600;
+  if (m <= 2) { y--; m += 12; }
+  const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + h/24 + B - 1524.5;
+}
 
-        let W, H, cx, cy, radius;
+/* ── Simplified Geocentric Longitudes (low-precision) ── */
+function norm(deg) { return ((deg % 360) + 360) % 360; }
 
-        // Zodiac signs (fixed 30° segments)
-        const zodiacSigns = [
-            { symbol: '♈', name: 'Aries', start: 0 },
-            { symbol: '♉', name: 'Taurus', start: 30 },
-            { symbol: '♊', name: 'Gemini', start: 60 },
-            { symbol: '♋', name: 'Cancer', start: 90 },
-            { symbol: '♌', name: 'Leo', start: 120 },
-            { symbol: '♍', name: 'Virgo', start: 150 },
-            { symbol: '♎', name: 'Libra', start: 180 },
-            { symbol: '♏', name: 'Scorpio', start: 210 },
-            { symbol: '♐', name: 'Sagittarius', start: 240 },
-            { symbol: '♑', name: 'Capricorn', start: 270 },
-            { symbol: '♒', name: 'Aquarius', start: 300 },
-            { symbol: '♓', name: 'Pisces', start: 330 }
-        ];
+function bodyLongitude(jd, id) {
+  const T = (jd - 2451545.0) / 36525; // centuries since J2000
+  const d = jd - 2451545.0;           // days since J2000
 
-        // Get zodiac sign info from an angle in degrees
-        function getZodiacSign(angleDeg) {
-            const normalized = ((angleDeg % 360) + 360) % 360;
-            for (let i = 0; i < zodiacSigns.length; i++) {
-                const start = zodiacSigns[i].start;
-                const end = start + 30;
-                if (normalized >= start && normalized < end) {
-                    return zodiacSigns[i];
-                }
-            }
-            return zodiacSigns[0]; // fallback
-        }
+  switch(id) {
+    case 'sun':
+      // Mean longitude of Sun ≈ Earth's + 180
+      return norm(280.46646 + 36000.76983 * T + 0.0003032 * T*T);
 
-        // Planet data
-        // Speeds are degrees per day (approximate geocentric mean motion)
-        const planetsConfig = {
-            Sun: { color: '#FFD700', radius: 18, speed: 0.9856, label: '☀️', name: 'Sun', wobble: 0 },
-            Moon: { color: '#C0C0C0', radius: 6, speed: 13.176, label: '🌙', name: 'Moon', wobble: 0 },
-            Mercury: { color: '#B5B5B5', radius: 4, speed: 1.383, label: '☿', name: 'Mercury', wobble: 2.5 },
-            Venus: { color: '#FFD700', radius: 7, speed: 0.615, label: '♀', name: 'Venus', wobble: 1.5 },
-            Mars: { color: '#FF4500', radius: 6, speed: 0.524, label: '♂', name: 'Mars', wobble: 1.2 },
-            Jupiter: { color: '#DAA520', radius: 12, speed: 0.083, label: '♃', name: 'Jupiter', wobble: 0.3 },
-            Saturn: { color: '#B8860B', radius: 10, speed: 0.033, label: '♄', name: 'Saturn', wobble: 0.1 }
-        };
+    case 'moon': {
+      // Simplified mean longitude
+      const L0 = norm(218.3165 + 13.176396 * d);
+      const M  = norm(134.9634 + 13.064993 * d);
+      const F  = norm(93.2720  + 13.229350 * d);
+      const D  = norm(297.8502 + 12.190749 * d);
+      return norm(L0
+        + 6.289 * Math.sin(M * DEG)
+        - 1.274 * Math.sin((2*D - M) * DEG)
+        + 0.658 * Math.sin(2*D * DEG)
+        + 0.214 * Math.sin(2*M * DEG)
+        - 0.186 * Math.sin((35.75 + 0.9856*d) * DEG) // solar term approx
+        - 0.114 * Math.sin(2*F * DEG));
+    }
 
-        // Distance from Earth (scaled for visual clarity)
-        const distances = {
-            Sun: 1.0,
-            Moon: 0.35,
-            Mercury: 0.55,
-            Venus: 0.75,
-            Mars: 1.3,
-            Jupiter: 2.4,
-            Saturn: 3.4
-        };
+    case 'mercury':
+      return norm(252.2509 + 149472.6746 * T);
+    case 'venus':
+      return norm(181.9798 + 58517.8157 * T);
+    case 'mars':
+      return norm(355.4330 + 19140.2993 * T);
+    case 'jupiter':
+      return norm(34.3515 + 3034.9057 * T);
+    case 'saturn':
+      return norm(50.0774 + 1222.1138 * T);
+    case 'uranus':
+      return norm(314.0550 + 428.4677 * T);
+    case 'neptune':
+      return norm(304.3487 + 218.4862 * T);
+    default:
+      return 0;
+  }
+}
 
-        // State
-        let time = 0; // simulation days
-        let lastTimestamp = 0;
-        let animating = true;
+/* ── Moon Phase (0 = new, 0.5 = full) ────────────────── */
+function moonPhase(jd) {
+  const d = jd - 2451550.1;
+  const synodic = 29.530588853;
+  return ((d % synodic) + synodic) % synodic / synodic;
+}
 
-        // =============================================================
-        // 2. RESIZE
-        // =============================================================
-        function resize() {
-            W = canvas.width = window.innerWidth;
-            H = canvas.height = window.innerHeight;
-            cx = W / 2;
-            cy = H / 2;
-            radius = Math.min(W, H) * 0.38;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+/* ── Draw Static Chart ─────────────────────────────────── */
+const svg = document.getElementById('zodiac-svg');
+const ns = 'http://www.w3.org/2000/svg';
 
-        // =============================================================
-        // 3. PLANET POSITIONS
-        // =============================================================
-        // We store angles in the planets object
-        const planets = {};
-        Object.keys(planetsConfig).forEach(key => {
-            planets[key] = {
-                angle: Math.random() * 360,
-                speed: planetsConfig[key].speed,
-                wobble: planetsConfig[key].wobble || 0
-            };
-        });
+function el(tag, attrs) {
+  const e = document.createElementNS(ns, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
 
-        function getPlanetAngle(key, day) {
-            const p = planets[key];
-            const baseAngle = (p.angle + p.speed * day) % 360;
-            // Add wobble to simulate retrograde illusion for inner planets
-            if (p.wobble > 0) {
-                const wobbleFactor = 4 * p.wobble * Math.sin(2 * Math.PI * day / (360 / p.speed) * 0.5);
-                return (baseAngle + wobbleFactor + 360) % 360;
-            }
-            return baseAngle;
-        }
+function drawStatic() {
+  // Background glow
+  const defs = el('defs', {});
+  const rg = el('radialGradient', { id: 'bg', cx: '50%', cy: '50%', r: '50%' });
+  rg.appendChild(el('stop', { offset: '0%', 'stop-color': '#14143a' }));
+  rg.appendChild(el('stop', { offset: '100%', 'stop-color': '#0a0a1a' }));
+  defs.appendChild(rg);
+  svg.appendChild(defs);
+  svg.appendChild(el('circle', { cx: CX, cy: CY, r: R_OUTER + 10, fill: 'url(#bg)' }));
 
-        function isRetrograde(key, day) {
-            // Simple simulation: if the wobble causes the angle to decrease over a short interval
-            const a1 = getPlanetAngle(key, day);
-            const a2 = getPlanetAngle(key, day + 0.1);
-            let diff = a2 - a1;
-            if (diff < -180) diff += 360;
-            if (diff > 180) diff -= 360;
-            return diff < 0;
-        }
+  // Outer ring
+  svg.appendChild(el('circle', { cx: CX, cy: CY, r: R_OUTER, fill: 'none', stroke: '#3a3a5a', 'stroke-width': 1 }));
+  svg.appendChild(el('circle', { cx: CX, cy: CY, r: R_SIGN, fill: 'none', stroke: '#2a2a4a', 'stroke-width': .5 }));
+  svg.appendChild(el('circle', { cx: CX, cy: CY, r: R_INNER, fill: 'none', stroke: '#2a2a4a', 'stroke-width': .5 }));
 
-        // =============================================================
-        // 4. DRAW
-        // =============================================================
-        function draw(day) {
-            ctx.clearRect(0, 0, W, H);
+  // Sign divisions & labels
+  for (let i = 0; i < 12; i++) {
+    const a1 = (i * 30 - 90) * DEG;
+    const a2 = ((i + 1) * 30 - 90) * DEG;
+    const amid = ((i * 30 + 15) - 90) * DEG;
 
-            // Background gradient
-            const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.8);
-            bg.addColorStop(0, '#1a1a2e');
-            bg.addColorStop(1, '#0a0a12');
-            ctx.fillStyle = bg;
-            ctx.fillRect(0, 0, W, H);
+    // Division line
+    svg.appendChild(el('line', {
+      x1: CX + R_INNER * Math.cos(a1), y1: CY + R_INNER * Math.sin(a1),
+      x2: CX + R_OUTER * Math.cos(a1), y2: CY + R_OUTER * Math.sin(a1),
+      stroke: '#3a3a5a', 'stroke-width': .7
+    }));
 
-            ctx.save();
-            ctx.translate(cx, cy);
+    // Sign symbol
+    const sr = (R_OUTER + R_SIGN) / 2;
+    const tx = el('text', {
+      x: CX + sr * Math.cos(amid), y: CY + sr * Math.sin(amid),
+      fill: '#7a7a9a', 'font-size': '20', 'text-anchor': 'middle', 'dominant-baseline': 'central'
+    });
+    tx.textContent = SIGNS[i].sym;
+    svg.appendChild(tx);
+  }
+}
+drawStatic();
 
-            // ---- Zodiac Ring ----
-            const zodiacRadius = radius * 1.2;
-            ctx.strokeStyle = '#2a1f3d';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(0, 0, zodiacRadius, 0, 2 * Math.PI);
-            ctx.stroke();
+/* ── Draw / Update Bodies ──────────────────────────────── */
+const bodyEls = {};
 
-            // Draw zodiac segments and labels
-            zodiacSigns.forEach((sign, i) => {
-                const startAngle = (sign.start - 90) * Math.PI / 180;
-                const endAngle = (sign.start + 30 - 90) * Math.PI / 180;
+function initBodies() {
+  BODIES.forEach(b => {
+    const g = el('g', { id: 'g-' + b.id });
 
-                // Arc segment
-                ctx.strokeStyle = '#3c2f5c';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(0, 0, zodiacRadius, startAngle, endAngle);
-                ctx.stroke();
+    // Glow dot
+    g.appendChild(el('circle', {
+      r: 6, fill: b.color, opacity: .35, class: 'glow'
+    }));
+    // Solid dot
+    g.appendChild(el('circle', {
+      r: 3, fill: b.color
+    }));
+    // Symbol — centered on the body
+    const t = el('text', {
+      x: 0, y: 0,
+      fill: b.color,
+      'font-size': '18',
+      'text-anchor': 'middle',
+      'dominant-baseline': 'central',
+      'font-weight': 'bold',
+      dy: '-14'            // nudge above the dot so it doesn't overlap
+    });
+    t.textContent = b.sym;
+    g.appendChild(t);
 
-                // Label
-                const midAngle = (startAngle + endAngle) / 2;
-                const labelR = zodiacRadius + 24;
-                const x = labelR * Math.cos(midAngle);
-                const y = labelR * Math.sin(midAngle);
+    svg.appendChild(g);
+    bodyEls[b.id] = g;
+  });
+}
+initBodies();
 
-                ctx.fillStyle = '#b0a4c4';
-                ctx.font = '16px Georgia';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(`${sign.symbol}`, x, y - 14);
-                ctx.font = '9px Georgia';
-                ctx.fillText(sign.name, x, y + 12);
-            });
+function updatePositions() {
+  const now = new Date();
+  const jd = toJD(now);
 
-            // ---- Ecliptic grid lines ----
-            for (let i = 0; i < 36; i++) {
-                const angle = (i * 10) * Math.PI / 180;
-                ctx.strokeStyle = 'rgba(30, 20, 40, 0.3)';
-                ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(zodiacRadius * 1.3 * Math.cos(angle), zodiacRadius * 1.3 * Math.sin(angle));
-                ctx.stroke();
-            }
+  document.getElementById('clock').textContent =
+    '⚡ ' + now.toUTCString().replace('GMT', 'UTC');
 
-            // ---- Planets ----
-            const planetKeys = Object.keys(planetsConfig);
-            planetKeys.forEach((key) => {
-                const config = planetsConfig[key];
-                const angleRad = getPlanetAngle(key, day) * Math.PI / 180;
-                const dist = distances[key] * radius * 0.3;
+  BODIES.forEach(b => {
+    const lon = bodyLongitude(jd, b.id);
+    // Astrological convention: 0° Aries at 3-o'clock, counter-clockwise
+    const angle = (lon - 90) * DEG;
+    const x = CX + R_PLANET * Math.cos(angle);
+    const y = CY + R_PLANET * Math.sin(angle);
+    bodyEls[b.id].setAttribute('transform', `translate(${x},${y})`);
+  });
 
-                const x = dist * Math.cos(angleRad);
-                const y = dist * Math.sin(angleRad);
+  drawMoonPhase(jd);
+}
 
-                // Glow
-                const glow = ctx.createRadialGradient(x, y, 0, x, y, config.radius * 3);
-                glow.addColorStop(0, config.color + '40');
-                glow.addColorStop(1, 'transparent');
-                ctx.fillStyle = glow;
-                ctx.beginPath();
-                ctx.arc(x, y, config.radius * 3, 0, 2 * Math.PI);
-                ctx.fill();
+/* ── Moon Phase Rendering ──────────────────────────────── */
+function drawMoonPhase(jd) {
+  const phase = moonPhase(jd);
+  const canvas = document.getElementById('moon-canvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const r = 26, cx = w/2, cy = h/2;
+  ctx.clearRect(0, 0, w, h);
 
-                // Body
-                ctx.shadowColor = config.color;
-                ctx.shadowBlur = 15;
-                ctx.fillStyle = config.color;
-                ctx.beginPath();
-                ctx.arc(x, y, config.radius, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.shadowBlur = 0;
+  // Dark side
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fill();
+  ctx.strokeStyle = '#4a4a6a';
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
-                // Label
-                ctx.fillStyle = '#e2daeb';
-                ctx.font = '10px Georgia';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'bottom';
-                ctx.fillText(config.label, x, y - config.radius - 4);
-            });
+  // Lit side
+  ctx.beginPath();
+  const sweep = phase * 2 * Math.PI;
+  // Draw illuminated portion using two arcs
+  ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + Math.PI, false); // left half boundary
+  const k = Math.cos(sweep);
+  ctx.ellipse(cx, cy, Math.abs(k) * r, r, 0, -Math.PI/2 + Math.PI, -Math.PI/2, k > 0);
+  ctx.fillStyle = '#e8e0c8';
+  ctx.fill();
 
-            // ---- Earth centre marker ----
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#4ade80';
-            ctx.beginPath();
-            ctx.arc(0, 0, 6, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.fillStyle = '#4ade8040';
-            ctx.beginPath();
-            ctx.arc(0, 0, 20, 0, 2 * Math.PI);
-            ctx.fill();
+  // Phase label
+  let label = '';
+  if (phase < 0.03 || phase > 0.97) label = 'New Moon';
+  else if (phase < 0.22) label = 'Waxing Crescent';
+  else if (phase < 0.28) label = 'First Quarter';
+  else if (phase < 0.47) label = 'Waxing Gibbous';
+  else if (phase < 0.53) label = 'Full Moon';
+  else if (phase < 0.72) label = 'Waning Gibbous';
+  else if (phase < 0.78) label = 'Last Quarter';
+  else label = 'Waning Crescent';
+  document.getElementById('moon-label').textContent = label;
+}
 
-            ctx.fillStyle = '#e2daeb';
-            ctx.font = '12px Georgia';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText('🌍 Earth', 0, 10);
-
-            ctx.restore();
-        }
-
-        // =============================================================
-        // 5. SIDEBAR UPDATE
-        // =============================================================
-        const planetDisplayOrder = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
-
-        function updateSidebar(day) {
-            // Date / Time
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-US', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-            const timeStr = now.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('datetime').innerHTML =
-                `🕒 ${dateStr}<br><span style="font-size:0.7rem; color:#6a5c7c;">${timeStr} (your local time)</span>`;
-
-            // User info from localStorage
-            const userName = localStorage.getItem('user-name') || 'Traveller';
-            const userBirthday = localStorage.getItem('user-birthday');
-            let userInfoHtml = `👤 <span class="highlight">${userName}</span>`;
-            if (userBirthday) {
-                const bday = new Date(userBirthday + 'T00:00:00');
-                const bdayStr = bday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                userInfoHtml += ` &middot; 🎂 ${bdayStr}`;
-            }
-            document.getElementById('user-info').innerHTML = userInfoHtml;
-
-            // Planetary info
-            let html = '';
-            planetDisplayOrder.forEach((key) => {
-                const config = planetsConfig[key];
-                const angle = getPlanetAngle(key, day);
-                const sign = getZodiacSign(angle);
-                const retro = isRetrograde(key, day);
-
-                const statusClass = retro ? 'retrograde' : 'direct';
-                const statusText = retro ? '⟲ Retro' : '⟳ Direct';
-
-                html += `
-                    <div class="planet-row">
-                        <span class="symbol">${config.label}</span>
-                        <span class="name">${config.name}</span>
-                        <span class="sign">${sign.symbol} ${sign.name}</span>
-                        <span class="status ${statusClass}">${statusText}</span>
-                    </div>
-                `;
-            });
-            document.getElementById('planetary-info').innerHTML = html;
-        }
-
-        // =============================================================
-        // 6. ANIMATION LOOP
-        // =============================================================
-        let accumulatedTime = 0;
-
-        function animate(timestamp) {
-            if (!animating) return;
-
-            if (!lastTimestamp) lastTimestamp = timestamp;
-            const delta = Math.min((timestamp - lastTimestamp) / 1000, 0.1); // seconds
-            lastTimestamp = timestamp;
-
-            // 1 second = 1 real day in the simulation? No, let's make it 1 minute = 1 day for visible motion.
-            // Actually, let's keep it slow enough to watch. 1 real second = 0.5 simulation days.
-            const dayIncrement = delta * 0.5;
-            time += dayIncrement;
-
-            // Cap time to avoid floating point issues
-            if (time > 100000) time = 0;
-
-            // Draw the canvas
-            draw(time);
-
-            // Update the sidebar (every frame is fine, but we can throttle if needed)
-            updateSidebar(time);
-
-            requestAnimationFrame(animate);
-        }
-
-        // =============================================================
-        // 7. START
-        // =============================================================
-        // Initialise planet angles to a nice starting layout
-        const startAngles = {
-            Sun: 45,
-            Moon: 120,
-            Mercury: 80,
-            Venus: 15,
-            Mars: 210,
-            Jupiter: 290,
-            Saturn: 345
-        };
-        Object.keys(planets).forEach(key => {
-            if (startAngles[key]) planets[key].angle = startAngles[key];
-        });
-
-        // Start the loop
-        requestAnimationFrame(animate);
-
-        // =============================================================
-        // 8. HANDLE WINDOW RESIZE (re-draw)
-        // =============================================================
-        window.addEventListener('resize', () => {
-            resize();
-        });
-
-        console.log('✨ Astrology Simulator started.');
-        console.log('📡 Fetching user data from localStorage...');
-    </script>
+/* ── Real-Time Loop (updates every 30 s, no fast-forward) */
+updatePositions();
+setInterval(updatePositions, 30000);
+</script>
 </body>
 </html>
