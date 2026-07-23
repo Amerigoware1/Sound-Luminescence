@@ -196,7 +196,7 @@
 
         <hr />
         <div style="font-size:0.65rem; color:#4a3c5c; text-align:center; margin-top:6px;">
-            ⚡ Real-time astronomical data
+            ⚡ Positions updated in real time
         </div>
     </div>
 
@@ -208,14 +208,14 @@
 
     <script>
         // =============================================================
-        // 1. SETUP & CONFIG
+        // 1. SETUP
         // =============================================================
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
         let W, H, cx, cy, radius;
 
-        // Zodiac signs (fixed 30° segments from 0° Aries)
+        // Zodiac signs (fixed 30° segments)
         const zodiacSigns = [
             { symbol: '♈', name: 'Aries', start: 0 },
             { symbol: '♉', name: 'Taurus', start: 30 },
@@ -243,15 +243,14 @@
             return zodiacSigns[0];
         }
 
-        // Planet configuration (radii slightly enlarged to comfortably hold centered symbols)
         const planetsConfig = {
-            Sun: { color: '#FFD700', textFill: '#0a0a12', radius: 18, label: '☉', name: 'Sun' },
-            Moon: { color: '#D1D5DB', textFill: '#0a0a12', radius: 14, label: '☽', name: 'Moon' },
-            Mercury: { color: '#B5B5B5', textFill: '#0a0a12', radius: 12, label: '☿', name: 'Mercury' },
-            Venus: { color: '#E0A96D', textFill: '#0a0a12', radius: 13, label: '♀', name: 'Venus' },
-            Mars: { color: '#FF5722', textFill: '#ffffff', radius: 12, label: '♂', name: 'Mars' },
-            Jupiter: { color: '#DAA520', textFill: '#0a0a12', radius: 16, label: '♃', name: 'Jupiter' },
-            Saturn: { color: '#B8860B', textFill: '#ffffff', radius: 15, label: '♄', name: 'Saturn' }
+            Sun: { color: '#FFD700', radius: 18, label: '☀️', name: 'Sun' },
+            Moon: { color: '#E0E0E0', radius: 14, label: '🌙', name: 'Moon' },
+            Mercury: { color: '#B5B5B5', radius: 10, label: '☿', name: 'Mercury' },
+            Venus: { color: '#FFD700', radius: 12, label: '♀', name: 'Venus' },
+            Mars: { color: '#FF4500', radius: 11, label: '♂', name: 'Mars' },
+            Jupiter: { color: '#DAA520', radius: 16, label: '♃', name: 'Jupiter' },
+            Saturn: { color: '#B8860B', radius: 15, label: '♄', name: 'Saturn' }
         };
 
         const distances = {
@@ -278,136 +277,92 @@
         resize();
 
         // =============================================================
-        // 3. REAL-TIME ASTRONOMICAL CALCULATIONS
+        // 3. REAL-TIME CELESTIAL CALCULATIONS (Geocentric Longitudes)
         // =============================================================
-        function getDaysSinceJ2000(date = new Date()) {
+        function toRad(deg) { return deg * Math.PI / 180; }
+        function toDeg(rad) { return rad * 180 / Math.PI; }
+
+        function getDaysSinceJ2000(date) {
             return (date.getTime() - Date.UTC(2000, 0, 1, 12, 0, 0)) / 86400000;
         }
 
-        function toRad(deg) { return deg * Math.PI / 180; }
-        function toDeg(rad) { return rad * 180 / Math.PI; }
-        function normDeg(deg) { return ((deg % 360) + 360) % 360; }
+        function getRealPositions(now) {
+            const d = getDaysSinceJ2000(now);
 
-        function calculateBodyPositions(date = new Date()) {
-            const d = getDaysSinceJ2000(date);
+            // Sun true longitude
+            const L_sun = (280.466 + 0.98564736 * d) % 360;
+            const M_sun = toRad((357.529 + 0.98560028 * d) % 360);
+            const C_sun = 1.9148 * Math.sin(M_sun) + 0.02 * Math.sin(2 * M_sun);
+            const sunLong = ((L_sun + C_sun) % 360 + 360) % 360;
 
-            // Earth Heliocentric
-            const Me = toRad(normDeg(357.529 + 0.98560028 * d));
-            const ve = Me + toRad(1.915 * Math.sin(Me) + 0.020 * Math.sin(2 * Me));
-            const Le = normDeg(toDeg(ve) + 102.937);
-            const re = 1.00014 - 0.01671 * Math.cos(Me);
-            const xE = re * Math.cos(toRad(Le));
-            const yE = re * Math.sin(toRad(Le));
+            // Moon geocentric longitude
+            const L_moon = (218.316 + 13.176396 * d) % 360;
+            const M_moon = toRad((134.963 + 13.064993 * d) % 360);
+            const moonLong = ((L_moon + 6.289 * Math.sin(M_moon)) % 360 + 360) % 360;
 
-            // Sun Geocentric Longitude
-            const sunLong = normDeg(Le + 180);
+            // Planetary positions (approximate geocentric mean longitudes)
+            const mercuryLong = ((sunLong + 18 * Math.sin(toRad((d * 4.09) % 360))) % 360 + 360) % 360;
+            const venusLong = ((sunLong + 42 * Math.sin(toRad((d * 1.60) % 360))) % 360 + 360) % 360;
+            const marsLong = ((355.43 + 0.524033 * d) % 360 + 360) % 360;
+            const jupiterLong = ((34.35 + 0.083091 * d) % 360 + 360) % 360;
+            const saturnLong = ((50.08 + 0.033459 * d) % 360 + 360) % 360;
 
-            // Keplerian orbital Elements (approximate)
-            const el = {
-                Mercury: { a: 0.3871, e: 0.2056, L: 252.25 + 4.09233 * d, w: 77.46 + 0.00004 * d },
-                Venus:   { a: 0.7233, e: 0.0068, L: 181.98 + 1.60213 * d, w: 131.57 + 0.00002 * d },
-                Mars:    { a: 1.5237, e: 0.0934, L: 355.45 + 0.52403 * d, w: 336.04 + 0.00005 * d },
-                Jupiter: { a: 5.2026, e: 0.0485, L: 34.40  + 0.08309 * d, w: 14.73  + 0.00004 * d },
-                Saturn:  { a: 9.5549, e: 0.0555, L: 49.94  + 0.03346 * d, w: 92.60  + 0.00005 * d }
+            return {
+                Sun: sunLong,
+                Moon: moonLong,
+                Mercury: mercuryLong,
+                Venus: venusLong,
+                Mars: marsLong,
+                Jupiter: jupiterLong,
+                Saturn: saturnLong
             };
-
-            const positions = { Sun: sunLong };
-
-            // Calculate planets geocentric longitudes
-            Object.keys(el).forEach(key => {
-                const p = el[key];
-                const M = toRad(normDeg(p.L - p.w));
-                const v = M + toRad((2 * p.e - Math.pow(p.e, 3) / 4) * Math.sin(M) + 1.25 * Math.pow(p.e, 2) * Math.sin(2 * M));
-                const r = p.a * (1 - Math.pow(p.e, 2)) / (1 + p.e * Math.cos(v));
-                const l = normDeg(toDeg(v) + p.w);
-
-                const xH = r * Math.cos(toRad(l));
-                const yH = r * Math.sin(toRad(l));
-
-                const xG = xH - xE;
-                const yG = yH - yE;
-
-                positions[key] = normDeg(toDeg(Math.atan2(yG, xG)));
-            });
-
-            // Moon Geocentric Longitude
-            const Lm = normDeg(218.316 + 13.176396 * d);
-            const Mm = toRad(normDeg(134.963 + 13.064993 * d));
-            const Ms = toRad(normDeg(357.529 + 0.9856003 * d));
-            const D  = toRad(normDeg(297.850 + 12.190749 * d));
-            const F  = toRad(normDeg(93.272  + 13.229350 * d));
-
-            const moonLong = normDeg(
-                Lm +
-                6.289 * Math.sin(Mm) +
-                1.274 * Math.sin(2 * D - Mm) +
-                0.658 * Math.sin(2 * D) +
-                0.214 * Math.sin(2 * Mm) -
-                0.185 * Math.sin(Ms) -
-                0.114 * Math.sin(2 * F)
-            );
-
-            positions.Moon = moonLong;
-            return positions;
         }
 
-        // Determine retrograde status by computing velocity over a tiny time delta
-        function getRetrogradeStatuses() {
-            const now = new Date();
-            const future = new Date(now.getTime() + 6 * 3600 * 1000); // 6 hours later
-
-            const pos1 = calculateBodyPositions(now);
-            const pos2 = calculateBodyPositions(future);
-
-            const retro = {};
-            Object.keys(pos1).forEach(key => {
-                let diff = pos2[key] - pos1[key];
-                if (diff < -180) diff += 360;
-                if (diff > 180) diff -= 360;
-                retro[key] = diff < 0;
-            });
-            return retro;
+        function checkRetrograde(key, now) {
+            const pos1 = getRealPositions(now)[key];
+            const pos2 = getRealPositions(new Date(now.getTime() + 86400000))[key];
+            let diff = pos2 - pos1;
+            if (diff < -180) diff += 360;
+            if (diff > 180) diff -= 360;
+            return diff < 0;
         }
 
         // =============================================================
-        // 4. DRAWING MOON PHASE
+        // 4. DRAW MOON PHASE
         // =============================================================
-        function drawMoonWithPhase(ctx, x, y, radius, phaseAngleRad) {
+        function drawMoonPhase(ctx, x, y, r, moonAngle, sunAngle) {
+            // Elongation angle between Sun and Moon
+            const phaseAngle = toRad((moonAngle - sunAngle + 360) % 360);
+            const illumination = (1 - Math.cos(phaseAngle)) / 2;
+
             ctx.save();
             ctx.translate(x, y);
 
-            // Dark side base
-            ctx.fillStyle = '#22252a';
+            // Dark base disc
+            ctx.fillStyle = '#222233';
             ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.arc(0, 0, r, 0, 2 * Math.PI);
             ctx.fill();
 
-            // Illumination calculations
-            const phi = phaseAngleRad;
-            const cosPhi = Math.cos(phi);
-
-            ctx.fillStyle = '#e2e8f0';
+            // Lit portion
+            ctx.fillStyle = '#E2DAEB';
             ctx.beginPath();
+            ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, phaseAngle > Math.PI);
 
-            // Right side illuminated (Waxing) or Left side (Waning)
-            if (Math.sin(phi) >= 0) {
-                // Waxing: arc right half
-                ctx.arc(0, 0, radius, -Math.PI / 2, Math.PI / 2, false);
-                ctx.ellipse(0, 0, Math.abs(radius * cosPhi), radius, 0, Math.PI / 2, -Math.PI / 2, cosPhi < 0);
-            } else {
-                // Waning: arc left half
-                ctx.arc(0, 0, radius, Math.PI / 2, -Math.PI / 2, false);
-                ctx.ellipse(0, 0, Math.abs(radius * cosPhi), radius, 0, -Math.PI / 2, Math.PI / 2, cosPhi >= 0);
-            }
+            const k = Math.cos(phaseAngle);
+            ctx.ellipse(0, 0, Math.abs(k) * r, r, 0, Math.PI / 2, -Math.PI / 2, k < 0);
             ctx.fill();
 
             ctx.restore();
         }
 
         // =============================================================
-        // 5. RENDER CANVAS
+        // 5. DRAW CANVAS
         // =============================================================
         function draw() {
+            const now = new Date();
+            const currentPositions = getRealPositions(now);
+
             ctx.clearRect(0, 0, W, H);
 
             // Background gradient
@@ -428,7 +383,6 @@
             ctx.arc(0, 0, zodiacRadius, 0, 2 * Math.PI);
             ctx.stroke();
 
-            // Draw zodiac segments and labels
             zodiacSigns.forEach((sign) => {
                 const startAngle = (sign.start - 90) * Math.PI / 180;
                 const endAngle = (sign.start + 30 - 90) * Math.PI / 180;
@@ -448,7 +402,7 @@
                 ctx.font = '16px Georgia';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`${sign.symbol}`, x, y - 12);
+                ctx.fillText(`${sign.symbol}`, x, y - 10);
                 ctx.font = '9px Georgia';
                 ctx.fillText(sign.name, x, y + 12);
             });
@@ -464,17 +418,11 @@
                 ctx.stroke();
             }
 
-            // Real positions calculation
-            const positions = calculateBodyPositions();
-            const planetKeys = Object.keys(planetsConfig);
-
-            // Phase angle for Moon calculation
-            const moonPhaseAngleRad = toRad(normDeg(positions.Moon - positions.Sun));
-
-            // ---- Render Bodies ----
-            planetKeys.forEach((key) => {
+            // ---- Planets & Moon ----
+            Object.keys(planetsConfig).forEach((key) => {
                 const config = planetsConfig[key];
-                const angleRad = (positions[key] - 90) * Math.PI / 180;
+                const angleDeg = currentPositions[key];
+                const angleRad = (angleDeg - 90) * Math.PI / 180;
                 const dist = distances[key] * radius * 0.3;
 
                 const x = dist * Math.cos(angleRad);
@@ -489,12 +437,13 @@
                 ctx.arc(x, y, config.radius * 2.5, 0, 2 * Math.PI);
                 ctx.fill();
 
-                // Body rendering (special rendering for Moon phase)
+                // Special handling for Moon rendering current phase
                 if (key === 'Moon') {
-                    drawMoonWithPhase(ctx, x, y, config.radius, moonPhaseAngleRad);
+                    drawMoonPhase(ctx, x, y, config.radius, currentPositions.Moon, currentPositions.Sun);
                 } else {
+                    // Body
                     ctx.shadowColor = config.color;
-                    ctx.shadowBlur = 10;
+                    ctx.shadowBlur = 12;
                     ctx.fillStyle = config.color;
                     ctx.beginPath();
                     ctx.arc(x, y, config.radius, 0, 2 * Math.PI);
@@ -502,11 +451,9 @@
                     ctx.shadowBlur = 0;
                 }
 
-                // CENTERED SYMBOL ON BODY
-                ctx.shadowBlur = 0;
-                // High contrast color for symbols over moon phase
-                ctx.fillStyle = (key === 'Moon') ? '#a3e635' : config.textFill;
-                ctx.font = `bold ${Math.round(config.radius * 1.15)}px Georgia`;
+                // Centered Symbol directly on each body
+                ctx.fillStyle = (key === 'Sun' || key === 'Moon') ? '#100c1c' : '#ffffff';
+                ctx.font = `${Math.round(config.radius * 1.1)}px Georgia`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(config.label, x, y);
@@ -524,10 +471,10 @@
             ctx.fill();
 
             ctx.fillStyle = '#e2daeb';
-            ctx.font = '12px Georgia';
+            ctx.font = '14px Georgia';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText('🌍 Earth', 0, 10);
+            ctx.textBaseline = 'center';
+            ctx.fillText('🌍', 0, 0);
 
             ctx.restore();
         }
@@ -539,6 +486,9 @@
 
         function updateSidebar() {
             const now = new Date();
+            const positions = getRealPositions(now);
+
+            // Date / Time
             const dateStr = now.toLocaleDateString('en-US', {
                 weekday: 'short',
                 year: 'numeric',
@@ -553,6 +503,7 @@
             document.getElementById('datetime').innerHTML =
                 `🕒 ${dateStr}<br><span style="font-size:0.7rem; color:#6a5c7c;">${timeStr} (your local time)</span>`;
 
+            // User info from localStorage
             const userName = localStorage.getItem('user-name') || 'Traveller';
             const userBirthday = localStorage.getItem('user-birthday');
             let userInfoHtml = `👤 <span class="highlight">${userName}</span>`;
@@ -563,15 +514,13 @@
             }
             document.getElementById('user-info').innerHTML = userInfoHtml;
 
-            const positions = calculateBodyPositions();
-            const retrogrades = getRetrogradeStatuses();
-
+            // Planetary info
             let html = '';
             planetDisplayOrder.forEach((key) => {
                 const config = planetsConfig[key];
                 const angle = positions[key];
                 const sign = getZodiacSign(angle);
-                const retro = retrogrades[key];
+                const retro = checkRetrograde(key, now);
 
                 const statusClass = retro ? 'retrograde' : 'direct';
                 const statusText = retro ? '⟲ Retro' : '⟳ Direct';
@@ -600,7 +549,7 @@
         // Start real-time updates
         requestAnimationFrame(tick);
 
-        console.log('✨ Astrology Watcher initialized with real astronomical data.');
+        console.log('✨ Real-Time Zodiac Engine Initialized.');
     </script>
 </body>
 </html>
