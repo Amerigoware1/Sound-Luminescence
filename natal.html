@@ -138,6 +138,22 @@
         .btn-generate:active {
             transform: scale(0.98);
         }
+        .btn-geocode {
+            width: 100%;
+            padding: 6px;
+            background: transparent;
+            color: #a092b8;
+            border: 1px dashed #2a1f3d;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+        .btn-geocode:hover {
+            border-color: #c77dff;
+            color: #c77dff;
+        }
 
         /* ===== Chart Panel ===== */
         .chart-panel {
@@ -190,7 +206,7 @@
             padding: 24px;
             backdrop-filter: blur(4px);
             align-self: flex-start;
-            max-height: 600px;
+            max-height: 700px;
             overflow-y: auto;
         }
         .interpretation h3 {
@@ -199,6 +215,11 @@
             border-bottom: 1px solid #2a1f3d;
             padding-bottom: 8px;
             margin-top: 0;
+        }
+        .interpretation h4 {
+            color: #c77dff;
+            font-weight: normal;
+            margin: 12px 0 4px;
         }
         .interpretation .planet-entry {
             padding: 6px 0;
@@ -211,6 +232,14 @@
         }
         .interpretation .planet-entry .highlight {
             color: #c77dff;
+        }
+        .interpretation .planet-entry .house-tag {
+            background: rgba(157, 78, 221, 0.15);
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: #a092b8;
+            margin-left: 6px;
         }
         .interpretation .aspect-list {
             margin-top: 12px;
@@ -225,6 +254,16 @@
         .interpretation .aspect-item .aspect-type {
             font-weight: bold;
             color: #c77dff;
+        }
+        .interpretation .transit-item {
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(42, 31, 61, 0.15);
+        }
+        .interpretation .transit-item .transit-type {
+            font-weight: bold;
+            color: #4ade80;
         }
         .interpretation::-webkit-scrollbar {
             width: 2px;
@@ -286,7 +325,7 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="birthHour">Hour</label>
+                        <label for="birthHour">Hour (24h)</label>
                         <input type="number" id="birthHour" min="0" max="23" value="12" />
                     </div>
                     <div class="form-group">
@@ -295,14 +334,25 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="birthLocation">Location</label>
-                    <input type="text" id="birthLocation" placeholder="City, Country" />
+                    <label for="birthLocation">Location (City, Country)</label>
+                    <input type="text" id="birthLocation" placeholder="e.g. London, UK" />
+                    <button type="button" class="btn-geocode" id="geocodeBtn">🌍 Find coordinates</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthLatitude">Latitude</label>
+                        <input type="text" id="birthLatitude" placeholder="e.g. 51.5074" />
+                    </div>
+                    <div class="form-group">
+                        <label for="birthLongitude">Longitude</label>
+                        <input type="text" id="birthLongitude" placeholder="e.g. -0.1278" />
+                    </div>
                 </div>
                 <button type="submit" class="btn-generate">🔮 Generate Chart</button>
             </form>
 
             <div style="margin-top:12px; font-size:0.7rem; color:#4a3c5c; text-align:center;">
-                💾 Name &amp; date are pre‑filled from your Altar profile.
+                💾 Name, date, and location are saved for future visits.
             </div>
         </div>
 
@@ -422,7 +472,67 @@
         }
 
         // =============================================================
-        // 3. ASPECT CALCULATION
+        // 3. ASCENDANT & HOUSES
+        // =============================================================
+        function getLocalSiderealTime(date, longitude) {
+            // Julian Day Number
+            const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+            const jd = (utcDate.getTime() / 86400000) + 2440587.5;
+            // GMST in degrees
+            const gmst = (280.46061837 + 360.98564736629 * (jd - 2451545.0)) % 360;
+            // Local sidereal time (degrees)
+            return (gmst + longitude) % 360;
+        }
+
+        function calculateAscendant(lstDeg, latitude) {
+            // Simplified formula using ecliptic obliquity (23.44°)
+            const obliquity = 23.44;
+            const lstRad = lstDeg * Math.PI / 180;
+            const latRad = latitude * Math.PI / 180;
+            const oblRad = obliquity * Math.PI / 180;
+
+            // Ascendant formula: tan(ASC) = -cos(LST) / (sin(LST)*cos(obliquity) + tan(latitude)*sin(obliquity))
+            const num = -Math.cos(lstRad);
+            const den = Math.sin(lstRad) * Math.cos(oblRad) + Math.tan(latRad) * Math.sin(oblRad);
+            let ascRad = Math.atan2(num, den);
+            let ascDeg = ascRad * 180 / Math.PI;
+            // Convert to 0-360 range
+            ascDeg = ((ascDeg % 360) + 360) % 360;
+            return ascDeg;
+        }
+
+        function getHouses(ascDeg) {
+            // Equal House system: each house is 30° wide, starting from the Ascendant
+            const houses = [];
+            for (let i = 0; i < 12; i++) {
+                const angle = (ascDeg + i * 30) % 360;
+                houses.push({
+                    number: i + 1,
+                    angle: angle,
+                    sign: getZodiacSign(angle)
+                });
+            }
+            return houses;
+        }
+
+        function getPlanetHouse(planetAngle, houses) {
+            for (let i = 0; i < houses.length; i++) {
+                const start = houses[i].angle;
+                const end = (i < houses.length - 1) ? houses[i + 1].angle : houses[0].angle + 360;
+                let adjustedAngle = planetAngle;
+                if (start > end) {
+                    // Wrap around: if planet angle is less than start, add 360
+                    if (adjustedAngle < start) adjustedAngle += 360;
+                    if (adjustedAngle >= start && adjustedAngle < end + 360) return houses[i].number;
+                } else {
+                    if (adjustedAngle >= start && adjustedAngle < end) return houses[i].number;
+                }
+            }
+            return 12; // fallback
+        }
+
+        // =============================================================
+        // 4. ASPECTS
         // =============================================================
         function calculateAspects(planets, orb = 8) {
             const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
@@ -461,7 +571,46 @@
         }
 
         // =============================================================
-        // 4. DRAW CHART
+        // 5. TRANSITS
+        // =============================================================
+        function getTransits(natalPlanets, currentPlanets, orb = 8) {
+            const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+            const transits = [];
+            const aspectTypes = [
+                { name: 'conjunction', angle: 0, symbol: '☌' },
+                { name: 'sextile', angle: 60, symbol: '⚹' },
+                { name: 'square', angle: 90, symbol: '□' },
+                { name: 'trine', angle: 120, symbol: '△' },
+                { name: 'opposition', angle: 180, symbol: '☍' }
+            ];
+
+            for (let i = 0; i < keys.length; i++) {
+                for (let j = 0; j < keys.length; j++) {
+                    const transiting = keys[i];
+                    const natal = keys[j];
+                    const tAngle = currentPlanets[transiting].angle;
+                    const nAngle = natalPlanets[natal].angle;
+                    let diff = ((tAngle - nAngle) % 360 + 360) % 360;
+                    if (diff > 180) diff = 360 - diff;
+
+                    for (let at of aspectTypes) {
+                        if (Math.abs(diff - at.angle) < orb) {
+                            transits.push({
+                                transiting: transiting,
+                                natal: natal,
+                                aspect: at,
+                                orb: Math.abs(diff - at.angle)
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+            return transits;
+        }
+
+        // =============================================================
+        // 6. DRAW CHART
         // =============================================================
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
@@ -475,7 +624,7 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        function drawChart(planets, birthName, birthDate) {
+        function drawChart(planets, birthName, birthDate, ascDeg, houses) {
             const w = canvas.width;
             const h = canvas.height;
             const cx = w / 2;
@@ -499,6 +648,26 @@
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, 2 * Math.PI);
             ctx.stroke();
+
+            // House lines
+            houses.forEach((house, i) => {
+                const angle = (house.angle - 90) * Math.PI / 180;
+                ctx.strokeStyle = i === 0 ? '#c77dff' : '#3c2f5c';
+                ctx.lineWidth = i === 0 ? 2 : 1;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(radius * 1.0 * Math.cos(angle), radius * 1.0 * Math.sin(angle));
+                ctx.stroke();
+                // House number
+                const labelR = radius * 0.9;
+                const lx = labelR * Math.cos(angle);
+                const ly = labelR * Math.sin(angle);
+                ctx.fillStyle = '#4a3c5c';
+                ctx.font = '9px Georgia';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`H${house.number}`, lx, ly);
+            });
 
             // Zodiac ring
             zodiacSigns.forEach((sign, i) => {
@@ -533,17 +702,6 @@
                 ctx.arc(0, 0, radius * ratio, 0, 2 * Math.PI);
                 ctx.stroke();
             });
-
-            // Grid lines
-            for (let i = 0; i < 12; i++) {
-                const angle = (i * 30 - 90) * Math.PI / 180;
-                ctx.strokeStyle = 'rgba(42, 31, 61, 0.2)';
-                ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(radius * 0.95 * Math.cos(angle), radius * 0.95 * Math.sin(angle));
-                ctx.stroke();
-            }
 
             // Planets
             const planetKeys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
@@ -583,6 +741,15 @@
                 ctx.fillText(data.sign.symbol, x + 6, y + 4);
             });
 
+            // Ascendant marker
+            const ascRad = (ascDeg - 90) * Math.PI / 180;
+            const ascR = radius * 1.05;
+            ctx.fillStyle = '#4ade80';
+            ctx.font = 'bold 14px Georgia';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⬆ ASC', ascR * Math.cos(ascRad), ascR * Math.sin(ascRad));
+
             // Center label
             ctx.fillStyle = '#4ade80';
             ctx.font = '14px Georgia';
@@ -603,45 +770,53 @@
                 month: 'long',
                 day: 'numeric'
             }) : 'Unknown date';
-            infoEl.textContent = `${birthName || 'Your'} chart – ${dateStr}`;
+            infoEl.textContent = `${birthName || 'Your'} chart – ${dateStr}  |  ASC: ${getZodiacSign(ascDeg).symbol} ${getZodiacSign(ascDeg).name}`;
         }
 
         // =============================================================
-        // 5. INTERPRETATION + ASPECTS
+        // 7. INTERPRETATION + ASPECTS + TRANSITS
         // =============================================================
-        function generateInterpretation(planets, birthName, aspects) {
+        function generateInterpretation(planets, birthName, aspects, houses, transits, ascDeg) {
             const keys = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+            const ascSign = getZodiacSign(ascDeg);
             let html = '';
 
+            html += `<div style="font-size:0.85rem; color:#a092b8; margin-bottom:12px;">
+                ⬆ <strong>Ascendant (Rising Sign)</strong>: ${ascSign.symbol} ${ascSign.name}
+            </div>`;
+
+            // ---- Planet placements with houses ----
             keys.forEach(key => {
                 const data = planets[key];
                 if (!data) return;
                 const display = planetDisplay[key];
                 const sign = data.sign;
+                const houseNum = getPlanetHouse(data.angle, houses);
 
                 const interpretations = {
-                    Sun: `Your core identity and vitality. You express yourself through ${sign.name} energy.`,
-                    Moon: `Your emotional nature and inner world. You feel most at home with ${sign.name} qualities.`,
-                    Mercury: `Your communication style and thinking. You process information through ${sign.name} intuition.`,
-                    Venus: `Your love language and values. You attract and appreciate ${sign.name} energy.`,
-                    Mars: `Your drive and ambition. You pursue goals with ${sign.name} determination.`,
-                    Jupiter: `Your growth and expansion. You find meaning through ${sign.name} wisdom.`,
-                    Saturn: `Your discipline and structure. You build foundations with ${sign.name} integrity.`
+                    Sun: `Your core identity and vitality.`,
+                    Moon: `Your emotional nature and inner world.`,
+                    Mercury: `Your communication style and thinking.`,
+                    Venus: `Your love language and values.`,
+                    Mars: `Your drive and ambition.`,
+                    Jupiter: `Your growth and expansion.`,
+                    Saturn: `Your discipline and structure.`
                 };
 
                 html += `
                     <div class="planet-entry">
                         <span class="symbol">${display.symbol}</span>
                         <strong>${display.name}</strong> in <span class="highlight">${sign.symbol} ${sign.name}</span>
+                        <span class="house-tag">House ${houseNum}</span>
                         <br />
                         <span style="font-size:0.75rem; color:#94a3b8;">${interpretations[key] || 'A unique expression of this placement.'}</span>
                     </div>
                 `;
             });
 
-            // ---- ASPECTS SECTION ----
+            // ---- ASPECTS ----
             if (aspects && aspects.length > 0) {
-                html += `<div class="aspect-list"><h4 style="margin:8px 0 4px; color:#c77dff;">⚡ Aspects</h4>`;
+                html += `<div class="aspect-list"><h4>⚡ Natal Aspects</h4>`;
                 aspects.forEach(a => {
                     const sym1 = planetDisplay[a.planet1]?.symbol || a.planet1;
                     const sym2 = planetDisplay[a.planet2]?.symbol || a.planet2;
@@ -659,13 +834,74 @@
                 html += `<div class="aspect-list"><p style="color:#4a3c5c; font-size:0.8rem;">No major aspects detected within 8° orb.</p></div>`;
             }
 
+            // ---- TRANSITS ----
+            if (transits && transits.length > 0) {
+                html += `<div class="aspect-list"><h4>🌀 Today's Transits</h4>`;
+                transits.forEach(t => {
+                    const symT = planetDisplay[t.transiting]?.symbol || t.transiting;
+                    const symN = planetDisplay[t.natal]?.symbol || t.natal;
+                    html += `
+                        <div class="transit-item">
+                            ${symT} (today) ${t.aspect.symbol} ${symN} (natal) — 
+                            <span class="transit-type">${t.aspect.name}</span>
+                            <span style="color:#4a3c5c;"> (orb ${t.orb.toFixed(1)}°)</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="aspect-list"><p style="color:#4a3c5c; font-size:0.8rem;">No major transits today within 8° orb.</p></div>`;
+            }
+
             return html;
         }
 
         // =============================================================
-        // 6. FORM HANDLER
+        // 8. TODAY'S PLANETS (for transits)
         // =============================================================
-        document.getElementById('birthForm').addEventListener('submit', function(e) {
+        function getTodayPlanets() {
+            const now = new Date();
+            const days = daysSinceEpoch(now);
+            const planets = {};
+            Object.keys(planetSpeeds).forEach(key => {
+                const angle = getPlanetAngle(key, days);
+                const sign = getZodiacSign(angle);
+                planets[key] = {
+                    angle: angle,
+                    sign: sign,
+                    display: planetDisplay[key]
+                };
+            });
+            return planets;
+        }
+
+        // =============================================================
+        // 9. GEOCODE LOCATION
+        // =============================================================
+        async function geocodeLocation(location) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Geocoding failed');
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lon: parseFloat(data[0].lon),
+                        display: data[0].display_name
+                    };
+                }
+                return null;
+            } catch (error) {
+                console.warn('Geocoding error:', error);
+                return null;
+            }
+        }
+
+        // =============================================================
+        // 10. FORM HANDLER
+        // =============================================================
+        document.getElementById('birthForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const name = document.getElementById('birthName').value || 'You';
@@ -673,25 +909,60 @@
             const hour = parseInt(document.getElementById('birthHour').value) || 12;
             const minute = parseInt(document.getElementById('birthMinute').value) || 0;
             const location = document.getElementById('birthLocation').value || 'Unknown';
+            let lat = parseFloat(document.getElementById('birthLatitude').value);
+            let lon = parseFloat(document.getElementById('birthLongitude').value);
 
             if (!dateStr) {
                 alert('Please enter your birth date.');
                 return;
             }
 
+            // If location is provided and coordinates are not, geocode
+            if (location && location !== 'Unknown' && (isNaN(lat) || isNaN(lon))) {
+                const geoResult = await geocodeLocation(location);
+                if (geoResult) {
+                    lat = geoResult.lat;
+                    lon = geoResult.lon;
+                    document.getElementById('birthLatitude').value = lat;
+                    document.getElementById('birthLongitude').value = lon;
+                }
+            }
+
+            // If still no coordinates, use London as default
+            if (isNaN(lat) || isNaN(lon)) {
+                lat = 51.5074;
+                lon = -0.1278;
+                document.getElementById('birthLatitude').value = lat;
+                document.getElementById('birthLongitude').value = lon;
+            }
+
+            // Create birth date
             const birthDate = new Date(dateStr + 'T' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0') +
                 ':00');
 
+            // Calculate planets
             const planets = calculatePlanets(birthDate);
-            drawChart(planets, name, birthDate);
+
+            // Calculate Ascendant & Houses
+            const lst = getLocalSiderealTime(birthDate, lon);
+            const ascDeg = calculateAscendant(lst, lat);
+            const houses = getHouses(ascDeg);
 
             // Calculate aspects
             const aspects = calculateAspects(planets, 8);
 
-            const interpHtml = generateInterpretation(planets, name, aspects);
+            // Calculate transits
+            const todayPlanets = getTodayPlanets();
+            const transits = getTransits(planets, todayPlanets, 8);
+
+            // Draw chart
+            drawChart(planets, name, birthDate, ascDeg, houses);
+
+            // Generate interpretation
+            const interpHtml = generateInterpretation(planets, name, aspects, houses, transits, ascDeg);
             document.getElementById('natal-interp').innerHTML = `
                 <div style="font-size:0.75rem; color:#4a3c5c; margin-bottom:12px;">
-                    🕒 ${birthDate.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'})} &middot; 📍 ${location}
+                    🕒 ${birthDate.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'})} &middot; 📍 ${location} (${lat.toFixed(4)}, ${lon.toFixed(4)})
                 </div>
                 ${interpHtml}
             `;
@@ -701,10 +972,31 @@
             localStorage.setItem('natal-date', dateStr);
             localStorage.setItem('natal-time', `${hour}:${String(minute).padStart(2,'0')}`);
             localStorage.setItem('natal-location', location);
+            localStorage.setItem('natal-lat', lat);
+            localStorage.setItem('natal-lon', lon);
         });
 
         // =============================================================
-        // 7. INIT – Pre‑fill and auto‑generate if data exists
+        // 11. GEOCODE BUTTON
+        // =============================================================
+        document.getElementById('geocodeBtn').addEventListener('click', async function() {
+            const location = document.getElementById('birthLocation').value;
+            if (!location || location.trim() === '') {
+                alert('Please enter a location first.');
+                return;
+            }
+            const result = await geocodeLocation(location);
+            if (result) {
+                document.getElementById('birthLatitude').value = result.lat;
+                document.getElementById('birthLongitude').value = result.lon;
+                document.getElementById('birthLocation').value = result.display;
+            } else {
+                alert('Location not found. Please enter coordinates manually.');
+            }
+        });
+
+        // =============================================================
+        // 12. INIT – Pre‑fill and auto‑generate
         // =============================================================
         document.addEventListener('DOMContentLoaded', function() {
             // Pre-fill from main altar profile
@@ -719,6 +1011,8 @@
             const natalDate = localStorage.getItem('natal-date');
             const natalTime = localStorage.getItem('natal-time');
             const natalLocation = localStorage.getItem('natal-location');
+            const natalLat = localStorage.getItem('natal-lat');
+            const natalLon = localStorage.getItem('natal-lon');
 
             if (natalName && natalDate) {
                 document.getElementById('birthName').value = natalName;
@@ -729,13 +1023,15 @@
                     document.getElementById('birthMinute').value = parseInt(parts[1]) || 0;
                 }
                 if (natalLocation) document.getElementById('birthLocation').value = natalLocation;
+                if (natalLat) document.getElementById('birthLatitude').value = parseFloat(natalLat);
+                if (natalLon) document.getElementById('birthLongitude').value = parseFloat(natalLon);
 
                 // Auto-generate chart
                 document.getElementById('birthForm').dispatchEvent(new Event('submit'));
             }
         });
 
-        console.log('✨ Natal Chart page loaded with aspects.');
+        console.log('✨ Natal Chart page loaded with houses + transits.');
         console.log('📡 Reading from localStorage...');
     </script>
 
