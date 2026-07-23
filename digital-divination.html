@@ -295,21 +295,20 @@
     }
 
     /* ========== NAV PILL ========== */
-    .altar-nav-pill-container {
-      position: relative;
+.altar-nav-pill-container {
+      position: absolute;
       top: 15px;
-      left: calc(50% - 150px);
+      left: 50%;
       transform: translateX(-50%);
       z-index: 100;
-      justify-content: center;
-      flex-wrap: wrap;        /* allows wrapping */
-      gap: 10px;              /* spacing between pills */
-      /*margin: 15px auto;       keeps it centered between boxes */
       display: flex;
-      width: auto;
+      justify-content: center;
+      width: min(620px, calc(100vw - 420px));
+      max-width: calc(100vw - 420px);
     }
 
     .altar-nav-pill {
+      width: 100%;
       background-color: rgba(20, 16, 30, 0.8);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
@@ -317,6 +316,8 @@
       padding: 6px 10px;
       border-radius: 50px;
       display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 8px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
         inset 0 0 10px rgba(157, 78, 221, 0.1);
