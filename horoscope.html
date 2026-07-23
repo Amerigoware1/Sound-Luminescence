@@ -76,7 +76,7 @@
 
         /* ===== Main Container ===== */
         .container {
-            max-width: 800px;
+            max-width: 820px;
             width: 100%;
             padding: 40px 24px 60px;
             display: flex;
@@ -89,7 +89,7 @@
         .greeting {
             font-size: 1.6rem;
             color: #e2daeb;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             text-align: center;
         }
         .greeting .highlight {
@@ -101,6 +101,28 @@
             margin-bottom: 30px;
             text-align: center;
             font-style: italic;
+        }
+        .zodiac-badges {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .zodiac-badge {
+            background: rgba(20, 16, 30, 0.6);
+            border: 1px solid #2a1f3d;
+            border-radius: 30px;
+            padding: 4px 16px;
+            font-size: 0.85rem;
+            color: #b0a4c4;
+        }
+        .zodiac-badge.western {
+            border-color: #9d4edd;
+        }
+        .zodiac-badge.chinese {
+            border-color: #c77dff;
+            color: #c77dff;
         }
 
         /* ===== Loading / Oracle Message ===== */
@@ -137,7 +159,7 @@
         /* ===== Horoscope Card ===== */
         #horoscope-card {
             width: 100%;
-            max-width: 640px;
+            max-width: 660px;
             background: rgba(20, 16, 30, 0.6);
             border: 1px solid #2a1f3d;
             border-radius: 24px;
@@ -209,10 +231,11 @@
 
         .horoscope-text {
             font-size: 1.05rem;
-            line-height: 1.8;
+            line-height: 1.9;
             color: #cbd5e1;
             margin: 16px 0 20px;
             padding: 0 4px;
+            white-space: pre-wrap;
         }
 
         .horoscope-footer {
@@ -238,7 +261,7 @@
         .api-status {
             font-size: 0.65rem;
             color: #4a3c5c;
-            margin-top: 12px;
+            margin-top: 14px;
             text-align: center;
             font-style: italic;
         }
@@ -310,6 +333,12 @@
         <div class="greeting" id="greeting">✨ <span class="highlight" id="userNameDisplay">Traveller</span></div>
         <div class="sub-greeting" id="subGreeting">The Oracle speaks…</div>
 
+        <!-- Zodiac badges -->
+        <div class="zodiac-badges" id="zodiacBadges">
+            <span class="zodiac-badge western" id="westernBadge">♈ Aries</span>
+            <span class="zodiac-badge chinese" id="chineseBadge">🐉 Dragon</span>
+        </div>
+
         <!-- Loading -->
         <div id="oracle-loading">
             <span class="dots">Consulting the Oracle</span>
@@ -373,7 +402,34 @@
         }
 
         // =============================================================
-        // 2. GET TODAY'S SUN SIGN (approximate, from date)
+        // 2. CHINESE ZODIAC
+        // =============================================================
+        const chineseAnimals = [
+            { animal: '🐭 Rat', traits: 'quick-witted, resourceful, charming, and adaptable', element: 'Water' },
+            { animal: '🐂 Ox', traits: 'patient, hardworking, reliable, and methodical', element: 'Earth' },
+            { animal: '🐅 Tiger', traits: 'brave, confident, competitive, and unpredictable', element: 'Wood' },
+            { animal: '🐇 Rabbit', traits: 'gentle, elegant, kind, and diplomatic', element: 'Wood' },
+            { animal: '🐉 Dragon', traits: 'ambitious, visionary, charismatic, and powerful', element: 'Fire' },
+            { animal: '🐍 Snake', traits: 'wise, mysterious, intuitive, and graceful', element: 'Fire' },
+            { animal: '🐴 Horse', traits: 'energetic, free-spirited, witty, and adventurous', element: 'Fire' },
+            { animal: '🐐 Goat', traits: 'creative, peaceful, gentle, and artistic', element: 'Earth' },
+            { animal: '🐵 Monkey', traits: 'clever, humorous, curious, and inventive', element: 'Metal' },
+            { animal: '🐔 Rooster', traits: 'observant, hardworking, courageous, and honest', element: 'Metal' },
+            { animal: '🐶 Dog', traits: 'loyal, honest, protective, and trustworthy', element: 'Earth' },
+            { animal: '🐷 Pig', traits: 'generous, compassionate, diligent, and optimistic', element: 'Water' }
+        ];
+
+        // Chinese zodiac year cycle (2024 is Dragon)
+        function getChineseZodiac(birthYear) {
+            const baseYear = 2024; // Dragon
+            const baseIndex = 4; // Dragon is at index 4
+            const diff = birthYear - baseYear;
+            const index = ((diff % 12) + 12) % 12;
+            return chineseAnimals[(baseIndex + index) % 12];
+        }
+
+        // =============================================================
+        // 3. GET TODAY'S SUN SIGN
         // =============================================================
         function getTodaySunSign() {
             const epoch = new Date(Date.UTC(2025, 0, 1, 12, 0, 0));
@@ -384,95 +440,138 @@
         }
 
         // =============================================================
-        // 3. GET MOON SIGN using SunCalc library
+        // 4. GET MOON SIGN
         // =============================================================
         function getMoonSign() {
             const now = new Date();
-            // Reference: New moon on 2025-01-29 12:36 UTC
             const newMoonRef = new Date(Date.UTC(2025, 0, 29, 12, 36, 0));
             const daysSinceNewMoon = (now.getTime() - newMoonRef.getTime()) / (1000 * 60 * 60 * 24);
-            // Moon moves ~13.176° per day through the zodiac
             const moonAngle = (13.176 * daysSinceNewMoon) % 360;
             return getZodiacByAngle(moonAngle);
         }
 
         // =============================================================
-        // 4. LOCAL HOROSCOPE GENERATOR (FALLBACK)
+        // 5. LOCAL HOROSCOPE GENERATOR (LONG + CHINESE ZODIAC)
         // =============================================================
-        const horoscopeTemplates = {
-            Aries: [
-                "Today you feel a surge of energy – channel it into creative projects. Love may spark unexpectedly.",
-                "Your natural leadership shines. Take the initiative at work; others will follow. Guard against impatience.",
-                "Aries, your vitality is high. Use this time for physical activity and bold new beginnings."
-            ],
-            Taurus: [
-                "Slow and steady wins the race. Focus on building something lasting today. Relationships deepen.",
-                "Your persistence pays off. Financial matters improve. Enjoy the simple pleasures of life.",
-                "Taurus, today is about comfort and security. Nurture your body and your home."
-            ],
-            Gemini: [
-                "Curiosity leads you to new knowledge today. Conversations open doors. Stay adaptable.",
-                "Your wit and charm are your superpowers. Use them to network and share ideas. Avoid scattering energy.",
-                "Gemini, communication flows easily. Write, talk, and connect – inspiration is everywhere."
-            ],
-            Cancer: [
-                "Your intuition is spot-on today. Trust your feelings and nurture those you love. A quiet evening heals.",
-                "Home and family are your anchors. A domestic project brings satisfaction. Emotional honesty wins.",
-                "Cancer, your caring nature attracts support. Accept help and offer comfort in return."
-            ],
-            Leo: [
-                "Your confidence draws attention. Shine in social settings and express your creative vision.",
-                "Leo, you're the centre of attention – use it to inspire others. Romance is highlighted.",
-                "Your generosity and warmth make you magnetic. Share your light generously."
-            ],
-            Virgo: [
-                "Precision and detail are your strengths. Organise something important today. Health improves with routine.",
-                "Your analytical mind solves a tricky problem. Service to others brings satisfaction. Stay grounded.",
-                "Virgo, focus on self‑improvement. Small steps lead to big progress."
-            ],
-            Libra: [
-                "Balance is key. Seek harmony in relationships and beauty in your surroundings. A partnership flourishes.",
-                "Your diplomatic skills resolve a conflict. Art and culture bring you joy. Socialise with grace.",
-                "Libra, today is about connection. Forge a new alliance or strengthen an existing one."
-            ],
-            Scorpio: [
-                "Depth and intensity define your day. A transformation is underway – embrace it. Intimacy deepens.",
-                "Your investigative powers uncover hidden truths. Use them wisely. Power shifts in your favour.",
-                "Scorpio, your passion is magnetic. Channel it into creative or spiritual pursuits."
-            ],
-            Sagittarius: [
-                "Adventure calls. Expand your horizons through travel, study, or a philosophical conversation. Optimism abounds.",
-                "Your enthusiasm is contagious. Take a risk – the universe supports your growth. Learn something new.",
-                "Sagittarius, freedom is your goal. Break routine and explore the unknown."
-            ],
-            Capricorn: [
-                "Discipline leads to success today. Focus on long‑term goals and practical steps. Authority is recognised.",
-                "Your patient work pays off. A financial or career milestone approaches. Stay the course.",
-                "Capricorn, structure your day for maximum productivity. You're building something enduring."
-            ],
-            Aquarius: [
-                "Innovation flows through you. Share your unique ideas – they could change the world. Friend networks expand.",
-                "Your humanitarian side shines. Get involved in a collective effort. Technology aids your plans.",
-                "Aquarius, think outside the box. A breakthrough idea is on the horizon."
-            ],
-            Pisces: [
-                "Dreams and intuition guide you. A creative project or spiritual practice brings deep fulfilment.",
-                "Your empathy is your gift. Help someone in need – it heals you both. Artistic expression flows.",
-                "Pisces, your sensitivity is your strength. Trust your visions and share them softly."
-            ]
-        };
+        function generateLocalHoroscope(westernSignName, chineseAnimal, moonSignName) {
+            // Combine western sign traits with chinese animal traits
+            const signCombinations = {
+                "Aries": {
+                    traits: "bold, energetic, and pioneering",
+                    love: "You crave passion and excitement. Today, your fiery nature draws someone close, but remember to listen as well as lead.",
+                    career: "Your natural leadership shines. Take the initiative on a stalled project; your momentum will inspire others to follow.",
+                    health: "Your vitality is high. Channel it into physical activity – a run, a workout, or even a brisk walk will clear your mind.",
+                    wisdom: "Patience is your teacher today. Not every battle needs to be won immediately."
+                },
+                "Taurus": {
+                    traits: "grounded, patient, and sensual",
+                    love: "You value stability and loyalty. Today, a simple gesture – a shared meal or a quiet evening – speaks louder than grand declarations.",
+                    career: "Slow and steady wins the race. Focus on building something lasting; your persistence will pay off in the long run.",
+                    health: "Your body craves comfort. Nourish it with good food, rest, and time in nature.",
+                    wisdom: "Change is inevitable, but you can adapt without losing your core strength."
+                },
+                "Gemini": {
+                    traits: "curious, witty, and adaptable",
+                    love: "Your charm and wit are magnetic today. Conversations deepen into meaningful connections. Listen as much as you speak.",
+                    career: "Your versatility is your superpower. Juggle multiple projects with ease, but be careful not to spread yourself too thin.",
+                    health: "Your mind needs stimulation. Read, learn, or engage in a lively debate to keep your energy flowing.",
+                    wisdom: "The answer you seek is often found in the question you're afraid to ask."
+                },
+                "Cancer": {
+                    traits: "intuitive, nurturing, and deeply emotional",
+                    love: "Your empathy draws people to you. Today, offer comfort to someone in need – it heals both of you.",
+                    career: "Trust your instincts. A subtle shift in a work relationship could open new doors if you pay attention.",
+                    health: "Your emotional well-being affects your physical state. Create a safe, peaceful space to recharge.",
+                    wisdom: "Water flows around obstacles, not through them. You can do the same."
+                },
+                "Leo": {
+                    traits: "confident, generous, and creative",
+                    love: "Your warmth and generosity shine. Romance is highlighted – share your light, and someone special will be drawn to it.",
+                    career: "You're a natural leader. Step up and take charge today; your team will rally behind your vision.",
+                    health: "Your energy is radiant. Use it to inspire others, but don't forget to recharge your own batteries.",
+                    wisdom: "The sun gives its light freely; so too can you share your gifts without expecting applause."
+                },
+                "Virgo": {
+                    traits: "analytical, practical, and devoted",
+                    love: "You show love through actions. Today, a small gesture of service – a thoughtful note, a helping hand – speaks volumes.",
+                    career: "Your attention to detail is invaluable. A complex problem finds its solution through your methodical approach.",
+                    health: "Your body is your temple. A routine – meditation, gentle exercise, or healthy eating – brings balance.",
+                    wisdom: "Perfection is a direction, not a destination. Celebrate progress, not just perfection."
+                },
+                "Libra": {
+                    traits: "diplomatic, charming, and fair-minded",
+                    love: "Connection is your air and water. Today, seek balance in a relationship – give and receive in equal measure.",
+                    career: "Your diplomatic skills resolve a conflict. You bring people together and find the middle ground.",
+                    health: "Harmony is your medicine. Surround yourself with beauty, and your well-being will follow.",
+                    wisdom: "Balance is not about staying still; it's about finding your centre in motion."
+                },
+                "Scorpio": {
+                    traits: "intense, passionate, and transformative",
+                    love: "Your depth is your gift. Today, intimacy deepens – trust the process of vulnerability.",
+                    career: "Your investigative powers uncover hidden opportunities. A secret shift in your industry works in your favour.",
+                    health: "Your energy is magnetic. Channel it into a creative or spiritual practice that nourishes your soul.",
+                    wisdom: "The phoenix rises from the ashes. Whatever burns away today makes room for something new."
+                },
+                "Sagittarius": {
+                    traits: "optimistic, adventurous, and free-spirited",
+                    love: "Your enthusiasm is contagious. Someone special is drawn to your joy. Share an adventure, even a small one.",
+                    career: "Your big-picture thinking solves a long-standing issue. Don't be afraid to think outside the box.",
+                    health: "Your body craves movement. Explore, stretch, and push your limits – your energy expands with use.",
+                    wisdom: "The journey is the destination. Enjoy every step, not just the arrival."
+                },
+                "Capricorn": {
+                    traits: "disciplined, ambitious, and responsible",
+                    love: "You express love through commitment. Today, a small act of reliability strengthens your bond.",
+                    career: "Your discipline pays off. A milestone you've been working toward is within reach. Stay the course.",
+                    health: "Your body responds to routine. Regular sleep and exercise create a foundation for everything else.",
+                    wisdom: "Climbing the mountain is part of the reward. Celebrate each step, not just the summit."
+                },
+                "Aquarius": {
+                    traits: "innovative, independent, and humanitarian",
+                    love: "Your uniqueness is your charm. Today, someone is drawn to your originality. Share your vision.",
+                    career: "Your innovative thinking solves a problem that has stumped others. Technology or collaboration aids your plans.",
+                    health: "Your energy flows when you're engaged in something meaningful. Get involved in a cause you care about.",
+                    wisdom: "The future is built by those who can imagine it. Trust your visions."
+                },
+                "Pisces": {
+                    traits: "dreamy, empathetic, and artistic",
+                    love: "Your empathy is your superpower. Today, offer a listening ear – it may heal someone deeply.",
+                    career: "Your intuition guides you to a creative solution. Trust the wisdom that flows through you.",
+                    health: "Your spirit needs nourishment. Art, music, or time by water restores your balance.",
+                    wisdom: "The boundary between reality and dreams is thin. Trust the messages that come to you."
+                }
+            };
 
-        function generateLocalHoroscope(signName) {
-            const snippets = horoscopeTemplates[signName] || [
-                "Today is full of possibility. Trust your inner guidance.",
-                "The stars are aligned in your favour. Embrace the day."
-            ];
-            const randomIndex = Math.floor(Math.random() * snippets.length);
-            return snippets[randomIndex];
+            const data = signCombinations[westernSignName] || {
+                traits: 'unique and full of potential',
+                love: 'Today is full of possibility. Trust your heart.',
+                career: 'Your path is unfolding. Take a step forward with confidence.',
+                health: 'Your well-being is your foundation. Nurture yourself today.',
+                wisdom: 'The stars are aligned in your favour.'
+            };
+
+            const animalTraits = chineseAnimal.traits;
+
+            // Build a rich, combined reading
+            const reading = `✨ ${westernSignName} · ${chineseAnimal.animal}
+
+        🌟 You are ${data.traits}, with the ${animalTraits} of the ${chineseAnimal.animal}.
+
+        💖 Love: ${data.love}
+
+        💼 Career: ${data.career}
+
+        🌿 Health: ${data.health}
+
+        🧠 Wisdom: ${data.wisdom}
+
+        🌙 With the Moon in ${moonSignName}, your emotional world is heightened. Trust your intuition today.`;
+
+            return reading;
         }
 
         // =============================================================
-        // 5. FETCH HOROSCOPE FROM Aztro API (with fallback)
+        // 6. FETCH HOROSCOPE FROM API (with fallback)
         // =============================================================
         async function fetchHoroscope(signName) {
             const signMap = {
@@ -499,86 +598,97 @@
                 return { success: true, data: data, source: 'api' };
             } catch (error) {
                 console.warn('Horoscope API error, using fallback:', error);
-
-                // Generate local fallback
-                const localText = generateLocalHoroscope(signName);
-                const fallbackData = {
-                    description: localText,
-                    lucky_number: Math.floor(Math.random() * 99) + 1,
-                    color: ['Red', 'Blue', 'Green', 'Gold', 'Silver', 'Purple', 'Orange', 'Pink'][Math.floor(Math.random() *
-                        8)],
-                    mood: ['Playful', 'Calm', 'Energetic', 'Reflective', 'Bold', 'Peaceful', 'Curious', 'Joyful'][Math.floor(
-                        Math.random() * 8)],
-                    compatibility: ['Taurus', 'Virgo', 'Capricorn', 'Cancer', 'Scorpio', 'Pisces', 'Gemini', 'Libra',
-                        'Aquarius', 'Leo', 'Sagittarius', 'Aries'
-                    ][Math.floor(Math.random() * 12)]
-                };
-                return { success: true, data: fallbackData, source: 'local' };
+                return { success: false, source: 'local' };
             }
         }
 
         // =============================================================
-        // 6. DISPLAY HOROSCOPE
+        // 7. DISPLAY HOROSCOPE
         // =============================================================
-        function displayHoroscope(result, userName, sunSign, moonSign) {
+        function displayHoroscope(apiResult, userName, sunSign, moonSign, chineseAnimal) {
             const loadingEl = document.getElementById('oracle-loading');
             const cardEl = document.getElementById('horoscope-card');
             const statusEl = document.getElementById('apiStatus');
 
-            if (!result || !result.success) {
-                loadingEl.innerHTML = '🌙 The Oracle is silent…<br><span style="font-size:0.8rem;color:#4a3c5c;">Please try again later.</span>';
+            // Update badges
+            document.getElementById('westernBadge').textContent = `${sunSign.symbol} ${sunSign.name}`;
+            document.getElementById('chineseBadge').textContent = chineseAnimal.animal;
+
+            // If API succeeded, use its data
+            if (apiResult && apiResult.success && apiResult.source === 'api') {
+                const data = apiResult.data;
+
+                loadingEl.style.display = 'none';
+                cardEl.style.display = 'block';
+
+                document.getElementById('userNameDisplay').textContent = userName || 'Traveller';
+                document.getElementById('subGreeting').textContent =
+                    `☀️ ${sunSign.symbol} ${sunSign.name} · 🌙 ${moonSign.symbol} ${moonSign.name} · ${chineseAnimal.animal}`;
+
+                const now = new Date();
+                document.getElementById('todayDate').textContent =
+                    now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+                document.getElementById('sunSignBadge').textContent = `${sunSign.symbol} ${sunSign.name} (Sun)`;
+                document.getElementById('moonSignBadge').textContent = `🌙 ${moonSign.symbol} ${moonSign.name} (Moon)`;
+
+                document.getElementById('horoscopeText').textContent = data.description || 'The stars are aligned in your favour.';
+                document.getElementById('luckyNumber').textContent = data.lucky_number || '—';
+                document.getElementById('luckyColor').textContent = data.color || '—';
+                document.getElementById('mood').textContent = data.mood || '—';
+                document.getElementById('compatibility').textContent = data.compatibility || '—';
+
+                statusEl.textContent = '✦ Connected to the stars ✦';
+                statusEl.className = 'api-status online';
                 return;
             }
 
-            const data = result.data;
-            const source = result.source;
+            // ---- FALLBACK: Local generation with Chinese zodiac ----
+            const localText = generateLocalHoroscope(sunSign.name, chineseAnimal, moonSign.name);
 
-            // Hide loading, show card
             loadingEl.style.display = 'none';
             cardEl.style.display = 'block';
 
-            // Update greeting
             document.getElementById('userNameDisplay').textContent = userName || 'Traveller';
             document.getElementById('subGreeting').textContent =
-                `☀️ ${sunSign.symbol} ${sunSign.name} · 🌙 ${moonSign.symbol} ${moonSign.name}`;
+                `☀️ ${sunSign.symbol} ${sunSign.name} · 🌙 ${moonSign.symbol} ${moonSign.name} · ${chineseAnimal.animal}`;
 
-            // Date
             const now = new Date();
             document.getElementById('todayDate').textContent =
                 now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-            // Sun & Moon badges
             document.getElementById('sunSignBadge').textContent = `${sunSign.symbol} ${sunSign.name} (Sun)`;
             document.getElementById('moonSignBadge').textContent = `🌙 ${moonSign.symbol} ${moonSign.name} (Moon)`;
 
-            // Horoscope text
-            document.getElementById('horoscopeText').textContent = data.description || 'The stars are aligned in your favour.';
+            document.getElementById('horoscopeText').textContent = localText;
 
-            // Footer details
-            document.getElementById('luckyNumber').textContent = data.lucky_number || '—';
-            document.getElementById('luckyColor').textContent = data.color || '—';
-            document.getElementById('mood').textContent = data.mood || '—';
-            document.getElementById('compatibility').textContent = data.compatibility || '—';
+            // Random details for local version
+            const luckyNumbers = [3, 7, 12, 21, 33, 42, 55, 77, 88, 99];
+            const colors = ['Crimson', 'Sapphire', 'Emerald', 'Gold', 'Silver', 'Amethyst', 'Rose', 'Indigo', 'Copper', 'Ivory'];
+            const moods = ['Playful', 'Calm', 'Energetic', 'Reflective', 'Bold', 'Peaceful', 'Curious', 'Joyful', 'Serene',
+                'Focused'
+            ];
+            const compatibilities = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius',
+                'Capricorn', 'Aquarius', 'Pisces'
+            ];
 
-            // API status
-            if (source === 'api') {
-                statusEl.textContent = '✦ Connected to the stars ✦';
-                statusEl.className = 'api-status online';
-            } else {
-                statusEl.textContent = '✦ Oracle reading from the local spirits ✦';
-                statusEl.className = 'api-status offline';
-            }
+            document.getElementById('luckyNumber').textContent = luckyNumbers[Math.floor(Math.random() * luckyNumbers.length)];
+            document.getElementById('luckyColor').textContent = colors[Math.floor(Math.random() * colors.length)];
+            document.getElementById('mood').textContent = moods[Math.floor(Math.random() * moods.length)];
+            document.getElementById('compatibility').textContent = compatibilities[Math.floor(Math.random() * compatibilities
+                .length)];
+
+            statusEl.textContent = '✦ Oracle reading from the local spirits ✦';
+            statusEl.className = 'api-status offline';
         }
 
         // =============================================================
-        // 7. MAIN INIT
+        // 8. MAIN INIT
         // =============================================================
         async function initHoroscope() {
-            // Get user data from localStorage
             const userName = localStorage.getItem('user-name') || 'Traveller';
             const userBirthday = localStorage.getItem('user-birthday');
 
-            // If no birthday, show message and stop
             if (!userBirthday) {
                 document.getElementById('greeting').innerHTML = '✨ <span class="highlight">Traveller</span>';
                 document.getElementById('subGreeting').textContent = 'Set your name and birthday in the Altar.';
@@ -592,28 +702,31 @@
                 return;
             }
 
-            // Update greeting with user name
+            // Get birth year for Chinese zodiac
+            const birthDate = new Date(userBirthday + 'T00:00:00');
+            const birthYear = birthDate.getFullYear();
+            const chineseAnimal = getChineseZodiac(birthYear);
+
             document.getElementById('userNameDisplay').textContent = userName;
 
-            // Get today's Sun and Moon signs
             const sunSign = getTodaySunSign();
             const moonSign = getMoonSign();
 
-            // Fetch horoscope from API (with fallback)
-            const result = await fetchHoroscope(sunSign.name);
+            // Try API first, but we already have the local fallback ready
+            const apiResult = await fetchHoroscope(sunSign.name);
 
-            // Display after a short delay (for dramatic effect)
+            // Display after dramatic delay
             setTimeout(() => {
-                displayHoroscope(result, userName, sunSign, moonSign);
+                displayHoroscope(apiResult, userName, sunSign, moonSign, chineseAnimal);
             }, 2200);
         }
 
         // =============================================================
-        // 8. START
+        // 9. START
         // =============================================================
         document.addEventListener('DOMContentLoaded', initHoroscope);
 
-        console.log('✨ Horoscope page loaded (with fallback).');
+        console.log('✨ Horoscope page loaded (with Chinese zodiac integration).');
         console.log('📡 Reading from localStorage...');
     </script>
 
