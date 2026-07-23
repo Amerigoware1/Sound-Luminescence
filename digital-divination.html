@@ -1074,13 +1074,15 @@
     // =============================================================
     document.addEventListener('DOMContentLoaded', async function () {
       // Get DOM references
-      bdayInput = document.getElementById('user-birthday');
-      sidebar = document.getElementById('meaning-sidebar');
-      surface = document.getElementById('canvas-surface');
-      dealBtn = document.getElementById('deal-spread-btn');
-      clearBtn = document.getElementById('clear-btn');
-      shuffleBtn = document.getElementById('shuffle-btn');
-      dropdown = document.getElementById('spread-matrix');
+      const nameInput = document.getElementById('user-name');
+      const bdayInput = document.getElementById('user-birthday');
+      const sidebar = document.getElementById('meaning-sidebar');
+      const surface = document.getElementById('canvas-surface');
+      const dealBtn = document.getElementById('deal-spread-btn');
+      const clearBtn = document.getElementById('clear-btn');
+      const shuffleBtn = document.getElementById('shuffle-btn');
+      const dropdown = document.getElementById('spread-matrix');
+
       // --- Load saved user data from localStorage ---
       const savedName = localStorage.getItem('user-name');
       const savedBirthday = localStorage.getItem('user-birthday');
@@ -1099,9 +1101,6 @@
 
       nameInput.addEventListener('change', saveUserData);
       bdayInput.addEventListener('change', saveUserData);
-
-      // --- Initial profile update ---
-      updateProfiles();
 
       // Setup cloth/cursor immediately
       setupClothAndCursor();
@@ -1140,7 +1139,6 @@
 
       bdayInput.addEventListener('change', updateProfiles);
       // --- Save user data to localStorage ---
-      const nameInput = document.getElementById('user-name');
 
       function saveUserData() {
         localStorage.setItem('user-name', nameInput.value);
