@@ -1081,6 +1081,27 @@
       clearBtn = document.getElementById('clear-btn');
       shuffleBtn = document.getElementById('shuffle-btn');
       dropdown = document.getElementById('spread-matrix');
+      // --- Load saved user data from localStorage ---
+      const savedName = localStorage.getItem('user-name');
+      const savedBirthday = localStorage.getItem('user-birthday');
+      if (savedName) {
+        nameInput.value = savedName;
+      }
+      if (savedBirthday) {
+        bdayInput.value = savedBirthday;
+      }
+
+      // --- Save on change (so other pages see updates) ---
+      function saveUserData() {
+        localStorage.setItem('user-name', nameInput.value);
+        localStorage.setItem('user-birthday', bdayInput.value);
+      }
+
+      nameInput.addEventListener('change', saveUserData);
+      bdayInput.addEventListener('change', saveUserData);
+
+      // --- Initial profile update ---
+      updateProfiles();
 
       // Setup cloth/cursor immediately
       setupClothAndCursor();
